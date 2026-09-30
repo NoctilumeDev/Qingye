@@ -1,0 +1,11 @@
+.title {
+  font-size:42rpx
+}
+
+.field .label {
+  margin-bottom:15rpx
+}
+
+.primary {
+  margin-top:40rpx
+}

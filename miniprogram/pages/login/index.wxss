@@ -1,0 +1,101 @@
+.login {
+  padding-top:28rpx
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:14rpx;
+  font-size:34rpx;
+  font-weight:800
+}
+
+.brand-mark {
+  font-size:44rpx;
+  color:#226647
+}
+
+.brand-en {
+  font-size:20rpx;
+  letter-spacing:3rpx;
+  color:#81917d;
+  margin-left:auto
+}
+
+.welcome {
+  position:relative;
+  background:#ddebba;
+  border-radius:40rpx;
+  margin:44rpx 0 30rpx;
+  padding:52rpx 36rpx 150rpx;
+  overflow:hidden;
+  min-height:490rpx
+}
+
+.sticker {
+  display:inline-block;
+  transform:rotate(-5deg);
+  padding:12rpx 18rpx;
+  background:#f8af83;
+  font-size:20rpx;
+  font-weight:800;
+  color:#663d27;
+  border-radius:9rpx;
+  margin-bottom:28rpx
+}
+
+.headline {
+  font-size:62rpx;
+  font-weight:850;
+  line-height:1.3;
+  letter-spacing:-2rpx
+}
+
+.welcome .subtitle {
+  color:#4f7250;
+  font-size:25rpx
+}
+
+.sun {
+  position:absolute;
+  right:25rpx;
+  top:42rpx;
+  font-size:100rpx;
+  color:#fffaf0;
+  transform:rotate(15deg)
+}
+
+.grass {
+  position:absolute;
+  bottom:-180rpx;
+  right:-120rpx;
+  width:650rpx;
+  height:320rpx;
+  border:4rpx solid #fff8;
+  border-radius:50%;
+  transform:rotate(-15deg)
+}
+
+.court {
+  position:absolute;
+  bottom:42rpx;
+  left:36rpx;
+  font-size:24rpx;
+  font-weight:800;
+  letter-spacing:2rpx
+}
+
+.demo {
+  margin-top:44rpx
+}
+
+.account {
+  background:#fff;
+  border:1rpx solid #e3eada;
+  border-radius:22rpx;
+  padding:26rpx;
+  margin-top:16rpx;
+  display:flex;
+  justify-content:space-between;
+  font-size:27rpx
+}

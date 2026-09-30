@@ -1,0 +1,8 @@
+<view class="tab-wrap">
+    <view class="tabs">
+      <view wx:for="{{tabs}}" wx:key="path" class="tab {{selected === index ? 'active' : ''}}" data-index="{{index}}" bindtap="switchTab">
+        <text class="icon">{{item.icon}}</text>
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </view>

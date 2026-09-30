@@ -1,0 +1,38 @@
+server:
+  port: ${QINGYE_PORT:8087}
+  address: ${QINGYE_BIND:127.0.0.1}
+spring:
+  datasource:
+    url: ${QINGYE_DB_URL:jdbc:mysql://127.0.0.1:3306/qingye?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai}
+    username: ${QINGYE_DB_USER:}
+    password: ${QINGYE_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 8
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+  jackson:
+    time-zone: Asia/Shanghai
+  data:
+    redis:
+      host: ${QINGYE_REDIS_HOST:127.0.0.1}
+      port: ${QINGYE_REDIS_PORT:6379}
+      timeout: 150ms
+      connect-timeout: 150ms
+      password: ${QINGYE_REDIS_PASSWORD:}
+qingye:
+  demo-enabled: ${QINGYE_DEMO:false}
+  redis-enabled: ${QINGYE_REDIS:false}
+  mq-enabled: ${QINGYE_MQ:false}
+  mq-host: ${QINGYE_MQ_HOST:127.0.0.1}
+  mq-port: ${QINGYE_MQ_PORT:5672}
+  mq-user: ${QINGYE_MQ_USER:guest}
+  mq-password: ${QINGYE_MQ_PASSWORD:guest}
+  token-secret: ${QINGYE_TOKEN_SECRET:}
+  wx-appid: ${QINGYE_WX_APPID:}
+  wx-secret: ${QINGYE_WX_SECRET:}
+  llm-url: ${QINGYE_LLM_URL:}
+  llm-key: ${QINGYE_LLM_KEY:}
+  llm-model: ${QINGYE_LLM_MODEL:}

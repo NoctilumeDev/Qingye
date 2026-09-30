@@ -1,0 +1,148 @@
+<view class="page">
+    <text class="eyebrow">CAMPUS WORKSPACE</text>
+    <view class="title gap">{{title}}</view>
+    <view class="subtitle">把必要的信息填清楚，好事就能顺利发生。</view>
+    <block wx:if="{{kind === 'activity'}}">
+      <view class="field">
+        <text class="label">所属社团</text>
+        <picker range="{{choiceNames}}" value="{{choiceIndex}}" bindchange="choice" disabled="{{editing}}">
+          <view class="picker">{{choiceNames[choiceIndex] || '还没有可管理的社团'}} ▾</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="label">活动名称</text>
+        <input class="input" value="{{form.title}}" maxlength="80" data-field="title" bindinput="field" placeholder="给这次活动起个名字" />
+      </view>
+      <view class="field">
+        <text class="label">活动分类</text>
+        <picker range="{{categories}}" value="{{categoryIndex}}" bindchange="category">
+          <view class="picker">{{categories[categoryIndex]}} ▾</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="label">活动地点</text>
+        <input class="input" value="{{form.location}}" maxlength="100" data-field="location" bindinput="field" placeholder="例如东操场草坪" />
+      </view>
+      <view class="field">
+        <text class="label">活动介绍</text>
+        <textarea class="textarea" value="{{form.description}}" maxlength="2000" data-field="description" bindinput="field" placeholder="我们做什么，适合谁参加？" />
+      </view>
+      <view class="field">
+        <text class="label">人数上限</text>
+        <input class="input" type="number" value="{{form.capacity}}" data-field="capacity" bindinput="field" />
+      </view>
+      <view class="field">
+        <text class="label">报名截止</text>
+        <view class="split">
+          <view>
+            <picker mode="date" value="{{form.deadlineDate}}" data-field="deadlineDate" bindchange="field">
+              <view class="picker">{{form.deadlineDate}}</view>
+            </picker>
+          </view>
+          <view>
+            <picker mode="time" value="{{form.deadlineTime}}" data-field="deadlineTime" bindchange="field">
+              <view class="picker">{{form.deadlineTime}}</view>
+            </picker>
+          </view>
+        </view>
+      </view>
+    </block>
+    <block wx:if="{{kind === 'activity' || kind === 'loan'}}">
+      <block wx:if="{{kind === 'loan'}}">
+        <view class="card gap">
+          <view class="section-title">{{equipmentName}}</view>
+          <view class="footnote">预约按时间段计算；实际领取时还会核对当前实物。</view>
+        </view>
+        <view class="field">
+          <text class="label">用于哪个活动</text>
+          <picker range="{{choiceNames}}" value="{{choiceIndex}}" bindchange="choice">
+            <view class="picker">{{choiceNames[choiceIndex] || '暂无已发布的活动'}} ▾</view>
+          </picker>
+        </view>
+        <view class="field">
+          <text class="label">预约数量</text>
+          <input class="input" type="number" value="{{form.quantity}}" data-field="quantity" bindinput="field" />
+        </view>
+        <view class="field">
+          <text class="label">用途说明</text>
+          <textarea class="textarea" value="{{form.reason}}" maxlength="300" data-field="reason" bindinput="field" placeholder="说明活动为什么需要这些器材" />
+        </view>
+      </block>
+      <view class="field">
+        <text class="label">{{kind === 'loan' ? '预约' : '活动'}}开始</text>
+        <view class="split">
+          <view>
+            <picker mode="date" value="{{form.startDate}}" data-field="startDate" bindchange="field">
+              <view class="picker">{{form.startDate}}</view>
+            </picker>
+          </view>
+          <view>
+            <picker mode="time" value="{{form.startTime}}" data-field="startTime" bindchange="field">
+              <view class="picker">{{form.startTime}}</view>
+            </picker>
+          </view>
+        </view>
+      </view>
+      <view class="field">
+        <text class="label">{{kind === 'loan' ? '预约' : '活动'}}结束</text>
+        <view class="split">
+          <view>
+            <picker mode="date" value="{{form.endDate}}" data-field="endDate" bindchange="field">
+              <view class="picker">{{form.endDate}}</view>
+            </picker>
+          </view>
+          <view>
+            <picker mode="time" value="{{form.endTime}}" data-field="endTime" bindchange="field">
+              <view class="picker">{{form.endTime}}</view>
+            </picker>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{availability}}" class="card">
+        <view class="row">
+          <text>这个时间段可预约</text>
+          <text class="badge">{{availability.availableQuantity}} 件</text>
+        </view>
+        <view class="footnote">总量 {{availability.totalQuantity}}，已有预约峰值 {{availability.peakOccupied}}。提交申请后仍需审核。</view>
+      </view>
+    </block>
+    <block wx:if="{{kind === 'equipment' || kind === 'club'}}">
+      <view class="field">
+        <text class="label">名称</text>
+        <input class="input" value="{{form.name}}" maxlength="60" data-field="name" bindinput="field" />
+      </view>
+      <view class="field">
+        <text class="label">介绍</text>
+        <textarea class="textarea" value="{{form.description}}" maxlength="1000" data-field="description" bindinput="field" />
+      </view>
+    </block>
+    <block wx:if="{{kind === 'equipment'}}">
+      <view class="field">
+        <text class="label">分类</text>
+        <input class="input" value="{{form.category}}" maxlength="20" data-field="category" bindinput="field" />
+      </view>
+      <view class="field">
+        <text class="label">总数量</text>
+        <input class="input" type="number" value="{{form.totalQuantity}}" data-field="totalQuantity" bindinput="field" />
+      </view>
+      <view class="field row">
+        <text class="label">开放预约</text>
+        <switch checked="{{form.enabled}}" color="#226647" bindchange="enabled" />
+      </view>
+    </block>
+    <block wx:if="{{kind === 'club'}}">
+      <view wx:if="{{!editing}}" class="field">
+        <text class="label">社团负责人</text>
+        <picker range="{{choiceNames}}" value="{{choiceIndex}}" bindchange="choice">
+          <view class="picker">{{choiceNames[choiceIndex] || '请选择负责人'}} ▾</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="label">社团颜色</text>
+        <picker range="{{colorNames}}" value="{{colorIndex}}" bindchange="color">
+          <view class="picker">{{colorNames[colorIndex]}} ▾</view>
+        </picker>
+      </view>
+    </block>
+    <button class="primary gap" loading="{{busy}}" disabled="{{busy}}" bindtap="save">{{kind === 'activity' || kind === 'loan' ? '提交审核 ↗' : '保存 ↗'}}</button>
+  </view>

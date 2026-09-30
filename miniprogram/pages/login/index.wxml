@@ -1,0 +1,36 @@
+<view class="page login">
+    <view class="brand">
+      <text class="brand-mark">✳</text>
+      <text>青野</text>
+      <text class="brand-en">QINGYE</text>
+    </view>
+    <view class="welcome">
+      <view class="sticker">HELLO, CAMPUS!</view>
+      <view class="headline">
+        <view>把青春，</view>
+        <view>留在校园里。</view>
+      </view>
+      <view class="subtitle">
+        <view>遇见同好，参加活动。</view>
+        <view>一起把课后的生活过得有声有色。</view>
+      </view>
+      <view class="sun">☀</view>
+      <view class="grass" />
+      <text class="court">LET'S PLAY TOGETHER ↗</text>
+    </view>
+    <view class="gap">
+      <button class="primary" loading="{{busy}}" bindtap="wechat">微信登录，开启校园生活</button>
+    </view>
+    <view wx:if="{{accounts.length}}" class="demo">
+      <view class="row">
+        <text class="section-title">体验青野</text>
+        <text class="muted">本地演示</text>
+      </view>
+      <view class="footnote">选一个身份，看看校园里正在发生什么。</view>
+      <view wx:for="{{accounts}}" wx:key="id" class="account" data-id="{{item.id}}" bindtap="demo">
+        <text>{{item.name}}</text>
+        <text class="link">进入 ↗</text>
+      </view>
+    </view>
+    <view class="footnote">青野 · 校园社团活动与共享资源</view>
+  </view>

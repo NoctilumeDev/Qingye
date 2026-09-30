@@ -1,0 +1,46 @@
+package cn.qingye.db;
+import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Repository
+public class MessageStore {
+    private final Sql sql;
+    public MessageStore(Sql sql) {
+        this.sql=sql;
+    }
+    public void notice(long user,String title,String body,LocalDateTime when,String source,Long sourceId) {
+        long notification=sql.insert("INSERT INTO notification(user_id,title,body) VALUES (?,?,?)",user,title,body);
+        sql.insert("INSERT INTO message_task(notification_id,available_at,source_kind,source_id) VALUES (?,?,?,?)",notification,when,source,sourceId);
+    }
+    public List<Map<String,Object>> list(long user) {
+        return sql.list("SELECT id,title,body,read_at,created_at FROM notification WHERE user_id=? AND delivered=TRUE ORDER BY id DESC LIMIT 100",user);
+    }
+    public void read(long id,long user,LocalDateTime now) {
+        sql.update("UPDATE notification SET read_at=? WHERE id=? AND user_id=? AND delivered=TRUE",now,id,user);
+    }
+    public void cancelReminders(String kind,long id) {
+        sql.update("UPDATE message_task SET status='CANCELLED' WHERE source_kind=? AND source_id=? AND status='PENDING'",kind,id);
+    }
+    public List<Map<String,Object>> pending(LocalDateTime now) {
+        return sql.list("SELECT id FROM message_task WHERE status='PENDING' AND available_at<=? ORDER BY available_at,id LIMIT 30",now);
+    }
+    public Map<String,Object> lock(long id) {
+        return sql.optional("SELECT * FROM message_task WHERE id=? FOR UPDATE",id);
+    }
+    public boolean applicable(String kind,long id) {
+        if ("ACTIVITY".equals(kind)) return sql.count("SELECT COUNT(*) FROM registration r JOIN activity a ON a.id=r.activity_id WHERE r.id=? AND r.status='REGISTERED' AND a.status='PUBLISHED'",id)>0;
+        if ("LOAN".equals(kind)) return sql.count("SELECT COUNT(*) FROM loan WHERE id=? AND status IN ('APPROVED','CHECKED_OUT')",id)>0;
+        return true;
+    }
+    public void finish(long id,long notification,LocalDateTime now,boolean applicable) {
+        if (applicable) sql.update("UPDATE notification SET delivered=TRUE WHERE id=?",notification);
+        sql.update("UPDATE message_task SET status=?,completed_at=?,last_error='' WHERE id=?",applicable?"DONE":"CANCELLED",now,id);
+    }
+    public void failed(long id,String message,LocalDateTime retry) {
+        sql.update("UPDATE message_task SET attempts=attempts+1,last_error=?,available_at=? WHERE id=? AND status='PENDING'",message,retry,id);
+    }
+    public Map<String,Object> stats() {
+        return Map.of("pending",sql.count("SELECT COUNT(*) FROM message_task WHERE status='PENDING'"),"done",sql.count("SELECT COUNT(*) FROM message_task WHERE status='DONE'"));
+    }
+}

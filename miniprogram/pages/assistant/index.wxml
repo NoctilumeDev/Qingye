@@ -1,0 +1,23 @@
+<view class="page">
+    <view class="assistant-hero">
+      <text class="spark">✦</text>
+      <text class="eyebrow">ASK QINGYE</text>
+      <view class="title gap">校园里的事，<view>随口问问。</view>
+      </view>
+      <view class="subtitle">查活动、查报名、查器材。<view>回答依据当前校园记录。</view>
+      </view>
+    </view>
+    <view class="suggestions">
+      <view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion">{{item}} ↗</view>
+    </view>
+    <view class="field">
+      <textarea class="textarea" value="{{question}}" maxlength="300" bindinput="input" placeholder="例如：这周末有什么摄影活动？" />
+    </view>
+    <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="ask">{{busy ? '正在查找校园记录…' : '帮我查查 ↗'}}</button>
+    <view wx:if="{{answer}}" class="card answer">
+      <text selectable="true">{{answer}}</text>
+      <view wx:for="{{items}}" wx:key="id" class="result" data-id="{{item.id}}" bindtap="open">{{item.displayName}}<text wx:if="{{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS'}}"> ↗</text>
+      </view>
+    </view>
+    <view class="footnote">查询不会替你报名、审批或借用器材。这些操作请在对应页面确认。</view>
+  </view>

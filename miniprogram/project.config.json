@@ -1,0 +1,10 @@
+{
+  "description": "青野 · 校园社团活动与共享资源",
+  "projectname": "qingye",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "./",
+  "libVersion": "3.10.3",
+  "setting": { "urlCheck": false, "es6": true, "enhance": true, "postcss": true, "minified": true },
+  "packOptions": { "ignore": [{ "type": "file", "value": "project.private.config.json" }] }
+}

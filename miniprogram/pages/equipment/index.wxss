@@ -1,0 +1,39 @@
+.equipment-visual {
+  background:#e6eff2;
+  border-radius:22rpx;
+  height:180rpx;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-bottom:24rpx;
+  overflow:hidden
+}
+
+.equipment-visual text {
+  font-size:96rpx;
+  transform:rotate(-8deg)
+}
+
+.equipment-visual image {
+  width:100%;
+  height:100%
+}
+
+.equipment-name {
+  font-size:32rpx;
+  font-weight:750
+}
+
+.stock {
+  display:flex;
+  gap:45rpx;
+  color:#7b8977;
+  font-size:22rpx;
+  margin-top:25rpx
+}
+
+.stock-number {
+  font-size:37rpx;
+  font-weight:750;
+  color:#226647
+}

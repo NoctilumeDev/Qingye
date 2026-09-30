@@ -1,0 +1,21 @@
+.title {
+  font-size:47rpx
+}
+
+.notice-title {
+  font-size:28rpx;
+  font-weight:700;
+  max-width:420rpx
+}
+
+.dot {
+  color:#5b9847;
+  font-size:19rpx
+}
+
+.notice-body {
+  font-size:26rpx;
+  color:#66785f;
+  line-height:1.9;
+  margin:22rpx 0
+}

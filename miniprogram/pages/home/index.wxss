@@ -1,0 +1,143 @@
+.campus-badge {
+  font-size:21rpx;
+  color:#66795e
+}
+
+.hero {
+  position:relative;
+  overflow:hidden;
+  background:#dcebaf;
+  border-radius:34rpx;
+  padding:37rpx 30rpx 42rpx;
+  margin-top:28rpx;
+  min-height:280rpx
+}
+
+.hero-title {
+  font-size:55rpx;
+  font-weight:850;
+  line-height:1.22;
+  letter-spacing:-2rpx;
+  position:relative;
+  z-index:2
+}
+
+.hero-description {
+  color:#557649;
+  font-size:22rpx;
+  margin-top:25rpx;
+  position:relative;
+  z-index:2
+}
+
+.ball {
+  position:absolute;
+  font-size:122rpx;
+  right:12rpx;
+  top:45rpx;
+  transform:rotate(-15deg)
+}
+
+.court-line {
+  position:absolute;
+  width:450rpx;
+  height:450rpx;
+  border:3rpx solid #fff9;
+  border-radius:50%;
+  right:-180rpx;
+  top:-100rpx
+}
+
+.hero-sticker {
+  position:absolute;
+  right:18rpx;
+  bottom:45rpx;
+  background:#fff9;
+  padding:10rpx 12rpx;
+  font-size:17rpx;
+  font-weight:850;
+  transform:rotate(7deg)
+}
+
+.shortcuts {
+  display:flex;
+  gap:18rpx;
+  margin-top:23rpx
+}
+
+.shortcut {
+  border-radius:24rpx;
+  padding:24rpx 17rpx;
+  display:flex;
+  align-items:center;
+  gap:15rpx;
+  flex:1
+}
+
+.shortcut.blue {
+  background:#dcebf7
+}
+
+.shortcut.lime {
+  background:#e6edcc
+}
+
+.shortcut-icon {
+  font-size:48rpx
+}
+
+.shortcut-title {
+  font-size:26rpx;
+  font-weight:700;
+  margin-bottom:8rpx
+}
+
+.shortcut text {
+  font-size:19rpx;
+  color:#6a7d6c
+}
+
+.shortcut .shortcut-icon {
+  font-size:45rpx;
+  color:#226647
+}
+
+.search {
+  display:flex;
+  align-items:center;
+  gap:15rpx;
+  background:#fff;
+  border:1rpx solid #e3e9db;
+  padding:20rpx 24rpx;
+  border-radius:20rpx;
+  margin:32rpx 0 24rpx
+}
+
+.search text {
+  font-size:37rpx;
+  color:#7b8c73
+}
+
+.search input {
+  flex:1;
+  font-size:25rpx
+}
+
+.chips {
+  white-space:nowrap
+}
+
+.chip {
+  display:inline-block;
+  padding:14rpx 27rpx;
+  font-size:25rpx;
+  color:#687a60;
+  background:#e9eedf;
+  border-radius:30rpx;
+  margin-right:14rpx
+}
+
+.chip.selected {
+  background:#226647;
+  color:#fff
+}

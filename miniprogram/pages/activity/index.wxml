@@ -1,0 +1,51 @@
+<view wx:if="{{item}}" class="page">
+    <view class="poster {{item.tone}}">
+      <image wx:if="{{item.poster}}" src="{{item.poster}}" mode="aspectFill" />
+      <block wx:else="">
+        <text class="poster-symbol">{{item.symbol}}</text>
+        <view class="poster-word">
+          <view>SEE YOU</view>
+          <view>ON CAMPUS!</view>
+        </view>
+        <view class="poster-orbit" />
+      </block>
+      <text class="poster-tag">{{item.categoryName}} / {{item.phase}}</text>
+    </view>
+    <view class="section">
+      <text class="badge">{{item.clubName}}</text>
+      <text class="muted">{{item.registeredCount}} / {{item.capacity}} 人报名</text>
+    </view>
+    <view class="title activity-title">{{item.title}}</view>
+    <view class="info card">
+      <view>◷ {{item.displayTime}} — {{displayEnd}}</view>
+      <view>⌁ {{item.location}}</view>
+      <view class="muted">报名截止：{{displayDeadline}}</view>
+    </view>
+    <view class="section">
+      <text class="section-title">这次我们做什么</text>
+    </view>
+    <text class="description" selectable="true">{{item.description}}</text>
+    <view wx:if="{{item.canManage}}" class="actions">
+      <button class="secondary small" bindtap="participants">查看报名名单</button>
+      <button wx:if="{{item.status === 'PENDING' || item.status === 'REJECTED'}}" class="secondary small" bindtap="edit">调整活动</button>
+    </view>
+    <view wx:if="{{participants}}" class="card gap">
+      <view class="section-title">报名名单</view>
+      <view wx:for="{{participants}}" wx:key="id" class="participant">
+        <text>{{item.name}}</text>
+        <text class="muted">{{item.status === 'REGISTERED' ? '正式报名' : '候补'}}</text>
+      </view>
+      <view wx:if="{{!participants.length}}" class="empty">还没有同学报名。</view>
+    </view>
+    <view class="signup card">
+      <block wx:if="{{registrationText}}">
+        <view class="row">
+          <text class="badge">{{registrationText}}</text>
+          <button wx:if="{{canCancel}}" class="secondary small" loading="{{busy}}" bindtap="cancel">取消报名</button>
+        </view>
+        <view class="footnote">{{registrationText === '候补中' ? '有人取消时，会按报名顺序递补并通知你。' : '已经为你记下这次活动，到时见。'}}</view>
+      </block>
+      <button wx:elif="{{canRegister}}" class="primary" loading="{{busy}}" bindtap="register">{{item.slots ? '我要报名，一起去！' : '加入候补，等一个名额'}}</button>
+      <view wx:else="" class="muted">{{item.phase}}，当前不能报名。</view>
+    </view>
+  </view>

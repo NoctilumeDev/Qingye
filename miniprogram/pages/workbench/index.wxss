@@ -1,0 +1,40 @@
+.title {
+  font-size:47rpx
+}
+
+.tabs {
+  display:flex;
+  gap:12rpx;
+  margin:38rpx 0 27rpx;
+  padding:8rpx;
+  background:#e8eddf;
+  border-radius:22rpx
+}
+
+.tab {
+  flex:1;
+  text-align:center;
+  padding:20rpx 8rpx;
+  font-size:25rpx;
+  border-radius:17rpx;
+  color:#73816b
+}
+
+.tab.selected {
+  background:#fff;
+  color:#226647;
+  font-weight:700;
+  box-shadow:0 4rpx 10rpx #29352308
+}
+
+.record-title {
+  font-size:31rpx;
+  font-weight:750;
+  line-height:1.5;
+  margin:19rpx 0 12rpx
+}
+
+.record-name {
+  font-size:29rpx;
+  font-weight:650
+}

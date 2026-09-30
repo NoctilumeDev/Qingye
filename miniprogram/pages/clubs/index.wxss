@@ -1,0 +1,37 @@
+.club {
+  position:relative;
+  overflow:hidden
+}
+
+.club.blue {
+  background:#e5f0fa
+}
+
+.club.green {
+  background:#eaf2d5
+}
+
+.club.orange {
+  background:#faf0dd
+}
+
+.club.red {
+  background:#f8e8df
+}
+
+.club-symbol {
+  font-size:53rpx;
+  color:#226647
+}
+
+.club-title {
+  font-size:37rpx;
+  font-weight:800;
+  margin:20rpx 0 16rpx
+}
+
+.club-description {
+  font-size:26rpx;
+  color:#657863;
+  line-height:1.85
+}

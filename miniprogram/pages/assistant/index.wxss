@@ -1,0 +1,53 @@
+.assistant-hero {
+  background:#e0edcf;
+  padding:35rpx 30rpx;
+  border-radius:30rpx;
+  position:relative;
+  overflow:hidden
+}
+
+.spark {
+  position:absolute;
+  font-size:120rpx;
+  right:20rpx;
+  top:20rpx;
+  color:#a8c484;
+  transform:rotate(10deg)
+}
+
+.title {
+  font-size:46rpx;
+  position:relative
+}
+
+.suggestions {
+  margin-top:28rpx
+}
+
+.suggestion {
+  display:inline-block;
+  padding:16rpx 20rpx;
+  background:#fff;
+  border:1rpx solid #e1e8d7;
+  border-radius:18rpx;
+  margin:0 12rpx 14rpx 0;
+  font-size:23rpx;
+  color:#456e4b
+}
+
+.answer {
+  margin-top:32rpx;
+  line-height:1.9;
+  font-size:26rpx
+}
+
+.answer>text {
+  white-space:pre-wrap
+}
+
+.result {
+  border-top:1rpx solid #edf0e6;
+  margin-top:16rpx;
+  padding-top:16rpx;
+  color:#226647
+}

@@ -1,0 +1,20 @@
+<view class="page">
+    <text class="eyebrow">YOUR CAMPUS UPDATES</text>
+    <view class="title gap">好消息，<view>记得查收。</view>
+    </view>
+    <view class="subtitle">报名、候补和器材借用的进展，都在这里。</view>
+    <view class="gap">
+      <view wx:for="{{items}}" wx:key="id" class="card notice" data-id="{{item.id}}" bindtap="read">
+        <view class="row">
+          <view class="notice-title">
+            <text wx:if="{{!item.readAt}}" class="dot">● </text>{{item.title}}</view>
+          <text class="muted">{{item.displayTime}}</text>
+        </view>
+        <view class="notice-body">{{item.body}}</view>
+        <text class="footnote">{{item.readAt ? '已读' : '轻点标记已读'}}</text>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading">正在取出你的消息…</view>
+    <view wx:if="{{!items.length && !loading}}" class="empty">暂时没有新消息。<view>活动有进展时，会在这里告诉你。</view>
+    </view>
+  </view>

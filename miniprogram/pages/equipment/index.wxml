@@ -1,0 +1,41 @@
+<view class="page">
+    <text class="eyebrow">SHARE THE GOOD STUFF</text>
+    <view class="title gap">好装备，<view>一起用。</view>
+    </view>
+    <view class="subtitle">社团负责人为活动预约，按时间共享校园器材。</view>
+    <button wx:if="{{user.admin}}" class="secondary small gap" bindtap="create">＋ 添加器材</button>
+    <view class="section">
+      <text class="section-title">共享器材室</text>
+      <text class="muted">带着装备，去做点什么</text>
+    </view>
+    <view wx:for="{{items}}" wx:key="id" class="card equipment">
+      <view class="equipment-visual">
+        <image wx:if="{{item.image}}" src="{{item.image}}" mode="aspectFit" />
+        <text wx:else="">{{item.symbol}}</text>
+      </view>
+      <view class="row">
+        <text class="equipment-name">{{item.name}}</text>
+        <text class="badge">{{item.category}}</text>
+      </view>
+      <view class="muted gap">{{item.description}}</view>
+      <view class="stock">
+        <view>
+          <text class="stock-number">{{item.totalQuantity}}</text>
+          <text> 总数量</text>
+        </view>
+        <view>
+          <text class="stock-number">{{item.available}}</text>
+          <text> 当前实物可用</text>
+        </view>
+      </view>
+      <view class="footnote">当前实物数量供浏览参考；预约余量需选择时间后查询，审批和领取会重新校验。</view>
+      <view class="actions">
+        <button wx:if="{{user.workbench && item.enabled}}" class="primary small" data-id="{{item.id}}" bindtap="apply">为活动预约 ↗</button>
+        <text wx:elif="{{!item.enabled}}" class="badge orange">暂停预约</text>
+        <text wx:else="" class="muted">请由社团负责人申请借用</text>
+        <button wx:if="{{user.admin}}" class="secondary small" data-id="{{item.id}}" bindtap="edit">管理</button>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading">正在打开器材室…</view>
+    <view wx:if="{{!loading && !items.length}}" class="empty">器材室正在整理，稍后再来看看。</view>
+  </view>
