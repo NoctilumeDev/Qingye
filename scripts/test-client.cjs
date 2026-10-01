@@ -233,6 +233,39 @@ test('selecting messages sends only chosen IDs and never marks them read', async
   assert.equal(notices.data.selecting, false); assert.equal(notices.data.unread, 1)
 })
 
+test('recycle bin switches reset selections and selective restore reloads the remaining trash', async () => {
+  const calls = []; let restored = false
+  const notices = page('notifications', async (url, verb, body) => {
+    calls.push({ url, verb, body })
+    if (verb === 'POST') { restored = true; return { restored: 1 } }
+    return url === '/notifications/trash' ? { retentionDays: 7, items: (restored ? [1] : [1, 2]).map(id => ({ id, expiresAt: '2026-10-08T12:00:00' })) } : [{ id: 2 }]
+  }, { showToast() {} })
+  notices.data.items = [{ id: 99 }]; notices.beginClear(); notices.selection([99])
+  await notices.switchSection({ currentTarget: { dataset: { key: 'trash' } } })
+  assert.equal(notices.data.selecting, false); assert.equal(notices.data.selectedIds.length, 0)
+  notices.tapNotice({ currentTarget: { dataset: { id: 2 } } }); await notices.readAll()
+  assert.equal(notices.data.selecting, true); assert.equal(calls.length, 1)
+  await notices.submitSelected()
+  assert.equal(calls[1].url, '/notifications/restore'); assert.deepEqual(Array.from(calls[1].body.ids), [2])
+  assert.equal(notices.data.items.length, 1); assert.equal(notices.data.items[0].id, 1); assert.equal(notices.data.selecting, false)
+  await notices.switchSection({ currentTarget: { dataset: { key: 'inbox' } } })
+  assert.equal(notices.data.unread, 1); assert.equal(notices.data.items[0].id, 2)
+})
+
+test('expired restore reports zero honestly and a failed restore keeps the selection for retry', async () => {
+  const toasts = []
+  const expired = page('notifications', async (url, verb) => verb === 'POST' ? { restored: 0 } : { retentionDays: 7, items: [] }, { showToast: value => toasts.push(value) })
+  expired.data.trash = true; expired.data.items = [{ id: 1 }]; expired.beginClear(); expired.selection([1]); await expired.restoreSelected()
+  assert.equal(expired.data.items.length, 0); assert.equal(toasts[0].icon, 'none'); assert.match(toasts[0].title, /过期/)
+  const pending = deferred(), calls = []
+  const failed = page('notifications', url => { calls.push(url); return pending.promise })
+  failed.data.trash = true; failed.data.items = [{ id: 2 }]; failed.beginClear(); failed.selection([2])
+  const first = failed.restoreSelected(); await failed.restoreSelected(); await failed.switchSection({ currentTarget: { dataset: { key: 'inbox' } } })
+  assert.equal(calls.length, 1); assert.equal(failed.data.trash, true)
+  pending.reject(new Error('offline')); await first
+  assert.equal(failed.data.busy, false); assert.equal(failed.data.selecting, true); assert.deepEqual(Array.from(failed.data.selectedIds), [2])
+})
+
 test('returning to a filtered activity list keeps all loaded pages and refreshes their facts', async () => {
   const urls = [], rows = Array.from({ length: 41 }, (_, n) => row(n))
   const home = page('home', async url => { urls.push(url); const index = Number(new URL(url, 'http://test.invalid').searchParams.get('page')); return rows.slice(index * 20, (index + 1) * 20) })

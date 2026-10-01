@@ -180,6 +180,12 @@ public class Api {
         messages.clear(actor.id(),input.ids(),LocalDateTime.now(clock));
         return data(Map.of("ok",true));
     }
+    @GetMapping("/notifications/trash") Object notificationTrash(@RequestAttribute Actor actor) {
+        return data(Map.of("retentionDays",MessageStore.TRASH_DAYS,"items",messages.trash(actor.id(),LocalDateTime.now(clock))));
+    }
+    @PostMapping("/notifications/restore") Object restoreNotifications(@RequestAttribute Actor actor,@Valid @RequestBody Forms.Messages input) {
+        return data(Map.of("restored",messages.restore(actor.id(),input.ids(),LocalDateTime.now(clock))));
+    }
     @GetMapping("/recommendations") Object recommended(@RequestAttribute Actor actor) {
         return data(recommendation.forUser(actor));
     }

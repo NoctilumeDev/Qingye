@@ -2,11 +2,16 @@
     <text class="eyebrow">YOUR CAMPUS UPDATES</text>
     <view class="title gap">消息</view>
     <view class="subtitle">报名、候补和器材借用的进展，都在这里。</view>
+    <view class="notice-tabs">
+      <button class="notice-tab {{!trash ? 'active' : ''}}" data-key="inbox" bindtap="switchSection" disabled="{{loading || busy}}">消息</button>
+      <button class="notice-tab {{trash ? 'active' : ''}}" data-key="trash" bindtap="switchSection" disabled="{{loading || busy}}">回收站</button>
+    </view>
+    <view wx:if="{{trash}}" class="trash-hint">从清理时起保留 {{retentionDays}} 天，可恢复所选消息；到期自动清理。</view>
     <view wx:if="{{!selecting}}" class="notice-toolbar">
-      <text class="muted">{{unread ? unread + ' 条未读' : '没有未读消息'}}</text>
+      <text class="muted">{{trash ? items.length + ' 条可恢复' : (unread ? unread + ' 条未读' : '没有未读消息')}}</text>
       <view class="notice-actions">
-        <button class="secondary small" bindtap="readAll" disabled="{{!unread || loading || busy}}">全部已读</button>
-        <button class="secondary small" bindtap="beginClear" disabled="{{!items.length || loading || busy}}">清理消息</button>
+        <button wx:if="{{!trash}}" class="secondary small" bindtap="readAll" disabled="{{!unread || loading || busy}}">全部已读</button>
+        <button class="secondary small" bindtap="beginClear" disabled="{{!items.length || loading || busy}}">{{trash ? '选择恢复' : '清理消息'}}</button>
       </view>
     </view>
     <view wx:else="" class="selection-toolbar">
@@ -17,21 +22,22 @@
           <button class="secondary small" bindtap="cancelSelection" disabled="{{loading || busy}}">取消</button>
         </view>
       </view>
-      <button class="primary" bindtap="clearSelected" loading="{{busy}}" disabled="{{!selectedIds.length || loading || busy}}">清理选中（{{selectedIds.length}}）</button>
+      <button class="primary" bindtap="submitSelected" loading="{{busy}}" disabled="{{!selectedIds.length || loading || busy}}">{{trash ? '恢复选中' : '移入回收站'}}（{{selectedIds.length}}）</button>
       <view class="footnote">轻点消息选择，未选中的消息会保留。</view>
     </view>
     <view class="gap">
       <view wx:for="{{items}}" wx:key="id" class="card notice {{item.selected ? 'selected-notice' : ''}}" data-id="{{item.id}}" bindtap="tapNotice" hover-class="notice-pressed">
         <view class="row">
           <view class="notice-title"><checkbox wx:if="{{selecting}}" checked="{{item.selected}}" color="#187553" class="notice-checkbox" disabled="{{busy || loading}}" />
-            <text wx:if="{{!item.readAt}}" class="dot">● </text>{{item.title}}</view>
+            <text wx:if="{{!trash && !item.readAt}}" class="dot">● </text>{{item.title}}</view>
           <text class="muted">{{item.displayTime}}</text>
         </view>
         <view class="notice-body">{{item.body}}</view>
-        <text class="footnote">{{selecting ? (item.selected ? '已选择' : '轻点选择') : (item.readAt ? '已读' : '轻点标记已读')}}</text>
+        <view wx:if="{{trash}}" class="footnote">{{item.expiryTime}} 到期 · {{item.readAt ? '原消息已读' : '恢复后仍为未读'}}</view>
+        <text class="footnote">{{selecting ? (item.selected ? '已选择' : '轻点选择') : (trash ? '轻点选择恢复' : (item.readAt ? '已读' : '轻点标记已读'))}}</text>
       </view>
     </view>
     <view wx:if="{{loading}}" class="loading">正在取出你的消息…</view>
-    <view wx:if="{{!items.length && !loading}}" class="empty">暂时没有新消息。<view>活动有进展时，会在这里告诉你。</view>
+    <view wx:if="{{!items.length && !loading}}" class="empty">{{trash ? '回收站是空的。' : '暂时没有新消息。'}}<view>{{trash ? '清理的消息会在这里保留 ' + retentionDays + ' 天。' : '活动有进展时，会在这里告诉你。'}}</view>
     </view>
   </view>

@@ -2,6 +2,37 @@
   font-size:47rpx
 }
 
+.notice-tabs {
+  display:flex;
+  gap:12rpx;
+  padding:8rpx;
+  margin-top:28rpx;
+  border-radius:24rpx;
+  background:#e7f2ed
+}
+
+.notice-tab {
+  flex:1;
+  font-size:26rpx;
+  line-height:2.8;
+  color:#60736f;
+  background:transparent;
+  border-radius:18rpx
+}
+
+.notice-tab.active {
+  color:#187553;
+  background:#fff;
+  font-weight:700
+}
+
+.trash-hint {
+  font-size:24rpx;
+  line-height:1.8;
+  color:#60736f;
+  margin-top:20rpx
+}
+
 .notice-toolbar {
   display:flex;
   align-items:center;

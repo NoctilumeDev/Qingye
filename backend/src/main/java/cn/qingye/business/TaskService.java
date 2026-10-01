@@ -14,6 +14,10 @@ public class TaskService {
         this.clock=clock;
     }
     @Transactional(isolation=Isolation.READ_COMMITTED)
+    public int purgeExpiredMessages() {
+        return messages.purgeExpired(LocalDateTime.now(clock));
+    }
+    @Transactional(isolation=Isolation.READ_COMMITTED)
     public void complete(long id) {
         var task=messages.lock(id);
         var now=LocalDateTime.now(clock);

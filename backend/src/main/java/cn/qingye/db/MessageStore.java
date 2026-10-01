@@ -5,6 +5,7 @@ import java.util.*;
 
 @Repository
 public class MessageStore {
+    public static final int TRASH_DAYS=7;
     private final Sql sql;
     public MessageStore(Sql sql) {
         this.sql=sql;
@@ -29,6 +30,28 @@ public class MessageStore {
         args.add(now);args.add(user);args.addAll(selected);
         String placeholders=String.join(",",Collections.nCopies(selected.size(),"?"));
         sql.update("UPDATE notification SET deleted_at=? WHERE user_id=? AND delivered=TRUE AND deleted_at IS NULL AND id IN ("+placeholders+")",args.toArray());
+    }
+    public List<Map<String,Object>> trash(long user,LocalDateTime now) {
+        var rows=sql.list("SELECT id,title,body,read_at,created_at,deleted_at FROM notification WHERE user_id=? AND delivered=TRUE AND deleted_at>? ORDER BY deleted_at DESC,id DESC LIMIT 100",user,now.minusDays(TRASH_DAYS));
+        rows.forEach(row->row.put("expiresAt",Rows.time(row,"deletedAt").plusDays(TRASH_DAYS).toString()));
+        return rows;
+    }
+    public int restore(long user,List<Long> ids,LocalDateTime now) {
+        if(ids.isEmpty()) return 0;
+        var selected=new LinkedHashSet<>(ids);
+        var args=new ArrayList<Object>();
+        args.add(user);args.add(now.minusDays(TRASH_DAYS));args.addAll(selected);
+        String placeholders=String.join(",",Collections.nCopies(selected.size(),"?"));
+        return sql.update("UPDATE notification SET deleted_at=NULL WHERE user_id=? AND delivered=TRUE AND deleted_at>? AND id IN ("+placeholders+")",args.toArray());
+    }
+    // Called inside TaskService's transaction: lock before deleting dependent delivery tasks.
+    public int purgeExpired(LocalDateTime now) {
+        var expired=sql.list("SELECT id FROM notification WHERE delivered=TRUE AND deleted_at<=? ORDER BY deleted_at,id LIMIT 100 FOR UPDATE",now.minusDays(TRASH_DAYS));
+        if(expired.isEmpty()) return 0;
+        Object[] ids=expired.stream().map(row->row.get("id")).toArray();
+        String placeholders=String.join(",",Collections.nCopies(ids.length,"?"));
+        sql.update("DELETE FROM message_task WHERE notification_id IN ("+placeholders+")",ids);
+        return sql.update("DELETE FROM notification WHERE id IN ("+placeholders+")",ids);
     }
     public void cancelReminders(String kind,long id) {
         sql.update("UPDATE message_task SET status='CANCELLED' WHERE source_kind=? AND source_id=? AND status='PENDING'",kind,id);

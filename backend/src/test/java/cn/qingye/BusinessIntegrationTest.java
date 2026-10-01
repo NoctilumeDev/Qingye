@@ -477,6 +477,63 @@ class BusinessIntegrationTest {
         assertThat(messages.list(student.id())).hasSize(2);
         assertThat(messages.list(other.id())).hasSize(1);
     }
+    @Test void trashRestoreIsSelectiveOwnedAndPreservesReadState() throws Exception {
+        long unread=sql.insert("INSERT INTO notification(user_id,title,body,delivered) VALUES (?,'未读','内容',TRUE)",student.id());
+        long read=sql.insert("INSERT INTO notification(user_id,title,body,delivered,read_at) VALUES (?,'已读','内容',TRUE,?)",student.id(),NOW.minusHours(1));
+        long foreign=sql.insert("INSERT INTO notification(user_id,title,body,delivered,deleted_at) VALUES (?,'其他账号','内容',TRUE,?)",other.id(),NOW);
+        long pending=sql.insert("INSERT INTO notification(user_id,title,body,deleted_at) VALUES (?,'未投递','内容',?)",student.id(),NOW);
+        var selected=new Forms.Messages(List.of(unread,read));
+        http(student,"POST","/notifications/clear",selected,200);
+        http(null,"GET","/notifications/trash",null,401);
+        http(null,"POST","/notifications/restore",selected,401);
+        http(student,"POST","/notifications/restore",new Forms.Messages(List.of()),400);
+        http(student,"POST","/notifications/restore",new Forms.Messages(List.of(-1L)),400);
+        http(student,"POST","/notifications/restore",new Forms.Messages(Collections.nCopies(101,unread)),400);
+        var trash=http(student,"GET","/notifications/trash",null,200);
+        assertThat(trash.path("retentionDays").asInt()).isEqualTo(7);
+        assertThat(trash.path("items").size()).isEqualTo(2);
+        assertThat(trash.path("items").get(0).path("expiresAt").asText()).isEqualTo(NOW.plusDays(7).toString());
+        http(student,"POST","/notifications/read-all",null,200);
+        assertThat(sql.one("SELECT read_at FROM notification WHERE id=?",unread).get("readAt")).isNull();
+        var result=http(student,"POST","/notifications/restore",new Forms.Messages(List.of(unread,unread,foreign,pending)),200);
+        assertThat(result.path("restored").asInt()).isEqualTo(1);
+        assertThat(http(student,"GET","/notifications/trash",null,200).path("items").size()).isEqualTo(1);
+        assertThat(http(student,"GET","/notifications",null,200).get(0).path("readAt").isNull()).isTrue();
+        assertThat(http(student,"POST","/notifications/restore",selected,200).path("restored").asInt()).isEqualTo(1);
+        assertThat(http(student,"POST","/notifications/restore",selected,200).path("restored").asInt()).isZero();
+        assertThat(sql.one("SELECT read_at FROM notification WHERE id=?",read).get("readAt")).isEqualTo(NOW.minusHours(1).toString());
+        for(long id:List.of(foreign,pending)) assertThat(sql.one("SELECT deleted_at FROM notification WHERE id=?",id).get("deletedAt")).isEqualTo(NOW.toString());
+    }
+    @Test void trashExpiresAtSevenDaysAndPurgeCannotRaceRestoreOrDeleteBusinessFacts() throws Exception {
+        activities.register(student,activityA);
+        for(var task:messages.pending(NOW)) tasks.complete(id(task,"id"));
+        long notice=id(messages.list(student.id()).get(0),"id");
+        messages.clear(student.id(),List.of(notice),NOW);
+        clock.set(NOW.plusDays(7).minusSeconds(1));
+        assertThat(http(student,"GET","/notifications/trash",null,200).path("items").size()).isEqualTo(1);
+        assertThat(tasks.purgeExpiredMessages()).isZero();
+        clock.set(NOW.plusDays(7));
+        long kept=sql.insert("INSERT INTO notification(user_id,title,body,delivered,deleted_at) VALUES (?,'仍可恢复','内容',TRUE,?)",student.id(),NOW.plusSeconds(1));
+        assertThat(http(student,"GET","/notifications/trash",null,200).path("items").size()).isEqualTo(1);
+        var results=concurrently(()->messages.restore(student.id(),List.of(notice,kept),NOW.plusDays(7)),()->tasks.purgeExpiredMessages());
+        assertThat(results).containsExactlyInAnyOrder(1,1);
+        assertThat(sql.count("SELECT COUNT(*) FROM notification WHERE id=?",notice)).isZero();
+        assertThat(sql.count("SELECT COUNT(*) FROM message_task WHERE notification_id=?",notice)).isZero();
+        assertThat(sql.one("SELECT deleted_at FROM notification WHERE id=?",kept).get("deletedAt")).isNull();
+        assertThat(http(student,"POST","/notifications/restore",new Forms.Messages(List.of(notice)),200).path("restored").asInt()).isZero();
+        assertThat(sql.count("SELECT COUNT(*) FROM registration WHERE user_id=? AND activity_id=?",student.id(),activityA)).isEqualTo(1);
+        assertThat(sql.count("SELECT COUNT(*) FROM activity WHERE id=?",activityA)).isEqualTo(1);
+        assertThat(sql.count("SELECT COUNT(*) FROM message_task WHERE status='PENDING'")).isPositive();
+    }
+    @Test void trashPurgeIsBoundedAndLeavesActiveAndUndeliveredMessagesAlone() {
+        for(int i=0;i<105;i++) sql.insert("INSERT INTO notification(user_id,title,body,delivered,deleted_at) VALUES (?,'过期','内容',TRUE,?)",student.id(),NOW.minusDays(7));
+        long active=sql.insert("INSERT INTO notification(user_id,title,body,delivered) VALUES (?,'保留','内容',TRUE)",student.id());
+        long pending=sql.insert("INSERT INTO notification(user_id,title,body) VALUES (?,'待投递','内容')",student.id());
+        assertThat(tasks.purgeExpiredMessages()).isEqualTo(100);
+        assertThat(tasks.purgeExpiredMessages()).isEqualTo(5);
+        assertThat(tasks.purgeExpiredMessages()).isZero();
+        assertThat(sql.count("SELECT COUNT(*) FROM notification WHERE id IN (?,?)",active,pending)).isEqualTo(2);
+    }
     @Test void demoNameRefreshKeepsCustomNicknamesAndOnlyTouchesBuiltInAccounts() {
         sql.update("UPDATE app_user SET name='林老师 · 管理员' WHERE id=?",admin.id());
         sql.update("UPDATE app_user SET openid='demo:student',name='周野 · 同学' WHERE id=?",student.id());

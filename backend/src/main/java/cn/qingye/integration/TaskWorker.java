@@ -20,6 +20,10 @@ public class TaskWorker {
         this.tasks=tasks;
         this.clock=clock;
     }
+    @Scheduled(fixedDelay=60000,initialDelay=30000)
+    public void purgeExpiredMessages() {
+        tasks.purgeExpiredMessages();
+    }
     @Scheduled(fixedDelay=2000,initialDelay=3000)
     public void tick() {
         try {
