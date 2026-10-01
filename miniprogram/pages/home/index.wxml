@@ -4,6 +4,7 @@
   <view class="search">
     <image src="/assets/icons/search-line-muted.png" />
     <input value="{{keyword}}" placeholder="搜活动，找到想去的那一场" confirm-type="search" bindconfirm="search" />
+    <button wx:if="{{keyword}}" class="search-cancel" bindtap="clearSearch">取消</button>
   </view>
   <view class="hero"><image src="/assets/campus/campus-hero-v1.jpg" mode="aspectFill" /></view>
   <view class="shortcuts">
@@ -24,6 +25,6 @@
   </scroll-view>
   <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
   <view wx:if="{{loading}}" class="loading">正在寻找校园里的好玩事…</view>
-  <view wx:if="{{!loading && !items.length}}" class="empty">暂时没有符合条件的活动。<view>换个分类，或过会儿再来看看。</view></view>
+  <view wx:if="{{!loading && !items.length}}" class="empty">暂时没有符合条件的活动。<view>{{keyword ? '试试其他关键词，或返回活动列表。' : '换个分类，或过会儿再来看看。'}}</view><button wx:if="{{keyword}}" class="secondary small gap" bindtap="clearSearch">清除搜索，返回活动列表</button></view>
   <view wx:if="{{finished && items.length}}" class="footnote">校园的精彩，还在继续生长。</view>
 </view>

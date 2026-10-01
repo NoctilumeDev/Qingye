@@ -21,3 +21,14 @@
   <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
   <view wx:if="{{!items.length}}" class="empty">你的校园故事还没开始。<view>去发现页，挑一个喜欢的活动吧。</view><button class="secondary small gap" bindtap="discover">去发现活动</button></view>
 </view>
+<view wx:if="{{renameVisible}}" class="profile-edit-mask" catchtap="closeRename" catchtouchmove="keepRenameOpen">
+  <view class="profile-edit-dialog" catchtap="keepRenameOpen" aria-role="dialog" aria-label="修改称呼">
+    <view class="edit-heading"><view class="edit-symbol"><image src="/assets/icons/edit-line-muted.png" /></view><text class="edit-title">怎么称呼你？</text></view>
+    <view class="edit-caption">换个喜欢的称呼，在校园里见面。</view>
+    <text class="edit-label">昵称</text>
+    <input class="edit-input" value="{{renameName}}" maxlength="40" placeholder="填写你的称呼" placeholder-style="color:#65767d" bindinput="renameInput" bindconfirm="saveRename" confirm-type="done" cursor-spacing="36" disabled="{{renameBusy}}" aria-label="昵称" />
+    <view class="edit-identity"><text>校园身份</text><text class="badge">{{renameIdentity}}</text></view>
+    <view wx:if="{{renameError}}" class="edit-error" aria-role="alert">{{renameError}}</view>
+    <view class="edit-actions"><button class="secondary" bindtap="closeRename" disabled="{{renameBusy}}">取消</button><button class="primary" bindtap="saveRename" loading="{{renameBusy}}" disabled="{{renameBusy}}">保存称呼</button></view>
+  </view>
+</view>

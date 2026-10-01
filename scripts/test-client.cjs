@@ -6,11 +6,11 @@ const fs = require('node:fs')
 const path = require('node:path')
 const client = path.resolve(__dirname, '../miniprogram')
 function page(name, request, wx = {}, confirmation = async () => true) {
-  let instance
+  let instance; const app = { globalData: {} }
   vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
-    Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.setData = values => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value } } },
-    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: confirmation } : require(path.join(client, 'utils/view.js')) },
-    wx: { stopPullDownRefresh() {}, ...wx }, setTimeout, clearTimeout, Date
+    Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = values => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value } } },
+    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
+    getApp: () => app, wx: { stopPullDownRefresh() {}, ...wx }, setTimeout, clearTimeout, Date
   })
   return instance
 }
@@ -134,4 +134,145 @@ test('selecting messages sends only chosen IDs and never marks them read', async
   assert.deepEqual(Array.from(calls[0].body.ids), [2])
   assert.equal(notices.data.items.length, 1); assert.equal(notices.data.items[0].id, 1)
   assert.equal(notices.data.selecting, false); assert.equal(notices.data.unread, 1)
+})
+
+test('returning to a filtered activity list keeps all loaded pages and refreshes their facts', async () => {
+  const urls = [], rows = Array.from({ length: 41 }, (_, n) => row(n))
+  const home = page('home', async url => { urls.push(url); const index = Number(new URL(url, 'http://test.invalid').searchParams.get('page')); return rows.slice(index * 20, (index + 1) * 20) })
+  home.data.category = 'SPORT'; home.data.keyword = '篮球'
+  await home.load(true); await home.load(); await home.load()
+  rows[40].registeredCount = 1; urls.length = 0
+  await home.onShow()
+  assert.equal(home.data.items.length, 41); assert.equal(home.data.items.at(-1).registeredCount, 1)
+  assert.equal(home.data.page, 3); assert.equal(home.data.finished, true)
+  assert.equal(home.data.category, 'SPORT'); assert.equal(home.data.keyword, '篮球')
+  assert.equal(urls.length, 3); assert.ok(urls.every(url => url.includes('category=SPORT') && url.includes('keyword=%E7%AF%AE%E7%90%83')))
+})
+
+test('a failed return refresh does not discard the existing long list', async () => {
+  const home = page('home', async url => { if (url.includes('page=1')) throw new Error('offline'); return Array.from({ length: 20 }, (_, n) => row(n)) })
+  home.data.items = Array.from({ length: 41 }, (_, n) => row(n)); home.data.page = 3; home.data.category = 'SPORT'
+  await home.onShow()
+  assert.equal(home.data.items.length, 41); assert.equal(home.data.page, 3); assert.equal(home.data.loading, false)
+})
+
+test('a new filter takes priority over a queued return refresh', async () => {
+  const first = deferred(), urls = []
+  const home = page('home', url => { urls.push(url); return urls.length === 1 ? first.promise : Promise.resolve([row(99, 'ART')]) })
+  home.data.items = Array.from({ length: 41 }, (_, n) => row(n)); home.data.page = 3; home.data.category = 'SPORT'
+  const returning = home.onShow(); home.category({ currentTarget: { dataset: { key: 'ART' } } }); home.onShow()
+  first.resolve(Array.from({ length: 20 }, (_, n) => row(n))); await returning
+  assert.equal(urls.length, 2); assert.equal(home.data.items.length, 1); assert.equal(home.data.items[0].id, 99); assert.equal(home.data.page, 1)
+})
+
+test('workbench return keeps the loaded activity range and selected section', async () => {
+  const rows = Array.from({ length: 41 }, (_, n) => row(n))
+  const workbench = page('workbench', async url => url === '/me' ? { workbench: true } : rows.slice(Number(new URL(url, 'http://test.invalid').searchParams.get('page')) * 20, (Number(new URL(url, 'http://test.invalid').searchParams.get('page')) + 1) * 20))
+  await workbench.load(); await workbench.more(); await workbench.more(); await workbench.onShow()
+  assert.equal(workbench.data.activities.length, 41); assert.equal(workbench.activityPage, 3); assert.equal(workbench.data.more, false)
+  assert.equal(workbench.data.tab, 'activities')
+})
+
+test('returning from club editing retains the selected club even if the list order changes', async () => {
+  const workbench = page('workbench', async url => url === '/me' ? { workbench: true, admin: true } : url === '/clubs' ? [{ id: 2, name: 'B' }, { id: 1, name: 'A' }] : [{ id: 20, status: 'ACTIVE' }])
+  workbench.data.tab = 'members'; workbench.data.clubs = [{ id: 1 }, { id: 2 }]; workbench.data.clubIndex = 1
+  await workbench.onShow()
+  assert.equal(workbench.data.tab, 'members'); assert.equal(workbench.data.clubs[workbench.data.clubIndex].id, 2); assert.equal(workbench.data.members[0].id, 20)
+})
+
+test('an earlier workbench request cannot replace the active section after a quick switch', async () => {
+  const pending = deferred()
+  const workbench = page('workbench', url => url === '/clubs' ? pending.promise : Promise.resolve([row(7)]))
+  workbench.data.user.admin = true; workbench.data.tab = 'members'; const previous = workbench.load()
+  workbench.data.tab = 'activities'; await workbench.load(); pending.resolve([{ id: 1 }]); await previous
+  assert.equal(workbench.data.activities[0].id, 7); assert.equal(workbench.data.clubs.length, 0); assert.equal(workbench.data.loading, false)
+})
+
+test('clubs return follows the latest actual tab entry and does not overwrite it on repeated taps', () => {
+  const app = { globalData: {} }, urls = [], context = { module: { exports: {} }, getApp: () => app, getCurrentPages: () => [{ route: context.route }], wx: { switchTab: ({ url }) => urls.push(url) } }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/navigation.js'), 'utf8'), context)
+  const navigation = context.module.exports
+  for (const source of ['pages/me/index', 'pages/home/index', 'pages/me/index']) {
+    context.route = source; navigation.switchTab('/pages/clubs/index')
+    context.route = 'pages/clubs/index'; navigation.switchTab('/pages/clubs/index'); navigation.backFromClubs()
+    assert.equal(urls.at(-1), '/' + source)
+  }
+})
+
+test('account switching clears the previous clubs entry', () => {
+  let app; const context = { App(value) { app = value }, wx: { setStorageSync() {}, removeStorageSync() {}, reLaunch() {} } }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'app.js'), 'utf8'), context)
+  app.globalData.clubReturnTo = '/pages/me/index'; app.logout(); assert.equal(app.globalData.clubReturnTo, null)
+  app.globalData.clubReturnTo = '/pages/me/index'; app.setSession({ user: { id: 2 }, token: 'test' }); assert.equal(app.globalData.clubReturnTo, null)
+})
+
+test('every demo identity edits only its nickname and cancelling leaves the profile intact', async () => {
+  for (const name of ['林老师 · 管理员', '张三 · 摄影社负责人', '李四 · 同学', '王五 · 篮球社负责人', '赵六 · 同学']) {
+    let writes = 0; const me = page('me', async () => { writes++ })
+    me.data.user = { name, admin: name.includes('管理员'), workbench: name.includes('负责人') || name.includes('管理员') }; me.rename()
+    assert.equal(me.data.renameName, name.split(' · ')[0]); assert.equal(me.data.renameIdentity, name.split(' · ')[1]); assert.equal(me.data.renameVisible, true)
+    me.renameInput({ detail: { value: '新称呼' } }); me.closeRename()
+    assert.equal(writes, 0); assert.equal(me.data.user.name, name); assert.equal(me.data.renameVisible, false)
+  }
+})
+
+test('nickname save validates, prevents duplicate writes, preserves identity and avatar, and handles an empty API reply', async () => {
+  const pending = deferred(), calls = [], stored = []
+  const me = page('me', (url, verb, body) => { calls.push({ url, verb, body }); return pending.promise }, { setStorageSync(key,value) { stored.push({ key, value }) }, showToast() {} })
+  me.data.user = { id: 2, name: '张三 · 摄影社负责人', avatar: 'https://example.test/avatar.jpg', admin: false, workbench: true }; me.rename()
+  me.renameInput({ detail: { value: '  ' } }); await me.saveRename(); assert.equal(calls.length, 0); assert.ok(me.data.renameError)
+  me.renameInput({ detail: { value: '新称呼' } }); const saving = me.saveRename(); await me.saveRename(); me.closeRename()
+  assert.equal(calls.length, 1); assert.equal(me.data.renameVisible, true)
+  assert.equal(calls[0].body.name, '新称呼 · 摄影社负责人'); assert.equal(calls[0].body.avatar, 'https://example.test/avatar.jpg')
+  pending.resolve(null); await saving
+  assert.equal(me.data.user.name, '新称呼 · 摄影社负责人'); assert.equal(me.data.user.workbench, true); assert.equal(me.data.user.admin, false)
+  assert.equal(stored[0].value.name, me.data.user.name); assert.equal(me.data.renameVisible, false); assert.equal(me.data.renameBusy, false)
+})
+
+test('failed nickname save keeps the editable draft and current profile for retry', async () => {
+  const me = page('me', async () => { throw new Error('offline') })
+  me.data.user = { name: '自定义名字' }; me.rename(); me.renameInput({ detail: { value: '另一个名字' } }); await me.saveRename()
+  assert.equal(me.data.user.name, '自定义名字'); assert.equal(me.data.renameName, '另一个名字'); assert.equal(me.data.renameVisible, true)
+  assert.ok(me.data.renameError); assert.equal(me.data.renameBusy, false)
+})
+
+test('opening nickname editor before the profile arrives gives a retry hint', () => {
+  const hints = [], me = page('me', async () => {}, { showToast: hint => hints.push(hint) })
+  me.rename()
+  assert.equal(me.data.renameVisible, false); assert.match(hints[0].title, /资料还未加载/)
+})
+
+test('an empty assistant question gives feedback without sending a query', async () => {
+  let calls = 0; const hints = []
+  const assistant = page('assistant', async () => { calls++ }, { showToast: hint => hints.push(hint) })
+  assistant.input({ detail: { value: '  ' } }); await assistant.ask()
+  assert.equal(calls, 0); assert.equal(assistant.data.busy, false); assert.match(hints[0].title, /先输入/)
+})
+
+test('loan defaults follow the selected activity and retain subsequent manual adjustments', async () => {
+  const first = { ...row(11), title: '摄影活动' }, second = { ...row(12), startTime: '2027-01-02T16:30:00', endTime: '2027-01-02T18:30:00' }, queries = []
+  const editor = page('editor', async url => {
+    if (url === '/me') return { workbench: true }
+    if (url === '/equipment') return [{ id: 1, name: '相机' }]
+    if (url.startsWith('/activities')) return [first, second]
+    queries.push(url); return { availableQuantity: 5 }
+  })
+  await editor.onLoad({ kind: 'loan', equipmentId: '1' }); await editor.check()
+  assert.equal(editor.data.form.startDate, '2027-01-01'); assert.equal(editor.data.form.startTime, '10:00')
+  assert.equal(editor.data.form.endTime, '12:00'); assert.match(editor.data.activityTime, /01-01 10:00/)
+  const previousKey = editor.requestKey; editor.choice({ detail: { value: '1' } }); await editor.check()
+  assert.equal(editor.data.form.activityId, 12); assert.equal(editor.data.form.startDate, '2027-01-02'); assert.equal(editor.data.form.startTime, '16:30')
+  assert.notEqual(editor.requestKey, previousKey); assert.match(queries.at(-1), /2027-01-02T16%3A30/)
+  editor.field({ currentTarget: { dataset: { field: 'startTime' } }, detail: { value: '16:00' } }); await editor.check()
+  assert.equal(editor.data.form.startTime, '16:00'); assert.match(queries.at(-1), /2027-01-02T16%3A00/)
+  editor.onUnload()
+})
+
+test('an empty search can return to the activity list while keeping the chosen category', async () => {
+  const urls = [], home = page('home', async url => { urls.push(url); return url.includes('keyword=%E7%B4%A0123456') ? [] : [row(2)] })
+  home.data.category = 'SPORT'; home.data.keyword = '素123456'; await home.load(true)
+  assert.equal(home.data.items.length, 0); assert.equal(home.data.finished, true)
+  await home.clearSearch()
+  assert.equal(home.data.keyword, ''); assert.equal(home.data.category, 'SPORT'); assert.equal(home.data.items[0].id, 2)
+  assert.match(urls.at(-1), /category=SPORT&keyword=$/)
 })

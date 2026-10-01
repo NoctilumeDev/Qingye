@@ -1,0 +1,104 @@
+{
+  "accounts-checks": [
+    {
+      "check": "shared custom nickname dialog rendered and cancelled for account 1",
+      "passed": true,
+      "name": "林老师 · 管理员"
+    },
+    {
+      "check": "shared custom nickname dialog rendered and cancelled for account 2",
+      "passed": true,
+      "name": "张三 · 摄影社负责人"
+    },
+    {
+      "check": "shared custom nickname dialog rendered and cancelled for account 3",
+      "passed": true,
+      "name": "李四 · 同学"
+    },
+    {
+      "check": "shared custom nickname dialog rendered and cancelled for account 4",
+      "passed": true,
+      "name": "王五 · 篮球社负责人"
+    },
+    {
+      "check": "shared custom nickname dialog rendered and cancelled for account 5",
+      "passed": true,
+      "name": "赵六 · 同学"
+    },
+    {
+      "check": "actual nickname save and restore preserve identity suffix",
+      "passed": true
+    },
+    {
+      "check": "nickname checks leave profiles intact and acceptance page ready",
+      "passed": true
+    }
+  ],
+  "admin-checks": [
+    {
+      "check": "workbench detail returns to same section and scroll",
+      "passed": true,
+      "scroll": 190
+    },
+    {
+      "check": "club editor returns to same members section and selected club",
+      "passed": true,
+      "clubId": 2,
+      "scroll": 0
+    },
+    {
+      "check": "equipment editor returns to equipment, not workbench",
+      "passed": true,
+      "scroll": 220
+    },
+    {
+      "check": "loan form returns through equipment to original workbench section",
+      "passed": true
+    }
+  ],
+  "student-checks": [
+    {
+      "check": "activity detail returns to filtered home at original scroll",
+      "passed": true,
+      "scroll": 46.66666793823242,
+      "category": "SPORT"
+    },
+    {
+      "check": "clubs back returns to actual home entry",
+      "passed": true,
+      "scroll": 46.66666793823242
+    },
+    {
+      "check": "student identity returns from clubs to me, not home",
+      "passed": true,
+      "scroll": 91.33333587646484
+    },
+    {
+      "check": "messages return to the originating profile",
+      "passed": true,
+      "scroll": 91.33333587646484
+    },
+    {
+      "check": "assistant result returns to the same question and answer",
+      "passed": true,
+      "scroll": 150,
+      "resultCount": 5
+    }
+  ],
+  "tabs-checks": [
+    {
+      "check": "club return button visual and touch target",
+      "passed": true,
+      "size": {
+        "success": true,
+        "width": 50,
+        "height": 50
+      }
+    },
+    {
+      "check": "shortcut, identity and tabbar entries return to actual source",
+      "passed": true,
+      "scroll": 80
+    }
+  ]
+}

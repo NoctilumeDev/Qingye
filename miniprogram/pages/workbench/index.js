@@ -4,25 +4,39 @@ Page({
   data: { user: {}, tab: 'activities', tabs: [{ key: 'activities', name: '活动' }, { key: 'loans', name: '器材借用' }, { key: 'members', name: '社团成员' }], activities: [], loans: [], clubs: [], members: [], clubIndex: 0, busy: false, loading: false },
   async onShow() {
     if (!guard()) return
-    try { const user = await request('/me'); if (!user.workbench) { wx.navigateBack(); return }; this.setData({ user }); this.load() } catch (e) {}
+    try { const user = await request('/me'); if (!user.workbench) { wx.navigateBack(); return }; this.setData({ user }); await this.load(true) } catch (e) {}
   },
   onPullDownRefresh() { this.load() },
-  async load() {
+  async load(preservePages = false) {
+    const version = this.loadVersion = (this.loadVersion || 0) + 1, tab = this.data.tab
     this.setData({ loading: true })
     try {
-      if (this.data.tab === 'activities') { this.activityPage = 1; const rows = await request('/activities?scope=work'); this.setData({ activities: rows.map(activity), more: rows.length === 20 }) }
-      if (this.data.tab === 'loans') this.setData({ loans: (await request('/loans')).map(record) })
-      if (this.data.tab === 'members') {
+      if (tab === 'activities') {
+        const count = preservePages ? Math.max(1, this.activityPage || 0) : 1, rows = []
+        let nextPage = 0, more = false
+        for (let index = 0; index < count; index++) {
+          const batch = await request(`/activities?scope=work&page=${nextPage}`)
+          if (version !== this.loadVersion) return
+          rows.push(...batch); nextPage++; more = batch.length === 20
+          if (!more) break
+        }
+        this.activityPage = nextPage; this.setData({ activities: rows.map(activity), more })
+      }
+      if (tab === 'loans') { const rows = await request('/loans'); if (version === this.loadVersion) this.setData({ loans: rows.map(record) }) }
+      if (tab === 'members') {
+        const selected = this.data.clubs[this.data.clubIndex]
         const clubs = (await request('/clubs')).filter(c => this.data.user.admin || (c.myRole === 'MANAGER' && c.myStatus === 'ACTIVE'))
-        const index = Math.min(this.data.clubIndex, Math.max(0, clubs.length - 1))
+        if (version !== this.loadVersion) return
+        const existing = selected ? clubs.findIndex(c => c.id === selected.id) : -1
+        const index = existing >= 0 ? existing : Math.min(this.data.clubIndex, Math.max(0, clubs.length - 1))
         this.setData({ clubs, clubNames: clubs.map(c => c.name), clubIndex: index })
         await this.loadMembers()
       }
-    } catch (e) {} finally { this.setData({ loading: false }); wx.stopPullDownRefresh() }
+    } catch (e) {} finally { if (version === this.loadVersion) this.setData({ loading: false }); wx.stopPullDownRefresh() }
   },
-  async more() { if (this.data.loading || !this.data.more) return; this.setData({ loading: true }); try { const rows = await request(`/activities?scope=work&page=${this.activityPage}`); this.activityPage++; this.setData({ activities: this.data.activities.concat(rows.map(activity)), more: rows.length === 20 }) } catch (e) {} finally { this.setData({ loading: false }) } },
-  async loadMembers() { const club = this.data.clubs[this.data.clubIndex]; this.setData({ members: club ? (await request(`/clubs/${club.id}/members`)).map(m => ({ ...m, statusText: states[m.status] })) : [] }) },
-  tab(e) { this.setData({ tab: e.currentTarget.dataset.key }); this.load() },
+  async more() { if (this.data.loading || !this.data.more) return; const version = this.loadVersion; this.setData({ loading: true }); try { const rows = await request(`/activities?scope=work&page=${this.activityPage}`); if (version !== this.loadVersion) return; this.activityPage++; this.setData({ activities: this.data.activities.concat(rows.map(activity)), more: rows.length === 20 }) } catch (e) {} finally { if (version === this.loadVersion) this.setData({ loading: false }) } },
+  async loadMembers() { const club = this.data.clubs[this.data.clubIndex], version = this.memberVersion = (this.memberVersion || 0) + 1; const rows = club ? await request(`/clubs/${club.id}/members`) : []; if (version === this.memberVersion && this.data.tab === 'members' && this.data.clubs[this.data.clubIndex] === club) this.setData({ members: rows.map(m => ({ ...m, statusText: states[m.status] })) }) },
+  tab(e) { const tab = e.currentTarget.dataset.key; if (tab === this.data.tab) return; this.setData({ tab }); this.load(true) },
   club(e) { this.setData({ clubIndex: Number(e.detail.value) }); this.loadMembers().catch(() => {}) },
   createActivity() { wx.navigateTo({ url: '/pages/editor/index?kind=activity' }) },
   createClub() { wx.navigateTo({ url: '/pages/editor/index?kind=club' }) },
@@ -45,7 +59,7 @@ Page({
       path = `/${kind}/${id}/${action}`
     }
     this.setData({ busy: true })
-    try { await request(path, 'POST', body); wx.showToast({ title: '已完成' }); await this.load() } catch (e) {} finally { this.setData({ busy: false }) }
+    try { await request(path, 'POST', body); wx.showToast({ title: '已完成' }); await this.load(true) } catch (e) {} finally { this.setData({ busy: false }) }
   },
   async member(e) {
     if (this.data.busy) return

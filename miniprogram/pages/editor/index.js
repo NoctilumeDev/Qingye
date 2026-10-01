@@ -1,12 +1,17 @@
 const { request, guard } = require('../../utils/request')
-const { dateParts } = require('../../utils/view')
+const { dateParts, format } = require('../../utils/view')
 const titles = { activity: '发起一场校园活动', equipment: '整理共享器材', club: '创建一个有趣的社团', loan: '为活动预约好装备' }
+const editTitles = { activity: '调整活动信息', equipment: '编辑器材资料', club: '编辑社团资料' }
+function loanTimes(activity) {
+  if (!activity) return {}
+  return { startDate: activity.startTime.slice(0, 10), startTime: activity.startTime.slice(11, 16), endDate: activity.endTime.slice(0, 10), endTime: activity.endTime.slice(11, 16) }
+}
 Page({
   data: { kind: '', form: {}, choices: [], choiceIndex: 0, categories: ['运动', '艺术', '科技', '志愿', '其他'], categoryKeys: ['SPORT', 'ART', 'TECH', 'VOLUNTEER', 'OTHER'], categoryIndex: 0, colors: ['green', 'blue', 'orange', 'red'], colorNames: ['草坪绿', '天空蓝', '日光橙', '珊瑚红'], colorIndex: 0, busy: false, availability: null },
   async onLoad(options) {
     if (!guard()) return
     this.kind = options.kind; this.id = Number(options.id) || null; this.requestKey = this.key()
-    this.setData({ kind: this.kind, title: titles[this.kind] || '校园工作台', editing: !!this.id })
+    this.setData({ kind: this.kind, title: (this.id ? editTitles[this.kind] : titles[this.kind]) || '校园工作台', editing: !!this.id })
     try {
       const user = await request('/me'); if (!user.workbench) { wx.navigateBack(); return }
       let form = {}, choices = []
@@ -28,9 +33,8 @@ Page({
       } else if (this.kind === 'loan') {
         const equipmentId = Number(options.equipmentId), equipment = (await request('/equipment')).find(r => r.id === equipmentId)
         choices = (await request('/activities?scope=work&upcoming=true')).filter(a => a.status === 'PUBLISHED')
-        const from = dateParts(new Date(Date.now() + 10 * 60000)), to = dateParts(new Date(Date.now() + 2 * 3600000))
-        form = { equipmentId, activityId: choices[0] && choices[0].id, quantity: 1, reason: '', startDate: from.date, startTime: from.time, endDate: to.date, endTime: to.time }
-        this.setData({ equipmentName: equipment && equipment.name })
+        form = { equipmentId, activityId: choices[0] && choices[0].id, quantity: 1, reason: '', ...loanTimes(choices[0]) }
+        this.setData({ equipmentName: equipment && equipment.name, activityTime: choices[0] ? format(choices[0].startTime) + ' — ' + format(choices[0].endTime) : '' })
       }
       this.setData({ form, choices, choiceNames: choices.map(c => c.title || c.name) })
       if (this.kind === 'loan') this.check()
@@ -38,7 +42,14 @@ Page({
   },
   key() { return 'wx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12) },
   field(e) { this.setData({ ['form.' + e.currentTarget.dataset.field]: e.detail.value }); this.requestKey = this.key(); if (this.kind === 'loan') { clearTimeout(this.timer); this.timer = setTimeout(() => this.check(), 300) } },
-  choice(e) { const index = Number(e.detail.value), field = this.kind === 'activity' ? 'clubId' : this.kind === 'loan' ? 'activityId' : 'managerId'; this.setData({ choiceIndex: index, ['form.' + field]: this.data.choices[index].id }); this.requestKey = this.key() },
+  choice(e) {
+    const index = Number(e.detail.value), selected = this.data.choices[index]
+    if (!selected) return
+    const field = this.kind === 'activity' ? 'clubId' : this.kind === 'loan' ? 'activityId' : 'managerId'
+    this.setData({ choiceIndex: index, form: { ...this.data.form, [field]: selected.id, ...(this.kind === 'loan' ? loanTimes(selected) : {}) } })
+    this.requestKey = this.key()
+    if (this.kind === 'loan') { clearTimeout(this.timer); this.setData({ activityTime: format(selected.startTime) + ' — ' + format(selected.endTime), availability: null }); this.check() }
+  },
   category(e) { const index = Number(e.detail.value); this.setData({ categoryIndex: index, 'form.category': this.data.categoryKeys[index] }) },
   color(e) { const index = Number(e.detail.value); this.setData({ colorIndex: index, 'form.color': this.data.colors[index] }) },
   enabled(e) { this.setData({ 'form.enabled': e.detail.value }) },

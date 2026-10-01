@@ -1,5 +1,5 @@
 <view class="page">
-  <text class="eyebrow">FIND YOUR PEOPLE</text>
+  <view class="club-heading"><button class="club-back" bindtap="back" hover-class="back-pressed" aria-label="返回上一入口"><image src="/assets/icons/arrow-right-s-line-muted.png" mode="aspectFit" /></button><text class="eyebrow">FIND YOUR PEOPLE</text></view>
   <view class="title gap">同好，就在这里。</view>
   <view class="subtitle">兴趣让我们相遇，社团让故事继续。</view>
   <view class="section"><text class="section-title">校园社团</text><text class="muted">{{clubs.length}} 个有趣的角落</text></view>

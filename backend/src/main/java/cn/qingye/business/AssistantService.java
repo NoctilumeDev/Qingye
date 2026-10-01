@@ -4,6 +4,7 @@ import cn.qingye.integration.LlmPlanner;
 import cn.qingye.model.*;
 import org.springframework.stereotype.Service;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -18,6 +19,7 @@ public class AssistantService {
     private final Clock clock;
     private static final Set<String> INTENTS=Set.of("ACTIVITIES","EQUIPMENT","MY_REGISTRATIONS","MY_LOANS");
     private static final Set<String> CATEGORIES=Set.of("SPORT","ART","TECH","VOLUNTEER","OTHER");
+    private static final DateTimeFormatter DISPLAY_TIME=DateTimeFormatter.ofPattern("MM-dd HH:mm");
     public AssistantService(ActivityStore activities,LoanStore loans,LoanService loanService,LlmPlanner planner,Clock clock) {
         this.activities=activities;
         this.loans=loans;
@@ -48,7 +50,7 @@ public class AssistantService {
             default -> throw Problem.bad("不支持的查询意图");
         }
         // Gate 4: render DB facts locally, never let the model invent an answer.
-        String answer=rows.isEmpty()?"当前数据库里没有符合条件的记录。":"查到 "+rows.size()+" 条记录：\n"+String.join("\n",rows.stream().limit(10).map(this::fact).toList());
+        String answer=rows.isEmpty()?emptyAnswer(plan.intent()):"查到 "+rows.size()+" 条记录：\n"+String.join("\n",rows.stream().limit(10).map(this::fact).toList());
         return Map.of("answer",answer,"items",rows,"intent",plan.intent(),"mode",remote.isPresent() && valid(remote.get())?"MODEL_PLAN":"LOCAL");
     }
     public boolean valid(QueryPlan p) {
@@ -85,8 +87,27 @@ public class AssistantService {
         return new QueryPlan(intent,category,keyword,start,end);
     }
     private String fact(Map<String,Object> row) {
-        if(row.containsKey("equipmentName")) return text(row,"equipmentName")+" ×"+integer(row,"quantity")+"，状态 "+text(row,"status");
-        if(row.containsKey("title")) return text(row,"title")+"，"+text(row,"startTime")+"，地点："+text(row,"location");
+        if(row.containsKey("equipmentName")) return text(row,"equipmentName")+" ×"+integer(row,"quantity")+"，"+loanStatus(text(row,"status"));
+        if(row.containsKey("title")) return text(row,"title")+"，"+time(row,"startTime").format(DISPLAY_TIME)+"，地点："+text(row,"location");
         return text(row,"name")+"，总量 "+integer(row,"totalQuantity")+"，当前实物可用 "+Math.max(0,integer(row,"totalQuantity")-integer(row,"borrowedQuantity"));
+    }
+    private String emptyAnswer(String intent) {
+        return switch(intent) {
+            case "MY_REGISTRATIONS" -> "你还没有报名活动，去发现页挑一场喜欢的吧。";
+            case "MY_LOANS" -> "你还没有器材借用记录。";
+            case "EQUIPMENT" -> "暂时没有找到符合条件的器材，换个关键词试试。";
+            default -> "暂时没有找到符合条件的活动，换个关键词再试试。";
+        };
+    }
+    private String loanStatus(String status) {
+        return switch(status) {
+            case "PENDING" -> "待审核";
+            case "APPROVED" -> "已批准";
+            case "REJECTED" -> "未通过";
+            case "CHECKED_OUT" -> "已领取";
+            case "RETURNED" -> "已归还";
+            case "CANCELLED" -> "已取消";
+            default -> "状态待确认";
+        };
     }
 }

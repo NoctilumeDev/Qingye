@@ -4,7 +4,8 @@ Page({
   onLoad() { guard() }, input(e) { this.setData({ question: e.detail.value }) },
   suggestion(e) { this.setData({ question: e.currentTarget.dataset.question }); this.ask() },
   async ask() {
-    if (this.data.busy || !this.data.question.trim()) return
+    if (this.data.busy) return
+    if (!this.data.question.trim()) return wx.showToast({ title: '先输入想问的问题吧', icon: 'none' })
     this.setData({ busy: true })
     try { const result = await request('/assistant', 'POST', { question: this.data.question.trim() }); this.setData({ answer: result.answer, items: result.items.map(r => ({ ...r, displayName: r.title || r.equipmentName || r.name })), intent: result.intent }) }
     catch (e) {} finally { this.setData({ busy: false }) }

@@ -453,6 +453,25 @@ class BusinessIntegrationTest {
         assertThat(http(manager,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("items").get(0).path("id").asLong()).isEqualTo(loan);
         http(manager,"POST","/loans/"+loan+"/cancel",null,403);
     }
+    @Test void assistantDisplaysReadableFactsAndIntentSpecificEmptyAnswers() throws Exception {
+        var activityAnswer=http(student,"POST","/assistant",new Forms.Question("今天有什么摄影活动"),200).path("answer").asText();
+        assertThat(activityAnswer).contains("10-01 18:00","东操场").doesNotContain("T18:00",":00:00");
+        assertThat(http(student,"POST","/assistant",new Forms.Question("我的报名活动"),200).path("answer").asText()).contains("你还没有报名活动");
+        assertThat(http(student,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("answer").asText()).contains("你还没有器材借用记录");
+        assertThat(http(student,"POST","/assistant",new Forms.Question("有什么投影仪器材"),200).path("answer").asText()).contains("暂时没有找到符合条件的器材");
+        assertThat(http(student,"POST","/assistant",new Forms.Question("明天有什么活动"),200).path("answer").asText()).contains("暂时没有找到符合条件的活动");
+        long loan=apply(manager,activityA,1,14,15);
+        assertThat(http(manager,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("answer").asText()).contains("相机 ×1，待审核").doesNotContain("PENDING");
+        approve(loan);
+        assertThat(http(manager,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("answer").asText()).contains("已批准").doesNotContain("APPROVED");
+        clock.set(NOW.withHour(14));loans.checkout(admin,loan);
+        assertThat(http(manager,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("answer").asText()).contains("已领取").doesNotContain("CHECKED_OUT");
+        loans.returned(admin,loan);
+        assertThat(http(manager,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("answer").asText()).contains("已归还").doesNotContain("RETURNED");
+        long cancelled=apply(manager,activityA,1,15,16);loans.cancel(manager,cancelled);
+        long rejected=apply(manager,activityA,1,15,16);loans.decide(admin,rejected,new Forms.Decision(false,"用途不符"));
+        assertThat(http(manager,"POST","/assistant",new Forms.Question("我的借用器材"),200).path("answer").asText()).contains("已取消","未通过").doesNotContain("CANCELLED","REJECTED");
+    }
     @Test void recommendationRankingHasExplainableMembershipAndInterestWeights() throws Exception {
         clubs.join(student,clubA);clubs.decide(manager,clubA,student.id(),new Forms.Member(true,"MEMBER"));
         activities.register(student,activityA);

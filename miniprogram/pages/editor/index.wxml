@@ -58,6 +58,7 @@
           <picker range="{{choiceNames}}" value="{{choiceIndex}}" bindchange="choice">
             <view class="picker">{{choiceNames[choiceIndex] || '暂无已发布的活动'}} ▾</view>
           </picker>
+          <view wx:if="{{activityTime}}" class="footnote">活动时间：{{activityTime}}。预约默认跟随活动，可按准备和归还需要调整；已开始的活动请把预约开始改为未来时间。</view>
         </view>
         <view class="field">
           <text class="label">预约数量</text>
