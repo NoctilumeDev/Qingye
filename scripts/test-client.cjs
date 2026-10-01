@@ -276,3 +276,29 @@ test('an empty search can return to the activity list while keeping the chosen c
   assert.equal(home.data.keyword, ''); assert.equal(home.data.category, 'SPORT'); assert.equal(home.data.items[0].id, 2)
   assert.match(urls.at(-1), /category=SPORT&keyword=$/)
 })
+
+test('changing a loan interval invalidates an old response before the debounce fires', async () => {
+  const pending = deferred(), editor = page('editor', () => pending.promise)
+  editor.kind = 'loan'; editor.data.form = { equipmentId: 1, startDate: '2026-10-02', endDate: '2026-10-02', startTime: '10:00', endTime: '11:00' }
+  const checking = editor.check()
+  editor.field({ currentTarget: { dataset: { field: 'endTime' } }, detail: { value: '12:00' } })
+  pending.resolve({ availableQuantity: 5 }); await checking; editor.onUnload()
+  assert.equal(editor.data.availability, null)
+})
+
+test('workbench guards confirmation as well as writes for operations and members', async () => {
+  for (const kind of ['operation', 'member']) {
+    let prompts = 0, writes = 0; const answer = deferred(), saving = deferred()
+    const workbench = page('workbench', async () => { writes++; return saving.promise }, { showToast() {} }, () => { prompts++; return answer.promise })
+    workbench.data.clubs = [{ id: 1 }]; workbench.load = workbench.loadMembers = async () => {}
+    const event = { currentTarget: { dataset: { kind: 'activities', id: 1, action: 'approve' } } }
+    const first = workbench[kind](event), second = workbench[kind](event)
+    const observedPrompts = prompts
+    answer.resolve(true); await new Promise(resolve => setImmediate(resolve)); const observedWrites = writes
+    saving.resolve({}); await Promise.all([first, second])
+    assert.equal(observedPrompts, 1, kind + ' confirmation opened twice'); assert.equal(observedWrites, 1, kind + ' write duplicated')
+    assert.equal(workbench.data.busy, false)
+    const cancelled = page('workbench', async () => { throw new Error('unexpected write') }, {}, async () => false)
+    cancelled.data.clubs = [{ id: 1 }]; await cancelled[kind](event); assert.equal(cancelled.data.busy, false)
+  }
+})

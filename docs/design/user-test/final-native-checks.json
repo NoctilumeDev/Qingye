@@ -1,0 +1,22 @@
+[
+  {
+    "check": "cancelled physical checkout confirmation unlocks workbench without changing loan",
+    "passed": true
+  },
+  {
+    "check": "cancelled member handover confirmation unlocks workbench without changing membership",
+    "passed": true
+  },
+  {
+    "check": "loan time edit refreshes real availability and native back returns to equipment",
+    "passed": true
+  },
+  {
+    "check": "nickname dialog layout and cancel remain consistent after style cleanup",
+    "passed": true
+  },
+  {
+    "check": "empty search still exits to the selected activity category",
+    "passed": true
+  }
+]

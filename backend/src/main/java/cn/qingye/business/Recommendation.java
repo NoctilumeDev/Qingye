@@ -9,12 +9,10 @@ import static cn.qingye.db.Rows.*;
 @Service
 public class Recommendation {
     private final ActivityStore activities;
-    private final UserStore users;
     private final ClubStore clubs;
     private final Clock clock;
-    public Recommendation(ActivityStore activities,UserStore users,ClubStore clubs,Clock clock) {
+    public Recommendation(ActivityStore activities,ClubStore clubs,Clock clock) {
         this.activities=activities;
-        this.users=users;
         this.clubs=clubs;
         this.clock=clock;
     }

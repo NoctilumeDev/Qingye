@@ -24,4 +24,4 @@ function guard() {
 function confirm(content, editable = false) {
   return new Promise(resolve => wx.showModal({ ...modalColors, title: '青野', content, editable, placeholderText: '可以填写审核意见', success: res => resolve(res.confirm ? (res.content || true) : false), fail: () => resolve(false) }))
 }
-module.exports = { request, guard, confirm, modalColors }
+module.exports = { request, guard, confirm }

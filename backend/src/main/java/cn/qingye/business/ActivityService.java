@@ -25,9 +25,6 @@ public class ActivityService {
         this.messages=messages;
         this.clock=clock;
     }
-    public List<Map<String,Object>> list(Actor actor,String scope,String category,String keyword,int page) {
-        return activities.list(actor,scope,category,keyword,page,null,null);
-    }
     public List<Map<String,Object>> list(Actor actor,String scope,String category,String keyword,int page,boolean upcoming) {
         return activities.list(actor,scope,category,keyword,page,upcoming?LocalDateTime.now(clock):null,null);
     }

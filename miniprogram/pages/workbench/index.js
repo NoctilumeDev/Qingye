@@ -45,27 +45,32 @@ Page({
   detail(e) { wx.navigateTo({ url: '/pages/activity/index?id=' + e.currentTarget.dataset.id }) },
   async operation(e) {
     if (this.data.busy) return
-    const { kind, id, action } = e.currentTarget.dataset
-    let body = {}, prompt = '确定执行这项操作吗？', path
-    if (action === 'approve' || action === 'reject') {
-      const result = await confirm(action === 'approve' ? '确认批准？可以填写审核意见。' : '确认拒绝？请填写原因。', true)
-      if (!result) return
-      body = { approve: action === 'approve', note: typeof result === 'string' ? result : '' }; path = `/${kind}/${id}/decision`
-    } else {
-      if (action === 'checkout') prompt = '请确认器材已经交给申请人。系统将再次核对实物数量。'
-      if (action === 'return') prompt = '请确认这一单的器材已全部归还。'
-      if (action === 'cancel') prompt = kind === 'activities' ? '取消活动后会通知报名同学，并释放尚未领取的器材预约。' : '确认取消这条尚未领取的器材申请？'
-      if (!await confirm(prompt)) return
-      path = `/${kind}/${id}/${action}`
-    }
     this.setData({ busy: true })
-    try { await request(path, 'POST', body); wx.showToast({ title: '已完成' }); await this.load(true) } catch (e) {} finally { this.setData({ busy: false }) }
+    try {
+      const { kind, id, action } = e.currentTarget.dataset
+      let body = {}, prompt = '确定执行这项操作吗？', path
+      if (action === 'approve' || action === 'reject') {
+        const result = await confirm(action === 'approve' ? '确认批准？可以填写审核意见。' : '确认拒绝？请填写原因。', true)
+        if (!result) return
+        body = { approve: action === 'approve', note: typeof result === 'string' ? result : '' }; path = `/${kind}/${id}/decision`
+      } else {
+        if (action === 'checkout') prompt = '请确认器材已经交给申请人。系统将再次核对实物数量。'
+        if (action === 'return') prompt = '请确认这一单的器材已全部归还。'
+        if (action === 'cancel') prompt = kind === 'activities' ? '取消活动后会通知报名同学，并释放尚未领取的器材预约。' : '确认取消这条尚未领取的器材申请？'
+        if (!await confirm(prompt)) return
+        path = `/${kind}/${id}/${action}`
+      }
+      await request(path, 'POST', body); wx.showToast({ title: '已完成' }); await this.load(true)
+    } catch (e) {} finally { this.setData({ busy: false }) }
   },
   async member(e) {
     if (this.data.busy) return
     const club = this.data.clubs[this.data.clubIndex], { id, action } = e.currentTarget.dataset
-    if (!club || !await confirm(action === 'promote' ? '确认将这位同学设为本社团负责人？' : action === 'demote' ? '确认交接这位负责人的身份？社团需要保留至少一位负责人。' : action === 'approve' ? '确认通过入社申请？' : '确认拒绝入社申请？')) return
+    if (!club) return
     this.setData({ busy: true })
-    try { await request(`/clubs/${club.id}/members/${id}/decision`, 'POST', { approve: action !== 'reject', role: action === 'promote' ? 'MANAGER' : 'MEMBER' }); await this.loadMembers() } catch (e) {} finally { this.setData({ busy: false }) }
+    try {
+      if (!await confirm(action === 'promote' ? '确认将这位同学设为本社团负责人？' : action === 'demote' ? '确认交接这位负责人的身份？社团需要保留至少一位负责人。' : action === 'approve' ? '确认通过入社申请？' : '确认拒绝入社申请？')) return
+      await request(`/clubs/${club.id}/members/${id}/decision`, 'POST', { approve: action !== 'reject', role: action === 'promote' ? 'MANAGER' : 'MEMBER' }); await this.loadMembers()
+    } catch (e) {} finally { this.setData({ busy: false }) }
   }
 })

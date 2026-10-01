@@ -1,7 +1,5 @@
 page {
   --green:#187553;
-  --lime:#d4eaa1;
-  --blue:#d0e8f9;
   --ink:#243b37;
   --muted:#65767d;
   --paper:#f7fafb;
@@ -211,8 +209,4 @@ page button.small {
   text-align:center;
   padding:30rpx;
   color:var(--muted);
-}
-
-.safe-bottom {
-  padding-bottom:env(safe-area-inset-bottom);
 }

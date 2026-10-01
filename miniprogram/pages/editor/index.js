@@ -41,7 +41,14 @@ Page({
     } catch (e) {}
   },
   key() { return 'wx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12) },
-  field(e) { this.setData({ ['form.' + e.currentTarget.dataset.field]: e.detail.value }); this.requestKey = this.key(); if (this.kind === 'loan') { clearTimeout(this.timer); this.timer = setTimeout(() => this.check(), 300) } },
+  field(e) {
+    this.setData({ ['form.' + e.currentTarget.dataset.field]: e.detail.value }); this.requestKey = this.key()
+    if (this.kind === 'loan') {
+      this.checkSequence = (this.checkSequence || 0) + 1
+      this.setData({ availability: null })
+      clearTimeout(this.timer); this.timer = setTimeout(() => this.check(), 300)
+    }
+  },
   choice(e) {
     const index = Number(e.detail.value), selected = this.data.choices[index]
     if (!selected) return
@@ -75,5 +82,5 @@ Page({
     try { await request(path + (this.id ? '/' + this.id : ''), this.id ? 'PUT' : 'POST', body); wx.showToast({ title: this.kind === 'loan' || this.kind === 'activity' ? '已提交审核' : '已保存' }); wx.navigateBack() }
     catch (e) {} finally { this.setData({ busy: false }) }
   },
-  onUnload() { clearTimeout(this.timer) }
+  onUnload() { clearTimeout(this.timer); this.checkSequence = (this.checkSequence || 0) + 1 }
 })
