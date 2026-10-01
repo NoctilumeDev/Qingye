@@ -10,12 +10,7 @@
 
 使用本机已有的 Java 17、Maven、MySQL 8、微信开发者工具。依赖版本沿用现有 Maven 缓存，不使用 Docker、uni-app 或额外 Node 业务服务。
 
-1. MySQL 中准备两个独立数据库：
-
-   ```sql
-   CREATE DATABASE IF NOT EXISTS qingye CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   CREATE DATABASE IF NOT EXISTS qingye_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
+1. 在 MySQL 客户端或 Navicat 打开并完整执行 [sql/qingye.sql](sql/qingye.sql)。单个文件包含建库、九张表和演示数据，使用五个内置演示身份。重复导入会替换 `qingye` 中的同名表；本机已有正常数据时无需再次导入。文件保留复制时的演示日期，后续演示可在工作台调整活动时间。
 
 2. 在本目录创建 **被 Git 忽略的** `local.ps1`，填写本机账号，或直接设置同名环境变量：
 
@@ -71,9 +66,15 @@
 
 目录按变化原因分为 `model`（少量稳定数据契约）、`business`（规则与事务）、`db`（表结构和查询）、`api`（接口与输入）和 `integration`（易替换的外部能力）。数据库及分层细节见 [设计说明](DESIGN.md)。
 
-手写源码约 **5,600 行**（本轮统计 5,604 行），统计 Java、SQL、小程序 JS/WXML/WXSS 和验证脚本，包含测试、空行及注释；排除依赖、构建产物、私人配置、临时验收材料和文档。维持 8,000 行停止线，新增功能先检查规模。
+源码与数据库初始化脚本约 **5,900 行**（本轮统计 5,866 行），统计 Java、SQL、小程序 JS/WXML/WXSS 和验证脚本，包含测试、SQL 演示数据、空行及注释；排除依赖、构建产物、私人配置、临时验收材料和文档。维持 8,000 行停止线，新增功能先检查规模。
 
 ## 验证命令
+
+真实 MySQL 测试另用独立的 `qingye_test`，首次测试前创建它：
+
+```sql
+CREATE DATABASE IF NOT EXISTS qingye_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
 ```powershell
 cd backend
