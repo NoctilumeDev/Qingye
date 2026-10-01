@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>青野 · 功能模块图</title>
+  <style>
+    :root { color-scheme: light; --green: #187553; --ink: #243d36; --line: #91a79c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: #f5f9f7; font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+    main { width: min(100%, 900px); margin: 0 auto; padding: 28px 24px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 { margin: 0; font-size: 24px; }
+    button { padding: 9px 13px; border: 1px solid #bbcdc3; border-radius: 6px; background: #fff; color: var(--green); font: inherit; font-size: 12px; cursor: pointer; }
+    button:hover { background: #edf5f0; }
+    button:focus-visible { outline: 3px solid #267bb4; outline-offset: 3px; }
+    .reading { margin: 14px 0 18px; color: #62796d; font-size: 13px; line-height: 1.8; }
+    figure { margin: 0; padding: 22px 20px 16px; border: 1px solid #dbe7e0; background: #fff; }
+    .diagram { position: relative; }
+    .connections { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+    .connections path { fill: none; stroke: var(--line); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+    .node { position: relative; z-index: 1; border: 1px solid #bbcdc3; border-radius: 5px; text-align: center; background: #fff; }
+    .root { width: 360px; max-width: calc(100% - 36px); margin: 0 auto 34px; padding: 16px; background: var(--green); border-color: var(--green); color: #fff; }
+    .root strong { display: block; font-size: 25px; letter-spacing: 3px; }
+    .root span { display: block; margin-top: 5px; font-size: 13px; line-height: 1.6; }
+    .role-group { position: relative; padding-left: 32px; margin-top: 34px; }
+    .role-group:first-of-type { margin-top: 0; }
+    .role-title { width: 350px; max-width: calc(100% - 24px); margin: 0 auto 30px; padding: 12px 16px; background: #e9f4ec; }
+    .role-label { color: #71887b; font-size: 10px; letter-spacing: 1px; }
+    h2 { margin: 5px 0 4px; color: #1c694b; font-size: 18px; line-height: 1.5; }
+    .role-title p { margin: 0; color: #587464; font-size: 11px; line-height: 1.7; }
+    .organizer .role-title { background: #eaf3fb; border-color: #b8ccdf; }
+    .organizer h2 { color: #2d678d; }
+    .admin .role-title { background: #fff2e8; border-color: #e2c6b4; }
+    .admin h2 { color: #9c542f; }
+    .module-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 28px 24px; padding-left: 28px; }
+    .module { min-width: 0; break-inside: avoid; }
+    .module-title { width: min(100%, 220px); margin: 0 auto; padding: 9px 10px; font-size: 15px; font-weight: 600; line-height: 1.5; background: #f5faf7; }
+    .operations { position: relative; display: grid; gap: 6px; margin: 20px 0 0; padding: 0 0 0 20px; list-style: none; }
+    .operations::before { content: ""; position: absolute; left: 8px; top: -20px; bottom: 18px; width: 1px; background: var(--line); }
+    .operations::after { content: ""; position: absolute; left: 8px; right: 50%; top: -20px; border-top: 1px solid var(--line); }
+    .operation { position: relative; display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 8px; border: 1px solid #dce7e0; border-radius: 4px; color: #405c4c; background: #fff; font-size: 12px; text-align: center; line-height: 1.6; }
+    .operation::before { content: ""; position: absolute; right: 100%; top: 50%; width: 12px; border-top: 1px solid var(--line); }
+    figcaption { margin-top: 20px; color: #62796d; font-size: 12px; line-height: 1.7; text-align: center; }
+    .note { margin: 12px 0 0; color: #62796d; font-size: 12px; line-height: 1.8; }
+    @media (max-width: 600px) {
+      main { padding: 18px 12px; }
+      h1 { font-size: 20px; }
+      button { padding: 8px 9px; font-size: 11px; }
+      figure { padding: 20px 10px 14px; }
+      .reading { font-size: 12px; }
+      .role-group { padding-left: 20px; margin-top: 30px; }
+      .role-title { padding: 11px 10px; max-width: calc(100% - 12px); }
+      h2 { font-size: 17px; }
+      .module-grid { grid-template-columns: 1fr; padding-left: 20px; gap: 25px; }
+      .module-title { font-size: 14px; }
+      .operation { min-height: 38px; font-size: 12px; }
+      figcaption, .note { font-size: 11px; }
+    }
+    @page { size: A4 portrait; margin: 9mm; }
+    @media print {
+      body { background: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      main { width: 100%; padding: 0; }
+      h1 { font-size: 17px; }
+      button { display: none; }
+      .reading { margin: 7px 0 9px; font-size: 10px; }
+      figure { border: 0; padding: 0; }
+      .root { width: 310px; margin-bottom: 14px; padding: 6px 12px; }
+      .root strong { font-size: 19px; line-height: 1.2; }
+      .root span { margin-top: 2px; font-size: 10px; line-height: 1.3; }
+      .role-group { padding-left: 28px; margin-top: 12px; }
+      .role-title { width: 310px; max-width: none; margin-bottom: 18px; padding: 4px 10px; line-height: 1.3; }
+      .role-label { display: none; }
+      h2 { margin: 2px 0; font-size: 13px; line-height: 1.3; }
+      .role-title p { font-size: 9px; line-height: 1.4; }
+      .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 22px; padding-left: 28px; }
+      .module-title { width: 190px; padding: 4px 8px; font-size: 11px; }
+      .operations { gap: 3px; margin-top: 10px; padding-left: 20px; }
+      .operations::before { top: -10px; bottom: 10px; }
+      .operations::after { top: -10px; }
+      .operation { min-height: 20px; padding: 1px 6px; font-size: 9px; line-height: 1.5; }
+      figcaption { margin-top: 8px; font-size: 9px; }
+      .note { margin-top: 6px; font-size: 8px; line-height: 1.3; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1 id="diagram-title">青野 · 功能模块图</h1><button type="button" onclick="window.print()">打印 / 保存 PDF</button></header>
+    <p class="reading">从上往下读：青野 → 共用功能 / 两类工作台 → 功能模块 → 具体操作。连线表示包含关系。</p>
+    <figure aria-labelledby="diagram-title">
+      <div class="diagram">
+        <svg class="connections" aria-hidden="true"></svg>
+        <div class="root node"><strong>青野</strong><span>校园社团活动与共享资源管理系统<br>一个原生微信小程序</span></div>
+        <section class="role-group common" aria-labelledby="role-common">
+      <div class="role-title node"><span class="role-label">功能分组 01</span><h2 id="role-common">共用功能</h2><p>同学、社团负责人和管理员均可使用</p></div>
+      <div class="module-grid"><section class="module"><h3 class="module-title node">活动参与</h3><ul class="operations"><li class="operation">搜索、分类与活动详情</li><li class="operation">活动报名与满员候补</li><li class="operation">取消报名与候补递补</li></ul></section><section class="module"><h3 class="module-title node">社团参与</h3><ul class="operations"><li class="operation">浏览校园社团</li><li class="operation">申请加入社团</li><li class="operation">退出所在社团</li></ul></section><section class="module"><h3 class="module-title node">个人与消息</h3><ul class="operations"><li class="operation">昵称编辑与本人活动记录</li><li class="operation">消息查看、单条或全部已读</li><li class="operation">勾选消息后软删除</li></ul></section><section class="module"><h3 class="module-title node">校园查询</h3><ul class="operations"><li class="operation">中文查询活动、器材</li><li class="operation">查询本人的报名与借用</li><li class="operation">活动推荐与推荐理由</li></ul></section></div>
+    </section>
+<section class="role-group organizer" aria-labelledby="role-organizer">
+      <div class="role-title node"><span class="role-label">功能分组 02</span><h2 id="role-organizer">社团负责人工作台</h2><p>负责人身份来自社团成员关系，管理范围限于本社团</p></div>
+      <div class="module-grid"><section class="module"><h3 class="module-title node">社团维护</h3><ul class="operations"><li class="operation">修改本社团资料</li><li class="operation">查看成员与入社申请</li><li class="operation">通过或拒绝入社申请</li></ul></section><section class="module"><h3 class="module-title node">活动组织</h3><ul class="operations"><li class="operation">创建、修改待审活动</li><li class="operation">查看本社团活动参与名单</li><li class="operation">取消本社团活动</li></ul></section><section class="module"><h3 class="module-title node">器材申请</h3><ul class="operations"><li class="operation">查询指定时段可预约量</li><li class="operation">为本社团活动申请器材</li><li class="operation">查看借用状态、取消预约</li></ul></section></div>
+    </section>
+<section class="role-group admin" aria-labelledby="role-admin">
+      <div class="role-title node"><span class="role-label">功能分组 03</span><h2 id="role-admin">管理员工作台</h2><p>负责校园公共资源维护与业务审核</p></div>
+      <div class="module-grid"><section class="module"><h3 class="module-title node">社团管理</h3><ul class="operations"><li class="operation">创建与维护社团</li><li class="operation">查看社团成员</li><li class="operation">设置与交接负责人</li></ul></section><section class="module"><h3 class="module-title node">活动审核</h3><ul class="operations"><li class="operation">查看待审核活动</li><li class="operation">批准活动并发布</li><li class="operation">退回活动并说明原因</li></ul></section><section class="module"><h3 class="module-title node">器材借还</h3><ul class="operations"><li class="operation">器材资料、数量维护与停用</li><li class="operation">审批器材预约</li><li class="operation">核验实物并确认领取</li><li class="operation">整单归还与借用记录</li></ul></section><section class="module"><h3 class="module-title node">运行状态</h3><ul class="operations"><li class="operation">查看缓存与消息通道状态</li><li class="operation">查看模型是否配置</li><li class="operation">查看消息任务处理统计</li></ul></section></div>
+    </section>
+      </div>
+      <figcaption>图 1　青野系统功能模块图</figcaption>
+    </figure>
+    <p class="note">两类工作台在同一个小程序内按权限显示。负责人和管理员同时拥有共用功能。数据库、算法及 Redis / MQ / 大模型的设计说明见同目录《项目简介》。</p>
+  </main>
+  <script>
+    // 连线随真实节点位置计算；父子归属不受窄屏、换行或打印影响。
+    const diagram = document.querySelector('.diagram');
+    const svg = diagram.querySelector('.connections');
+    function drawConnections() {
+      const base = diagram.getBoundingClientRect();
+      const box = element => {
+        const r = element.getBoundingClientRect();
+        return { left: r.left - base.left, right: r.right - base.left, top: r.top - base.top, bottom: r.bottom - base.top, x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
+      };
+      const root = box(diagram.querySelector('.root'));
+      const roles = [...diagram.querySelectorAll('.role-group')];
+      const narrow = innerWidth <= 600 && !matchMedia('print').matches;
+      const mainX = narrow ? 3 : 8;
+      const last = box(roles.at(-1).querySelector('.role-title'));
+      const paths = [`M ${root.x} ${root.bottom} V ${root.bottom + 12} H ${mainX} V ${last.y}`];
+      roles.forEach(role => {
+        const title = box(role.querySelector('.role-title'));
+        const forkX = box(role).left + (narrow ? 21 : 35);
+        const modules = [...role.querySelectorAll('.module-title')].map(box);
+        const lastY = modules.at(-1).top - 12;
+        paths.push(`M ${mainX} ${title.y} H ${title.left}`);
+        const firstY = Math.min(title.bottom + 10, modules[0].top - 12);
+        paths.push(`M ${title.x} ${title.bottom} V ${firstY} H ${forkX} V ${lastY}`);
+        modules.forEach(module => paths.push(`M ${forkX} ${module.top - 12} H ${module.x} V ${module.top}`));
+      });
+      svg.setAttribute('viewBox', `0 0 ${base.width} ${base.height}`);
+      svg.replaceChildren(...paths.map(d => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d);
+        return path;
+      }));
+    }
+    drawConnections();
+    new ResizeObserver(drawConnections).observe(diagram);
+    document.fonts.ready.then(drawConnections);
+    window.addEventListener('beforeprint', drawConnections);
+    window.addEventListener('afterprint', drawConnections);
+    matchMedia('print').addEventListener('change', drawConnections);
+  </script>
+</body>
+</html>
