@@ -1,0 +1,765 @@
+[
+  {
+    "case": "valid_control",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.094,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "MODEL_PLAN",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "model_clarification_is_not_provider_failure",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.015,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "这句话还没有明确的校园查询，请换个说法。比如：相机现在还有多少？或：这周末有什么活动？",
+        "intent": "OUT_OF_SCOPE",
+        "mode": "MODEL_PLAN",
+        "items": []
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "invalid_clarification_parameters",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "incidental_keyword_before_network",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 0,
+    "result": {
+      "data": {
+        "answer": "这句话还没有明确的校园查询，请换个说法。比如：相机现在还有多少？或：这周末有什么活动？",
+        "intent": "OUT_OF_SCOPE",
+        "mode": "LOCAL",
+        "items": []
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "extra_sql",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.015,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "extra_identity",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "invented_answer",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "invalid_json",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "empty_content",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "array",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "wrong_scalar_type",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "duplicate_field",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.0,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "trailing_document",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "unsupported_intent",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "unsupported_category",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "long_keyword",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "half_time",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "reversed_time",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.0,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "too_long_interval",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.032,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "truncated_output",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.0,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "http_503",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.031,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "http_429",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.0,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "timeout",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 5.016,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "private_manager",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.015,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "查到 2 条记录：\n单反相机 ×1，待审核\n单反相机 ×2，已批准",
+        "intent": "MY_LOANS",
+        "mode": "MODEL_PLAN",
+        "items": [
+          {
+            "id": 22,
+            "activityId": 1,
+            "applicantId": 2,
+            "equipmentId": 1,
+            "quantity": 1,
+            "plannedStart": "2026-10-03T17:00",
+            "plannedEnd": "2026-10-03T19:00",
+            "reason": "",
+            "status": "PENDING",
+            "requestKey": "wx-1790867088043-5ygydpsgla",
+            "reviewedBy": null,
+            "reviewNote": "",
+            "reviewedAt": null,
+            "checkedOutAt": null,
+            "returnedAt": null,
+            "createdAt": "2026-10-01T23:04:51.931520",
+            "equipmentName": "单反相机",
+            "activityTitle": "把黄昏拍成一张明信片",
+            "clubName": "追光摄影社",
+            "applicantName": "张三 · 摄影社负责人"
+          },
+          {
+            "id": 1,
+            "activityId": 5,
+            "applicantId": 2,
+            "equipmentId": 1,
+            "quantity": 2,
+            "plannedStart": "2026-10-01T07:01:41",
+            "plannedEnd": "2026-10-01T11:01:41",
+            "reason": "准备活动拍摄",
+            "status": "APPROVED",
+            "requestKey": "demo-ready-to-pickup",
+            "reviewedBy": 1,
+            "reviewNote": "",
+            "reviewedAt": "2026-10-01T07:01:41",
+            "checkedOutAt": null,
+            "returnedAt": null,
+            "createdAt": "2026-10-01T07:01:41.121373",
+            "equipmentName": "单反相机",
+            "activityTitle": "今天的追光准备会",
+            "clubName": "追光摄影社",
+            "applicantName": "张三 · 摄影社负责人"
+          }
+        ]
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "private_student",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.0,
+    "provider_calls": 1,
+    "result": {
+      "data": {
+        "answer": "你还没有器材借用记录。",
+        "intent": "MY_LOANS",
+        "mode": "MODEL_PLAN",
+        "items": []
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "scope_before_network",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.016,
+    "provider_calls": 0,
+    "result": {
+      "data": {
+        "answer": "目前支持中文查询校园活动、报名和器材借用。试试：这周末有什么活动？",
+        "intent": "OUT_OF_SCOPE",
+        "mode": "LOCAL",
+        "items": []
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "attack_before_network",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 400,
+    "seconds": 0.0,
+    "provider_calls": 0,
+    "result": {
+      "code": 400,
+      "message": "这里只查询校园记录，不执行指令或提供凭据"
+    }
+  },
+  {
+    "case": "unauthenticated",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 401,
+    "provider_calls": 0,
+    "seconds": 0.015,
+    "result": {
+      "code": 401,
+      "message": "登录已失效，请重新登录"
+    }
+  },
+  {
+    "case": "disconnected",
+    "source": "CONTROLLED_HTTP_FIXTURE",
+    "status": 200,
+    "seconds": 0.015,
+    "provider_calls": 0,
+    "result": {
+      "data": {
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4",
+        "intent": "EQUIPMENT",
+        "mode": "LOCAL",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ]
+      },
+      "code": 0
+    }
+  }
+]

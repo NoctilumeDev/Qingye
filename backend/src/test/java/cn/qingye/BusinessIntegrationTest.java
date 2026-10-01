@@ -218,6 +218,60 @@ class BusinessIntegrationTest {
         verifyNoInteractions(planner);
         assertThat(service.valid(new QueryPlan("DELETE_ALL",null,null,null,null))).isFalse();
     }
+    @Test void invalidModelParametersFallBackAndPrivateFactsStayBoundToTheSession() {
+        long own=apply(manager,activityA,1,14,15);
+        apply(secondManager,activityB,1,15,16);
+        var planner=mock(LlmPlanner.class);
+        var service=new AssistantService(activityStore,loanStore,loans,planner,clock);
+        for(var invalid:List.of(
+            new QueryPlan("DELETE_ALL",null,null,null,null),
+            new QueryPlan("EQUIPMENT","ADMIN",null,null,null),
+            new QueryPlan("EQUIPMENT",null,"相".repeat(31),null,null),
+            new QueryPlan("EQUIPMENT",null,null,NOW,null),
+            new QueryPlan("EQUIPMENT",null,null,NOW,NOW.minusHours(1)),
+            new QueryPlan("EQUIPMENT",null,null,NOW.minusDays(2),NOW),
+            new QueryPlan("EQUIPMENT",null,null,NOW,NOW.plusDays(32)),
+            new QueryPlan("EQUIPMENT",null,null,NOW.plusYears(2),NOW.plusYears(2).plusHours(1)))) {
+            when(planner.plan(anyString())).thenReturn(Optional.of(invalid));
+            var answer=service.ask(student,"查相机器材");
+            assertThat(answer.get("mode")).isEqualTo("LOCAL");
+            assertThat(answer.get("answer").toString()).contains("总量 5");
+        }
+        when(planner.plan(anyString())).thenReturn(Optional.of(new QueryPlan("MY_LOANS",null,null,null,null)));
+        assertThat(service.ask(other,"查询管理员的器材借用记录").get("items")).isEqualTo(List.of());
+        @SuppressWarnings("unchecked") var ownRows=(List<Map<String,Object>>)service.ask(manager,"查询其他负责人的器材借用记录").get("items");
+        assertThat(ownRows).hasSize(1);
+        assertThat(id(ownRows.get(0),"id")).isEqualTo(own);
+        assertThat(id(ownRows.get(0),"applicantId")).isEqualTo(manager.id());
+    }
+    @Test void incidentalCampusWordsDoNotCreateQueriesAndModelClarificationIsNotProviderFailure() {
+        var planner=mock(LlmPlanner.class);
+        var activityFacts=mock(ActivityStore.class);
+        var loanFacts=mock(LoanStore.class);
+        var service=new AssistantService(activityFacts,loanFacts,loans,planner,clock);
+        String noise="你上啥啦呢西行纪打麻将登记上哪上哪相机谢娜小姐姐想你你的你觉得就算你是香蕉很适合";
+        when(planner.plan(anyString())).thenReturn(Optional.of(new QueryPlan("OUT_OF_SCOPE",null,null,null,null)));
+        var answer=service.ask(student,noise);
+        assertThat(answer.get("items")).isEqualTo(List.of());
+        assertThat(answer.get("answer").toString()).contains("请换个说法");
+        verifyNoInteractions(planner,activityFacts,loanFacts);
+        assertThat(service.ask(student,"给我看一首关于相机的诗").get("mode")).isEqualTo("MODEL_PLAN");
+        verifyNoInteractions(activityFacts,loanFacts);
+        reset(planner);
+        assertThat(service.ask(student,"香蕉西行纪相机打麻将哈哈哈哈").get("intent")).isEqualTo("OUT_OF_SCOPE");
+        for(String foreign:List.of("How many cameras are available?","今週末に参加できるイベントはありますか？")) {
+            assertThat(service.ask(student,foreign).get("answer").toString()).contains("目前支持中文");
+        }
+        verifyNoInteractions(planner,activityFacts,loanFacts);
+        assertThat(service.valid(new QueryPlan("OUT_OF_SCOPE",null,"相机",null,null))).isFalse();
+        when(planner.plan(anyString())).thenReturn(Optional.empty());
+        assertThat(service.ask(student,"相机").get("intent")).isEqualTo("EQUIPMENT");
+        verify(loanFacts).equipment();
+        for(String question:List.of("有相机吗","能借三脚架吗","校园有啥活动")) {
+            assertThat(service.ask(student,question).get("intent")).isNotEqualTo("OUT_OF_SCOPE");
+        }
+        assertThat(service.ask(student,"本周摄影活动").get("intent")).isEqualTo("ACTIVITIES");
+    }
     @Test void httpAuthenticationValidationAndClubAuthorizationAreEnforced() throws Exception {
         mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
         String token=auth.demo(student.id()).get("token").toString();

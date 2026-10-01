@@ -1,0 +1,43 @@
+✔ typing in a form exposes the next field while preserving the current label, then restores the view (7.1697ms)
+✔ assistant typing exposes the query button and keeps a deliberate manual scroll when the keyboard closes (1.4357ms)
+✔ a late keyboard layout measurement cannot move a page after it is hidden or unloaded (3.2489ms)
+✔ global keyboard events cover missing component events, repeated heights do not repeat movement, and listeners detach (1.2636ms)
+✔ focus height supplies a fallback and blur restores when Android omits the closing event (128.5455ms)
+✔ nickname keyboard moves the whole dialog, avoids double compensation and resets on close (1.9934ms)
+✔ equipment editing reserves keyboard scroll space without altering fields and resets when leaving (1.5259ms)
+✔ an old response cannot sign out or return another identity data after switching account (1.7973ms)
+✔ an expired current session signs out, and a current network failure shows a retry hint (1.3867ms)
+✔ rapid filter and search changes eventually show the latest query (1.861ms)
+✔ a failed in-flight request still runs the queued refresh (1.4875ms)
+✔ pagination appends once and stops at the short final page (1.4924ms)
+✔ out-of-order availability responses cannot overwrite the latest interval (1.2894ms)
+✔ invalid interval clears availability and invalidates a pending response (1.5798ms)
+✔ registration cannot submit twice while awaiting the backend (1.6504ms)
+✔ bulk read submits once and reloads the authoritative read state (1.6641ms)
+✔ cancelled or failed clearing keeps the current messages visible (2.7225ms)
+✔ selecting messages sends only chosen IDs and never marks them read (1.8861ms)
+✔ returning to a filtered activity list keeps all loaded pages and refreshes their facts (1.8529ms)
+✔ a failed return refresh does not discard the existing long list (1.2601ms)
+✔ a new filter takes priority over a queued return refresh (1.3624ms)
+✔ workbench return keeps the loaded activity range and selected section (2.1225ms)
+✔ returning from club editing retains the selected club even if the list order changes (1.4339ms)
+✔ an earlier workbench request cannot replace the active section after a quick switch (1.4286ms)
+✔ clubs return follows the latest actual tab entry and does not overwrite it on repeated taps (0.7572ms)
+✔ account switching clears the previous clubs entry (0.6737ms)
+✔ every demo identity edits only its nickname and cancelling leaves the profile intact (6.2337ms)
+✔ nickname save validates, prevents duplicate writes, preserves identity and avatar, and handles an empty API reply (1.3287ms)
+✔ failed nickname save keeps the editable draft and current profile for retry (1.2858ms)
+✔ opening nickname editor before the profile arrives gives a retry hint (1.2163ms)
+✔ an empty assistant question gives feedback without sending a query (1.254ms)
+✔ loan defaults follow the selected activity and retain subsequent manual adjustments (1.5551ms)
+✔ an empty search can return to the activity list while keeping the chosen category (1.4076ms)
+✔ changing a loan interval invalidates an old response before the debounce fires (1.3134ms)
+✔ workbench guards confirmation as well as writes for operations and members (9.6425ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 281.6358

@@ -11,7 +11,7 @@
       </view>
       <view class="field">
         <text class="label">活动名称</text>
-        <input class="input" value="{{form.title}}" maxlength="80" data-field="title" bindinput="field" placeholder="给这次活动起个名字" />
+        <input class="input" value="{{form.title}}" maxlength="80" id="field-title" data-field="title" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" placeholder="给这次活动起个名字" />
       </view>
       <view class="field">
         <text class="label">活动分类</text>
@@ -21,15 +21,15 @@
       </view>
       <view class="field">
         <text class="label">活动地点</text>
-        <input class="input" value="{{form.location}}" maxlength="100" data-field="location" bindinput="field" placeholder="例如东操场草坪" />
+        <input class="input" value="{{form.location}}" maxlength="100" id="field-location" data-field="location" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" placeholder="例如东操场草坪" />
       </view>
       <view class="field">
         <text class="label">活动介绍</text>
-        <textarea class="textarea" value="{{form.description}}" maxlength="2000" data-field="description" bindinput="field" placeholder="我们做什么，适合谁参加？" />
+        <textarea class="textarea" value="{{form.description}}" maxlength="2000" id="field-description" data-field="description" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" placeholder="我们做什么，适合谁参加？" />
       </view>
       <view class="field">
         <text class="label">人数上限</text>
-        <input class="input" type="number" value="{{form.capacity}}" data-field="capacity" bindinput="field" />
+        <input class="input" type="number" value="{{form.capacity}}" id="field-capacity" data-field="capacity" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" />
       </view>
       <view class="field">
         <text class="label">报名截止</text>
@@ -62,11 +62,11 @@
         </view>
         <view class="field">
           <text class="label">预约数量</text>
-          <input class="input" type="number" value="{{form.quantity}}" data-field="quantity" bindinput="field" />
+          <input class="input" type="number" value="{{form.quantity}}" id="field-quantity" data-field="quantity" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" />
         </view>
         <view class="field">
           <text class="label">用途说明</text>
-          <textarea class="textarea" value="{{form.reason}}" maxlength="300" data-field="reason" bindinput="field" placeholder="说明活动为什么需要这些器材" />
+          <textarea class="textarea" value="{{form.reason}}" maxlength="300" id="field-reason" data-field="reason" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" placeholder="说明活动为什么需要这些器材" />
         </view>
       </block>
       <view class="field">
@@ -110,21 +110,21 @@
     <block wx:if="{{kind === 'equipment' || kind === 'club'}}">
       <view class="field">
         <text class="label">名称</text>
-        <input class="input" value="{{form.name}}" maxlength="60" data-field="name" bindinput="field" />
+        <input class="input" value="{{form.name}}" maxlength="60" id="field-name" data-field="name" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" />
       </view>
       <view class="field">
         <text class="label">介绍</text>
-        <textarea class="textarea" value="{{form.description}}" maxlength="1000" data-field="description" bindinput="field" />
+        <textarea class="textarea" value="{{form.description}}" maxlength="1000" id="field-description" data-field="description" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" />
       </view>
     </block>
     <block wx:if="{{kind === 'equipment'}}">
       <view class="field">
         <text class="label">分类</text>
-        <input class="input" value="{{form.category}}" maxlength="20" data-field="category" bindinput="field" />
+        <input class="input" value="{{form.category}}" maxlength="20" id="field-category" data-field="category" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" />
       </view>
       <view class="field">
         <text class="label">总数量</text>
-        <input class="input" type="number" value="{{form.totalQuantity}}" data-field="totalQuantity" bindinput="field" />
+        <input class="input" type="number" value="{{form.totalQuantity}}" id="field-totalQuantity" data-field="totalQuantity" bindinput="field" bindfocus="fieldFocus" bindblur="fieldBlur" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" cursor-spacing="24" />
       </view>
       <view class="field row">
         <text class="label">开放预约</text>
@@ -146,4 +146,5 @@
       </view>
     </block>
     <button class="primary gap" loading="{{busy}}" disabled="{{busy}}" bindtap="save">{{kind === 'activity' || kind === 'loan' ? '提交审核 ↗' : '保存 ↗'}}</button>
+    <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
   </view>

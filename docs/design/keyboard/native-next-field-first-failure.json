@@ -1,0 +1,82 @@
+{
+  "success": true,
+  "result": {
+    "result": {
+      "windowHeight": 834,
+      "rows": [
+        {
+          "id": "field-category",
+          "dataset": {
+            "field": "category"
+          },
+          "left": 18,
+          "right": 412,
+          "top": 267.91668701171875,
+          "bottom": 317.91668701171875,
+          "width": 394,
+          "height": 50
+        },
+        {
+          "id": "",
+          "dataset": {},
+          "scrollLeft": 0,
+          "scrollTop": 135.3333282470703,
+          "scrollWidth": 430,
+          "scrollHeight": 1267
+        },
+        [
+          {
+            "id": "",
+            "dataset": {},
+            "left": 18,
+            "right": 412,
+            "top": -2.0833334922790527,
+            "bottom": 73.91666650772095,
+            "width": 394,
+            "height": 76
+          },
+          {
+            "id": "",
+            "dataset": {},
+            "left": 18,
+            "right": 412,
+            "top": 90.91667175292969,
+            "bottom": 224.9166717529297,
+            "width": 394,
+            "height": 134
+          },
+          {
+            "id": "",
+            "dataset": {},
+            "left": 18,
+            "right": 412,
+            "top": 241.9166717529297,
+            "bottom": 317.9166717529297,
+            "width": 394,
+            "height": 76
+          },
+          {
+            "id": "",
+            "dataset": {},
+            "left": 18,
+            "right": 412,
+            "top": 334.91668701171875,
+            "bottom": 410.91668701171875,
+            "width": 394,
+            "height": 76
+          },
+          {
+            "id": "",
+            "dataset": {},
+            "left": 18,
+            "right": 412,
+            "top": 427.91668701171875,
+            "bottom": 459.91668701171875,
+            "width": 394,
+            "height": 32
+          }
+        ]
+      ]
+    }
+  }
+}

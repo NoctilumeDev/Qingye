@@ -1,0 +1,16 @@
+{
+  "prompt": "只生成校园查询参数，不回答问题，不生成SQL，不调用工具。输出纯JSON，且仅含 intent,category,keyword,start,end。intent只能为ACTIVITIES、EQUIPMENT、MY_REGISTRATIONS、MY_LOANS。category只能为SPORT、ART、TECH、VOLUNTEER、OTHER或null。keyword是活动标题或器材名的检索词，最多30字符，不含泛词活动或器材；只问分类时keyword用null。start/end为Asia/Shanghai的ISO本地时间或null。无法确定时字段用null。示例JSON：{\"intent\":\"EQUIPMENT\",\"category\":null,\"keyword\":\"相机\",\"start\":null,\"end\":null}。当前时间：2026-10-01T22:47:01",
+  "question": "这周末有什么摄影活动？",
+  "plan": "{\"intent\":\"ACTIVITIES\",\"category\":\"ART\",\"keyword\":\"摄影\",\"start\":\"2026-10-03T00:00:00\",\"end\":\"2026-10-04T23:59:59\"}",
+  "finish_reason": "stop",
+  "usage": {
+    "prompt_tokens": 204,
+    "completion_tokens": 46,
+    "total_tokens": 250,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 204
+  }
+}

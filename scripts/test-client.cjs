@@ -7,14 +7,111 @@ const path = require('node:path')
 const client = path.resolve(__dirname, '../miniprogram')
 function page(name, request, wx = {}, confirmation = async () => true) {
   let instance; const app = { globalData: {} }
+  const native = { stopPullDownRefresh() {}, getWindowInfo: () => ({ windowHeight: 800 }), ...wx }
+  const layout = { module: { exports: {} }, wx: native, setTimeout, clearTimeout }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/keyboard.js'), 'utf8'), layout)
   vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
-    Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = values => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value } } },
-    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
-    getApp: () => app, wx: { stopPullDownRefresh() {}, ...wx }, setTimeout, clearTimeout, Date
+    Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = (values, callback) => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value }; if (callback) callback() } },
+    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('keyboard') ? layout.module.exports : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
+    getApp: () => app, wx: native, setTimeout, clearTimeout, Date
   })
   return instance
 }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
+function keyboardViewport(rectangles, fields = []) {
+  const state = { scrollTop: 0, moves: [], pending: [] }
+  const shift = rect => ({ top: rect.top - state.scrollTop, bottom: rect.bottom - state.scrollTop })
+  const wx = {
+    createSelectorQuery() {
+      let selector, all = false; const reads = []
+      const query = {
+        in() { return query }, select(value) { selector = value; all = false; return query }, selectAll() { all = true; return query },
+        boundingClientRect() { const selected = selector, multiple = all; reads.push(() => multiple ? fields.map(shift) : shift(rectangles[selected])); return query },
+        selectViewport() { return query }, scrollOffset() { reads.push(() => ({ scrollTop: state.scrollTop })); return query },
+        exec(callback) { const result = reads.map(read => read()); if (state.delayed) state.pending.push(() => callback(result)); else callback(result) }
+      }; return query
+    },
+    pageScrollTo(options) { state.moves.push(options); state.scrollTop = options.scrollTop }
+  }
+  return { state, wx }
+}
+test('typing in a form exposes the next field while preserving the current label, then restores the view', async () => {
+  const viewport = keyboardViewport({ '#field-name': { top: 320, bottom: 420 }, '#field-description': { top: 470, bottom: 610.0001 } }, [{ top: 280, bottom: 420 }, { top: 440, bottom: 610 }, { top: 640, bottom: 750 }])
+  const editor = page('editor', async url => url === '/me' ? { admin: true, workbench: true } : [], viewport.wx)
+  await editor.onLoad({ kind: 'equipment' })
+  editor.fieldFocus({ currentTarget: { dataset: { field: 'name' } } })
+  editor.keyboardChange({ detail: { height: 320 } })
+  assert.equal(viewport.state.scrollTop, 146)
+  assert.ok(280 - viewport.state.scrollTop >= 16)
+  assert.ok(610 - viewport.state.scrollTop <= 480 - 16)
+  editor.fieldFocus({ currentTarget: { dataset: { field: 'description' } } })
+  assert.equal(viewport.state.scrollTop, 286)
+  assert.ok(440 - viewport.state.scrollTop >= 16)
+  editor.keyboardChange({ detail: { height: 0 } })
+  assert.equal(viewport.state.scrollTop, 0)
+})
+test('assistant typing exposes the query button and keeps a deliberate manual scroll when the keyboard closes', () => {
+  const viewport = keyboardViewport({ '#assistant-query': { top: 570, bottom: 620 } })
+  const assistant = page('assistant', async () => ({}), viewport.wx); assistant.onLoad(); assistant.focusQuestion()
+  assistant.keyboardChange({ detail: { height: 320 } })
+  assert.equal(viewport.state.scrollTop, 156)
+  assert.ok(620 - viewport.state.scrollTop <= 464)
+  viewport.state.scrollTop = 200
+  assistant.keyboardChange({ detail: { height: 0 } })
+  assert.equal(viewport.state.scrollTop, 200)
+})
+test('a late keyboard layout measurement cannot move a page after it is hidden or unloaded', () => {
+  for (const lifecycle of ['onHide', 'onUnload']) {
+    const viewport = keyboardViewport({ '#assistant-query': { top: 570, bottom: 620 } }); viewport.state.delayed = true
+    const assistant = page('assistant', async () => ({}), viewport.wx); assistant.onLoad(); assistant.focusQuestion()
+    assistant.keyboardChange({ detail: { height: 320 } }); if (assistant[lifecycle]) assistant[lifecycle]()
+    viewport.state.pending.forEach(callback => callback())
+    assert.equal(viewport.state.moves.length, 0); assert.equal(assistant.data.keyboardHeight, 0)
+  }
+})
+test('global keyboard events cover missing component events, repeated heights do not repeat movement, and listeners detach', () => {
+  let callback, removed
+  const viewport = keyboardViewport({ '#assistant-query': { top: 570, bottom: 620 } })
+  const assistant = page('assistant', async () => ({}), { ...viewport.wx, onKeyboardHeightChange(fn) { callback = fn }, offKeyboardHeightChange(fn) { removed = fn } })
+  assistant.onLoad(); assistant.focusQuestion({ detail: {} })
+  callback({ height: 320 }); callback({ height: 320 })
+  assert.equal(assistant.data.keyboardHeight, 320); assert.equal(viewport.state.moves.length, 1)
+  assistant.onHide(); assert.equal(removed, callback)
+})
+test('focus height supplies a fallback and blur restores when Android omits the closing event', async () => {
+  const viewport = keyboardViewport({ '#assistant-query': { top: 570, bottom: 620 } })
+  const assistant = page('assistant', async () => ({}), viewport.wx)
+  assistant.onLoad(); assistant.focusQuestion({ detail: { height: 320 } })
+  assert.equal(viewport.state.scrollTop, 156)
+  assistant.blurQuestion(); await new Promise(resolve => setTimeout(resolve, 120))
+  assert.equal(assistant.data.keyboardHeight, 0); assert.equal(viewport.state.scrollTop, 0)
+})
+test('nickname keyboard moves the whole dialog, avoids double compensation and resets on close', () => {
+  let windowHeight = 800, hidden = 0
+  const me = page('me', async () => ({}), { getWindowInfo: () => ({ windowHeight }), hideKeyboard: () => hidden++ })
+  me.data.user = { name: '李四 · 同学' }; me.rename()
+  me.renameKeyboard({ detail: { height: 320 } }); assert.equal(me.data.renameKeyboardHeight, 320)
+  windowHeight = 480
+  me.renameKeyboard({ detail: { height: 320 } }); assert.equal(me.data.renameKeyboardHeight, 0)
+  windowHeight = 800
+  me.renameKeyboard({ detail: { height: 0 } }); assert.equal(me.data.renameKeyboardHeight, 0)
+  me.renameKeyboard({ detail: { height: 320 } }); me.closeRename()
+  assert.equal(me.data.renameKeyboardHeight, 0); assert.equal(me.data.renameVisible, false); assert.equal(hidden, 1)
+  me.renameKeyboard({ detail: { height: 320 } }); assert.equal(me.data.renameKeyboardHeight, 0)
+  assert.equal(me.data.user.name, '李四 · 同学')
+})
+test('equipment editing reserves keyboard scroll space without altering fields and resets when leaving', async () => {
+  let windowHeight = 800
+  const editor = page('editor', async url => url === '/me' ? { admin: true, workbench: true } : [{ id: 1, name: '相机', totalQuantity: 5 }], { getWindowInfo: () => ({ windowHeight }) })
+  await editor.onLoad({ kind: 'equipment', id: 1 })
+  editor.keyboardChange({ detail: { height: 300 } }); assert.equal(editor.data.keyboardHeight, 300)
+  windowHeight = 500
+  editor.keyboardChange({ detail: { height: 300 } }); assert.equal(editor.data.keyboardHeight, 0)
+  windowHeight = 800
+  editor.keyboardChange({ detail: { height: 0 } }); assert.equal(editor.data.keyboardHeight, 0)
+  editor.keyboardChange({ detail: { height: 300 } }); editor.onHide()
+  assert.equal(editor.data.keyboardHeight, 0); assert.equal(editor.data.form.totalQuantity, 5); assert.equal(editor.data.form.name, '相机')
+})
 function transport() {
   const state = { token: 'first-test-session', logout: 0, toast: 0 }
   const context = { module: { exports: {} }, require: () => ({ baseUrl: 'http://test.invalid' }), getApp: () => ({ logout: () => state.logout++ }), wx: { getStorageSync: () => state.token, request: options => { state.options = options }, showToast: () => state.toast++ } }

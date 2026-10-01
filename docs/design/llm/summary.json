@@ -1,0 +1,31 @@
+{
+  "dates": [
+    "2026-10-01",
+    "2026-10-02"
+  ],
+  "h2_passed": 34,
+  "mysql_passed": 34,
+  "mysql_business_database": "qingye_test",
+  "schema_upgrade_test_database": "H2",
+  "client_passed": 35,
+  "native_pages_compiled": 10,
+  "offline_package": "passed",
+  "real_provider": "DeepSeek deepseek-flash",
+  "early_real_cases": 8,
+  "early_camera_quantity": 5,
+  "semantic_recheck_cases": 7,
+  "current_camera_quantity": 4,
+  "camera_change_source": "user real-phone edit; preserved",
+  "controlled_http_fixture_cases": 29,
+  "controlled_faults_are_real_provider_faults": false,
+  "early_readonly_verification_database_hashes": {
+    "llm-db-before.sql": "a3ff56e6c684beffe85d0790257c03e5282b9f99c0d32dec7224293c6ec32456",
+    "llm-db-after.sql": "a3ff56e6c684beffe85d0790257c03e5282b9f99c0d32dec7224293c6ec32456"
+  },
+  "early_hash_scope": "early model-only verification, before subsequent user phone edits",
+  "source_lines_including_tests": 5604,
+  "credentials_committed": false,
+  "user_revoked_test_key_after_verification": true,
+  "current_backend_planner": "LOCAL; test key cleared",
+  "real_wechat_login": "outside current acceptance scope"
+}

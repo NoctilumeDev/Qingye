@@ -1,5 +1,6 @@
 const { request, guard } = require('../../utils/request')
 const { dateParts, format } = require('../../utils/view')
+const { keyboard } = require('../../utils/keyboard')
 const titles = { activity: '发起一场校园活动', equipment: '整理共享器材', club: '创建一个有趣的社团', loan: '为活动预约好装备' }
 const editTitles = { activity: '调整活动信息', equipment: '编辑器材资料', club: '编辑社团资料' }
 function loanTimes(activity) {
@@ -7,9 +8,10 @@ function loanTimes(activity) {
   return { startDate: activity.startTime.slice(0, 10), startTime: activity.startTime.slice(11, 16), endDate: activity.endTime.slice(0, 10), endTime: activity.endTime.slice(11, 16) }
 }
 Page({
-  data: { kind: '', form: {}, choices: [], choiceIndex: 0, categories: ['运动', '艺术', '科技', '志愿', '其他'], categoryKeys: ['SPORT', 'ART', 'TECH', 'VOLUNTEER', 'OTHER'], categoryIndex: 0, colors: ['green', 'blue', 'orange', 'red'], colorNames: ['草坪绿', '天空蓝', '日光橙', '珊瑚红'], colorIndex: 0, busy: false, availability: null },
+  data: { kind: '', form: {}, choices: [], choiceIndex: 0, categories: ['运动', '艺术', '科技', '志愿', '其他'], categoryKeys: ['SPORT', 'ART', 'TECH', 'VOLUNTEER', 'OTHER'], categoryIndex: 0, colors: ['green', 'blue', 'orange', 'red'], colorNames: ['草坪绿', '天空蓝', '日光橙', '珊瑚红'], colorIndex: 0, busy: false, availability: null, keyboardHeight: 0 },
   async onLoad(options) {
     if (!guard()) return
+    this.keyboardLayout = keyboard(this, 'keyboardHeight')
     this.kind = options.kind; this.id = Number(options.id) || null; this.requestKey = this.key()
     this.setData({ kind: this.kind, title: (this.id ? editTitles[this.kind] : titles[this.kind]) || '校园工作台', editing: !!this.id })
     try {
@@ -60,6 +62,10 @@ Page({
   category(e) { const index = Number(e.detail.value); this.setData({ categoryIndex: index, 'form.category': this.data.categoryKeys[index] }) },
   color(e) { const index = Number(e.detail.value); this.setData({ colorIndex: index, 'form.color': this.data.colors[index] }) },
   enabled(e) { this.setData({ 'form.enabled': e.detail.value }) },
+  fieldFocus(e) { this.keyboardLayout.focus('#field-' + e.currentTarget.dataset.field, 16, '.field', e.detail) },
+  fieldBlur() { this.keyboardLayout.blur() },
+  keyboardChange(e) { this.keyboardLayout.change(e) },
+  onHide() { if (this.keyboardLayout) this.keyboardLayout.reset() },
   async check() {
     const sequence = this.checkSequence = (this.checkSequence || 0) + 1
     const f = this.data.form, start = f.startDate + 'T' + f.startTime + ':00', end = f.endDate + 'T' + f.endTime + ':00'
@@ -82,5 +88,5 @@ Page({
     try { await request(path + (this.id ? '/' + this.id : ''), this.id ? 'PUT' : 'POST', body); wx.showToast({ title: this.kind === 'loan' || this.kind === 'activity' ? '已提交审核' : '已保存' }); wx.navigateBack() }
     catch (e) {} finally { this.setData({ busy: false }) }
   },
-  onUnload() { clearTimeout(this.timer); this.checkSequence = (this.checkSequence || 0) + 1 }
+  onUnload() { clearTimeout(this.timer); this.checkSequence = (this.checkSequence || 0) + 1; if (this.keyboardLayout) this.keyboardLayout.reset() }
 })

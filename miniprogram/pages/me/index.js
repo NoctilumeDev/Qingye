@@ -1,8 +1,9 @@
 const { request, guard } = require('../../utils/request')
 const { activity } = require('../../utils/view')
 const { switchTab } = require('../../utils/navigation')
+const { keyboard } = require('../../utils/keyboard')
 Page({
-  data: { user: {}, items: [], unread: 0, avatarFailed: false, renameVisible: false, renameName: '', renameIdentity: '', renameSuffix: '', renameBusy: false, renameError: '' },
+  data: { user: {}, items: [], unread: 0, avatarFailed: false, renameVisible: false, renameName: '', renameIdentity: '', renameSuffix: '', renameBusy: false, renameError: '', renameKeyboardHeight: 0 },
   async onShow() {
     if (!guard()) return; if (this.getTabBar()) this.getTabBar().setData({ selected: 2, hidden: this.data.renameVisible })
     try {
@@ -13,6 +14,7 @@ Page({
   },
   avatarError() { this.setData({ avatarFailed: true }) },
   onHide() { this.setRenameVisible(false) },
+  onUnload() { if (this.renameKeyboardLayout) this.renameKeyboardLayout.reset() },
   myActivities() { wx.pageScrollTo({ selector: '#my-activities', duration: 250 }) },
   discover() { wx.switchTab({ url: '/pages/home/index' }) },
   identity() { if (this.data.user.workbench) this.workbench(); else switchTab('/pages/clubs/index') },
@@ -23,13 +25,20 @@ Page({
   rename() {
     const user = this.data.user
     if (!user.name) return wx.showToast({ title: '资料还未加载，请稍后再试', icon: 'none' })
+    this.renameKeyboardLayout = keyboard(this, 'renameKeyboardHeight')
     const match = user.name.match(/^(.*?)\s*·\s*(管理员|摄影社负责人|篮球社负责人|同学)$/)
     const identity = user.admin ? '管理员' : user.workbench ? (match && match[2].endsWith('负责人') ? match[2] : '社团负责人') : '同学'
     this.setData({ renameName: match ? match[1].trim() : user.name, renameSuffix: match ? ' · ' + match[2] : '', renameIdentity: identity })
     this.setRenameVisible(true)
   },
   renameInput(e) { this.setData({ renameName: e.detail.value, renameError: '' }) },
-  setRenameVisible(visible) { this.setData({ renameVisible: visible, renameError: '' }); if (this.getTabBar()) this.getTabBar().setData({ hidden: visible }) },
+  renameFocus(e) { this.renameKeyboardLayout.focus('', 24, '', e.detail) },
+  renameBlur() { this.renameKeyboardLayout.blur() },
+  renameKeyboard(e) {
+    if (!this.data.renameVisible) return
+    this.renameKeyboardLayout.change(e)
+  },
+  setRenameVisible(visible) { if (this.renameKeyboardLayout) this.renameKeyboardLayout.reset(); this.setData({ renameVisible: visible, renameError: '' }); if (!visible && wx.hideKeyboard) wx.hideKeyboard(); if (this.getTabBar()) this.getTabBar().setData({ hidden: visible }) },
   closeRename() { if (!this.data.renameBusy) this.setRenameVisible(false) },
   keepRenameOpen() {},
   async saveRename() {

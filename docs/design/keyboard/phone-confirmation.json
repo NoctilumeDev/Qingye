@@ -1,0 +1,15 @@
+{
+  "source": "USER_REPORTED_REAL_ANDROID_PHONE",
+  "date": "2026-10-02",
+  "preview_package_bytes": 972999,
+  "prompt": "①问问青野输入时能否点到帮我查查；②预约数量输入时能否直接点下一项用途说明；③昵称弹窗按钮是否可见，移动是否平顺、遮罩是否还有亮色断层。",
+  "reply": "这三处都正常了",
+  "accepted": [
+    "assistant query button reachable while typing",
+    "loan next field reachable without closing keyboard",
+    "nickname buttons visible, movement smooth and mask continuous"
+  ],
+  "additional_form_variants_real_ime": "not individually confirmed",
+  "all_android_devices": "not claimed",
+  "final_followup": "onUnload listener/timer cleanup added; visual geometry unchanged; final preview package 973116 bytes"
+}

@@ -1,0 +1,190 @@
+[
+  {
+    "case": "phone_incidental_keyword",
+    "question": "你上啥啦呢西行纪打麻将登记上哪上哪相机谢娜小姐姐想你你的你觉得就算你是香蕉很适合",
+    "status": 200,
+    "seconds": 0.016,
+    "result": {
+      "data": {
+        "intent": "OUT_OF_SCOPE",
+        "mode": "LOCAL",
+        "items": [],
+        "answer": "这句话还没有明确的校园查询，请换个说法。比如：相机现在还有多少？或：这周末有什么活动？"
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "camera_poem",
+    "question": "给我看一首关于相机的诗",
+    "status": 200,
+    "seconds": 0.703,
+    "result": {
+      "data": {
+        "intent": "OUT_OF_SCOPE",
+        "mode": "MODEL_PLAN",
+        "items": [],
+        "answer": "这句话还没有明确的校园查询，请换个说法。比如：相机现在还有多少？或：这周末有什么活动？"
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "english_product_scope",
+    "question": "How many cameras are available?",
+    "status": 200,
+    "seconds": 0.0,
+    "result": {
+      "data": {
+        "intent": "OUT_OF_SCOPE",
+        "mode": "LOCAL",
+        "items": [],
+        "answer": "目前支持中文查询校园活动、报名和器材借用。试试：这周末有什么活动？"
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "japanese_product_scope",
+    "question": "今週末に参加できるイベントはありますか？",
+    "status": 200,
+    "seconds": 0.016,
+    "result": {
+      "data": {
+        "intent": "OUT_OF_SCOPE",
+        "mode": "LOCAL",
+        "items": [],
+        "answer": "目前支持中文查询校园活动、报名和器材借用。试试：这周末有什么活动？"
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "camera_normal",
+    "question": "有相机吗",
+    "status": 200,
+    "seconds": 0.594,
+    "result": {
+      "data": {
+        "intent": "EQUIPMENT",
+        "mode": "MODEL_PLAN",
+        "items": [
+          {
+            "id": 1,
+            "name": "单反相机",
+            "category": "摄影",
+            "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+            "image": "",
+            "totalQuantity": 4,
+            "enabled": true,
+            "createdAt": "2026-10-01T07:01:41.118688",
+            "borrowedQuantity": 0
+          }
+        ],
+        "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4"
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "weekend_photo",
+    "question": "这周末有什么摄影活动？",
+    "status": 200,
+    "seconds": 0.515,
+    "result": {
+      "data": {
+        "intent": "ACTIVITIES",
+        "mode": "MODEL_PLAN",
+        "items": [
+          {
+            "id": 1,
+            "clubId": 1,
+            "createdBy": 2,
+            "title": "把黄昏拍成一张明信片",
+            "description": "带上相机，一起走过校园的草坪、长廊和最后一束夕阳。零基础也欢迎。",
+            "category": "ART",
+            "location": "东操场草坪",
+            "poster": "",
+            "startTime": "2026-10-03T17:00:41",
+            "endTime": "2026-10-03T19:00:41",
+            "signupDeadline": "2026-10-03T16:00:41",
+            "capacity": 24,
+            "status": "PUBLISHED",
+            "reviewedBy": 1,
+            "reviewNote": "",
+            "reviewedAt": "2026-10-01T07:01:41.096583",
+            "createdAt": "2026-10-01T07:01:41.112616",
+            "clubName": "追光摄影社",
+            "color": "blue",
+            "registeredCount": 0,
+            "waitlistCount": 0
+          }
+        ],
+        "answer": "查到 1 条记录：\n把黄昏拍成一张明信片，10-03 17:00，地点：东操场草坪"
+      },
+      "code": 0
+    }
+  },
+  {
+    "case": "brief_topic",
+    "question": "本周摄影活动",
+    "status": 200,
+    "seconds": 0.547,
+    "result": {
+      "data": {
+        "intent": "ACTIVITIES",
+        "mode": "MODEL_PLAN",
+        "items": [
+          {
+            "id": 5,
+            "clubId": 1,
+            "createdBy": 2,
+            "title": "今天的追光准备会",
+            "description": "用于演示器材申请、审批、领取与归还的活动。",
+            "category": "ART",
+            "location": "社团器材室",
+            "poster": "",
+            "startTime": "2026-10-01T09:01:41",
+            "endTime": "2026-10-01T11:01:41",
+            "signupDeadline": "2026-10-01T08:01:41",
+            "capacity": 10,
+            "status": "PUBLISHED",
+            "reviewedBy": 1,
+            "reviewNote": "",
+            "reviewedAt": "2026-10-01T07:01:41.117427",
+            "createdAt": "2026-10-01T07:01:41.118191",
+            "clubName": "追光摄影社",
+            "color": "blue",
+            "registeredCount": 0,
+            "waitlistCount": 0
+          },
+          {
+            "id": 1,
+            "clubId": 1,
+            "createdBy": 2,
+            "title": "把黄昏拍成一张明信片",
+            "description": "带上相机，一起走过校园的草坪、长廊和最后一束夕阳。零基础也欢迎。",
+            "category": "ART",
+            "location": "东操场草坪",
+            "poster": "",
+            "startTime": "2026-10-03T17:00:41",
+            "endTime": "2026-10-03T19:00:41",
+            "signupDeadline": "2026-10-03T16:00:41",
+            "capacity": 24,
+            "status": "PUBLISHED",
+            "reviewedBy": 1,
+            "reviewNote": "",
+            "reviewedAt": "2026-10-01T07:01:41.096583",
+            "createdAt": "2026-10-01T07:01:41.112616",
+            "clubName": "追光摄影社",
+            "color": "blue",
+            "registeredCount": 0,
+            "waitlistCount": 0
+          }
+        ],
+        "answer": "查到 2 条记录：\n今天的追光准备会，10-01 09:01，地点：社团器材室\n把黄昏拍成一张明信片，10-03 17:00，地点：东操场草坪"
+      },
+      "code": 0
+    }
+  }
+]

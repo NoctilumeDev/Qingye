@@ -1,0 +1,38 @@
+{
+  "source": "LOCAL_PLANNER_AFTER_USER_REVOKED_TEST_KEY",
+  "health": "passed",
+  "status": {
+    "cache": "REDIS",
+    "llmConfigured": false,
+    "mq": "DISABLED",
+    "tasks": {
+      "done": 74,
+      "pending": 11
+    }
+  },
+  "query": {
+    "items": [
+      {
+        "id": 1,
+        "name": "单反相机",
+        "category": "摄影",
+        "description": "用于活动记录和校园外拍，配套电池与存储卡。",
+        "image": "",
+        "totalQuantity": 4,
+        "enabled": true,
+        "createdAt": "2026-10-01T07:01:41.118688",
+        "borrowedQuantity": 0
+      }
+    ],
+    "mode": "LOCAL",
+    "intent": "EQUIPMENT",
+    "answer": "查到 1 条记录：\n单反相机，总量 4，当前实物可用 4"
+  },
+  "middleware_listening_ports": [
+    3306,
+    6379,
+    5672
+  ],
+  "mq_restarted_backend_delivery_retested": false,
+  "mq_note": "RabbitBridge opens a connection on publish; the new process has not published a due task. No business test records created."
+}
