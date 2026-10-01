@@ -26,4 +26,4 @@
 
 修正前失败日志、两套 Java 报告、完整前端日志、样式扫描及最终运行读回分别留在被忽略的 `runtime/audit-before-fix-client.log`、`round2-h2/`、`round2-mysql/`、`round2-client.log`、`style-audit.json`、`round2-live-readback.json`。模拟器重新编译后首次自动连接尚未附着，工具报 `getCurrentPagesByDomain`；等待实际页面附着后重试通过，保留原日志，并未把工具连接阶段认定为产品故障。
 
-原生关键截图见 `docs/design/user-test/`，完整独立回归留在 `runtime/user-test/recheck/`。正式微信登录、外部模型、真机键盘 / 原生选择器与高负载性能仍待实际环境验证。源码统计 5,289 行，包含测试、空行及注释，沿用 README 的统计口径，仍在 8,000 行停止线内。
+原生关键截图见 `docs/design/user-test/`，完整独立回归留在 `runtime/user-test/recheck/`。本轮结束时外部模型、真机键盘 / 原生选择器尚待验证，后续结果见 [模型复核](LLM-REVIEW-20261001.md) 和 [键盘验收](KEYBOARD-REVIEW-20261001.md)；正式微信登录与高负载性能仍未验证。源码统计 5,289 行，包含测试、空行及注释，沿用 README 的统计口径，仍在 8,000 行停止线内。

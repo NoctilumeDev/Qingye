@@ -40,7 +40,7 @@
 
 ## 受控故障路径
 
-本地 HTTP 服务提供恶意 / 异常输出，临时后端使用相同生产 JAR、真实 MySQL 和演示身份，关闭任务工作线程。**这些故障由测试程序注入，不是 DeepSeek 实际产生的故障。**早期 [26 个受控场景](design/llm/controlled-faults.json) 保留；最终 JAR 的 [29 个受控场景](design/llm/controlled-faults-semantic-final.json) 全部通过，增加合法模型澄清、非法澄清参数及乱句在联网前拦截。
+本地 HTTP 服务提供恶意 / 异常输出，临时后端使用相同生产 JAR、真实 MySQL 和演示身份，关闭任务工作线程。**这些故障由测试程序注入，不是 DeepSeek 实际产生的故障。**最终 JAR 的 [29 个受控场景](design/llm/controlled-faults-semantic-final.json) 全部通过，涵盖早期 26 个场景并增加合法模型澄清、非法澄清参数及乱句在联网前拦截；仅保留这份最终报告。
 
 - 合法查询参数正常接受；私有借用只返回会话申请人的记录。
 - SQL、用户 ID、虚构回答等额外字段拒绝。
