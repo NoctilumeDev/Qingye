@@ -9,7 +9,7 @@
       <view class="hero-description">找到你喜欢的活动，遇见同频的人。</view>
       <text class="ball">🏀</text>
       <view class="court-line" />
-      <text class="hero-sticker">GO OUT &amp; PLAY!</text>
+      <text class="hero-sticker">GO OUT + PLAY!</text>
     </view>
     <view class="shortcuts">
       <view class="shortcut blue" bindtap="equipment">
@@ -39,13 +39,13 @@
         <text class="section-title">可能正合你意</text>
         <text class="muted">FOR YOU ↗</text>
       </view>
-      <activity-card wx:for="{{recommendations}}" wx:key="id" item="{{item}}" bindopen="open" />
+      <activity-card class="activity-entry" wx:for="{{recommendations}}" wx:key="id" item="{{item}}" bindopen="open" />
     </block>
     <view class="section">
       <text class="section-title">校园活动日历</text>
       <text class="muted">来凑个热闹</text>
     </view>
-    <activity-card wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
+    <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
     <view wx:if="{{loading}}" class="loading">正在寻找校园里的好玩事…</view>
     <view wx:if="{{!loading && !items.length}}" class="empty">暂时没有符合条件的活动。<view>换个分类，或过会儿再来看看。</view>
     </view>

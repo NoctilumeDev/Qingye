@@ -99,6 +99,7 @@ public class Api {
     }
     @GetMapping("/activities") Object activities(@RequestAttribute Actor actor,@RequestParam(defaultValue="public") String scope,@RequestParam(required=false) String category,@RequestParam(required=false) String keyword,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="false") boolean upcoming) {
         if ((keyword!=null && keyword.length()>60) || (category!=null && category.length()>20)) throw Problem.bad("查询条件过长");
+        if (!Set.of("public","mine","work").contains(scope) || page<0 || page>500 || (category!=null && !category.isBlank() && !Set.of("SPORT","ART","TECH","VOLUNTEER","OTHER").contains(category))) throw Problem.bad("查询范围、分类或页码无效");
         return data("public".equals(scope)?cache.publicList("activities:"+Objects.toString(category,"")+":"+Objects.toString(keyword,"")+":"+page+":"+upcoming,()->activities.list(actor,"public",category,keyword,page,upcoming)):activities.list(actor,scope,category,keyword,page,upcoming));
     }
     @GetMapping("/activities/{id}") Object activity(@RequestAttribute Actor actor,@PathVariable long id) {

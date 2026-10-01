@@ -76,6 +76,7 @@
               <button class="danger small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="reject" bindtap="member">拒绝</button>
             </block>
             <button wx:if="{{user.admin && item.status === 'ACTIVE' && item.role !== 'MANAGER'}}" class="secondary small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="promote" bindtap="member">设为负责人</button>
+            <button wx:if="{{user.admin && item.status === 'ACTIVE' && item.role === 'MANAGER'}}" class="secondary small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="demote" bindtap="member">交接为普通成员</button>
           </view>
         </view>
       </view>

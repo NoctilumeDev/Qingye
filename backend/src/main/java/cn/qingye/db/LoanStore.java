@@ -58,9 +58,9 @@ public class LoanStore {
         sql.update("UPDATE loan SET status='CANCELLED' WHERE id=?",id);
     }
     public List<Map<String,Object>> list(Actor actor) {
-        String where=actor.admin()?"":" WHERE EXISTS (SELECT 1 FROM club_member m WHERE m.club_id=a.club_id AND m.user_id=? AND m.role='MANAGER' AND m.status='ACTIVE')";
+        String where=actor.admin()?"":" WHERE (l.applicant_id=? OR EXISTS (SELECT 1 FROM club_member m WHERE m.club_id=a.club_id AND m.user_id=? AND m.role='MANAGER' AND m.status='ACTIVE'))";
         String query="SELECT l.*,e.name AS equipment_name,a.title AS activity_title,c.name AS club_name,u.name AS applicant_name FROM loan l JOIN equipment e ON e.id=l.equipment_id JOIN activity a ON a.id=l.activity_id JOIN club c ON c.id=a.club_id JOIN app_user u ON u.id=l.applicant_id"+where+" ORDER BY l.created_at DESC,l.id DESC LIMIT 200";
-        return actor.admin()?sql.list(query):sql.list(query,actor.id());
+        return actor.admin()?sql.list(query):sql.list(query,actor.id(),actor.id());
     }
     public List<Map<String,Object>> forActivity(long id) {
         return sql.list("SELECT * FROM loan WHERE activity_id=? AND status IN ('PENDING','APPROVED') ORDER BY equipment_id,id",id);

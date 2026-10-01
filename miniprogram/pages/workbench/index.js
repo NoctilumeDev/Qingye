@@ -50,7 +50,7 @@ Page({
   async member(e) {
     if (this.data.busy) return
     const club = this.data.clubs[this.data.clubIndex], { id, action } = e.currentTarget.dataset
-    if (!club || !await confirm(action === 'promote' ? '确认将这位同学设为本社团负责人？' : action === 'approve' ? '确认通过入社申请？' : '确认拒绝入社申请？')) return
+    if (!club || !await confirm(action === 'promote' ? '确认将这位同学设为本社团负责人？' : action === 'demote' ? '确认交接这位负责人的身份？社团需要保留至少一位负责人。' : action === 'approve' ? '确认通过入社申请？' : '确认拒绝入社申请？')) return
     this.setData({ busy: true })
     try { await request(`/clubs/${club.id}/members/${id}/decision`, 'POST', { approve: action !== 'reject', role: action === 'promote' ? 'MANAGER' : 'MEMBER' }); await this.loadMembers() } catch (e) {} finally { this.setData({ busy: false }) }
   }
