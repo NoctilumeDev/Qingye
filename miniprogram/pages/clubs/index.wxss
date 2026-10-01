@@ -4,11 +4,11 @@
 }
 
 .club.blue {
-  background:#e5f0fa
+  background:#e0eff9
 }
 
 .club.green {
-  background:#eaf2d5
+  background:#e7f1d0
 }
 
 .club.orange {
@@ -21,7 +21,7 @@
 
 .club-symbol {
   font-size:53rpx;
-  color:#226647
+  color:#23734f
 }
 
 .club-title {

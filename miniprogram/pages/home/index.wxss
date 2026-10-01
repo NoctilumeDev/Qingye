@@ -6,7 +6,7 @@
 .hero {
   position:relative;
   overflow:hidden;
-  background:#dcebaf;
+  background:#d4eaa1;
   border-radius:34rpx;
   padding:37rpx 30rpx 42rpx;
   margin-top:28rpx;
@@ -52,7 +52,7 @@
   position:absolute;
   right:18rpx;
   bottom:45rpx;
-  background:#fff9;
+  background:#f8c694;
   padding:10rpx 12rpx;
   font-size:17rpx;
   font-weight:850;
@@ -75,11 +75,11 @@
 }
 
 .shortcut.blue {
-  background:#dcebf7
+  background:#d0e8f9
 }
 
 .shortcut.lime {
-  background:#e6edcc
+  background:#e2edc5
 }
 
 .shortcut-icon {
@@ -99,7 +99,7 @@
 
 .shortcut .shortcut-icon {
   font-size:45rpx;
-  color:#226647
+  color:#23734f
 }
 
 .search {
@@ -138,6 +138,6 @@
 }
 
 .chip.selected {
-  background:#226647;
+  background:#23734f;
   color:#fff
 }

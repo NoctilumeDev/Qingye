@@ -10,19 +10,19 @@
   height:230rpx;
   position:relative;
   overflow:hidden;
-  background:#dcebaf
+  background:#d4eaa1
 }
 
 .cover.blue {
-  background:#dcebf7
+  background:#d0e8f9
 }
 
 .cover.orange {
-  background:#f4dfbd
+  background:#f7dbb0
 }
 
 .cover.red {
-  background:#f4d8cb
+  background:#f8d4c5
 }
 
 .cover image {
@@ -89,7 +89,7 @@
 }
 
 .phase {
-  color:#226647
+  color:#23734f
 }
 
 .card-title {
@@ -114,8 +114,8 @@
 }
 
 .arrow {
-  background:#edf3e3;
-  color:#226647;
+  background:#f7e6b5;
+  color:#23734f;
   border-radius:50%;
   width:45rpx;
   height:45rpx;

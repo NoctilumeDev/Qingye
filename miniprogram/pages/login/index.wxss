@@ -12,7 +12,7 @@
 
 .brand-mark {
   font-size:44rpx;
-  color:#226647
+  color:#23734f
 }
 
 .brand-en {
@@ -24,7 +24,7 @@
 
 .welcome {
   position:relative;
-  background:#ddebba;
+  background:#d7e9ad;
   border-radius:40rpx;
   margin:44rpx 0 30rpx;
   padding:52rpx 36rpx 150rpx;
@@ -36,7 +36,7 @@
   display:inline-block;
   transform:rotate(-5deg);
   padding:12rpx 18rpx;
-  background:#f8af83;
+  background:#f6a17b;
   font-size:20rpx;
   font-weight:800;
   color:#663d27;

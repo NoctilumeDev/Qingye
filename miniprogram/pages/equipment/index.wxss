@@ -1,5 +1,5 @@
 .equipment-visual {
-  background:#e6eff2;
+  background:#e0eef7;
   border-radius:22rpx;
   height:180rpx;
   display:flex;
@@ -35,5 +35,5 @@
 .stock-number {
   font-size:37rpx;
   font-weight:750;
-  color:#226647
+  color:#23734f
 }

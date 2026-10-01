@@ -22,7 +22,7 @@
 
 .tab.selected {
   background:#fff;
-  color:#226647;
+  color:#23734f;
   font-weight:700;
   box-shadow:0 4rpx 10rpx #29352308
 }

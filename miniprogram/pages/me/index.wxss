@@ -10,9 +10,9 @@
   height:108rpx;
   line-height:108rpx;
   text-align:center;
-  background:#dcebaf;
+  background:#d4eaa1;
   border-radius:35rpx;
-  color:#226647;
+  color:#23734f;
   font-size:46rpx;
   font-weight:800
 }

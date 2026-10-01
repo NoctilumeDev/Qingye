@@ -127,7 +127,7 @@
       </view>
       <view class="field row">
         <text class="label">开放预约</text>
-        <switch checked="{{form.enabled}}" color="#226647" bindchange="enabled" />
+        <switch checked="{{form.enabled}}" color="#23734f" bindchange="enabled" />
       </view>
     </block>
     <block wx:if="{{kind === 'club'}}">

@@ -1,5 +1,5 @@
 .assistant-hero {
-  background:#e0edcf;
+  background:#deedc6;
   padding:35rpx 30rpx;
   border-radius:30rpx;
   position:relative;
@@ -49,5 +49,5 @@
   border-top:1rpx solid #edf0e6;
   margin-top:16rpx;
   padding-top:16rpx;
-  color:#226647
+  color:#23734f
 }

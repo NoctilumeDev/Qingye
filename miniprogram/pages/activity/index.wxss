@@ -1,21 +1,21 @@
 .poster {
   height:390rpx;
   border-radius:34rpx;
-  background:#dcebaf;
+  background:#d4eaa1;
   position:relative;
   overflow:hidden
 }
 
 .poster.blue {
-  background:#dcebf7
+  background:#d0e8f9
 }
 
 .poster.orange {
-  background:#f4dfbd
+  background:#f7dbb0
 }
 
 .poster.red {
-  background:#f4d8cb
+  background:#f8d4c5
 }
 
 .poster image {
