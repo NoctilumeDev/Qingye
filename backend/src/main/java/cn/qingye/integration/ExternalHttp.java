@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ExternalHttp {
@@ -20,7 +21,11 @@ public class ExternalHttp {
         return send(HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(5)).header("Content-Type","application/json").header("Authorization","Bearer "+key).POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build());
     }
     private Map<?,?> send(HttpRequest request) throws Exception {
-        var result=client.send(request,HttpResponse.BodyHandlers.ofString());
+        var pending=client.sendAsync(request,HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> result;
+        try { result=pending.get(request.timeout().orElse(Duration.ofSeconds(5)).toMillis(),TimeUnit.MILLISECONDS); }
+        catch(InterruptedException e) { Thread.currentThread().interrupt();throw e; }
+        finally { if(!pending.isDone()) pending.cancel(true); }
         if (result.statusCode()!=200 || result.body().length()>100_000) throw new IllegalStateException("外部服务不可用");
         return json.readValue(result.body(),Map.class);
     }

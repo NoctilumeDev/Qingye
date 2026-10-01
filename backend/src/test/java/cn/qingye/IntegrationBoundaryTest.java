@@ -97,4 +97,21 @@ class IntegrationBoundaryTest {
         }
         finally { server.stop(0);executor.shutdownNow(); }
     }
+    @Test void modelResponseHeadersCannotBypassTheCompleteBodyDeadline() throws Exception {
+        var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
+        var executor=Executors.newSingleThreadExecutor();server.setExecutor(executor);
+        server.createContext("/stalled-body",exchange->{
+            try {
+                exchange.getRequestBody().readAllBytes();exchange.sendResponseHeaders(200,0);
+                exchange.getResponseBody().write(' ');exchange.getResponseBody().flush();Thread.sleep(7000);
+            } catch(Exception ignored) { }
+            finally { exchange.close(); }
+        });server.start();
+        try {
+            var json=new ObjectMapper().findAndRegisterModules();
+            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/stalled-body","test-fixture","test-model");
+            long started=System.nanoTime();assertThat(planner.plan("查相机")).isEmpty();
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isLessThan(Duration.ofMillis(6500));
+        } finally { server.stop(0);executor.shutdownNow(); }
+    }
 }

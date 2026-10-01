@@ -62,6 +62,9 @@ public class LoanStore {
         String query="SELECT l.*,e.name AS equipment_name,a.title AS activity_title,c.name AS club_name,u.name AS applicant_name FROM loan l JOIN equipment e ON e.id=l.equipment_id JOIN activity a ON a.id=l.activity_id JOIN club c ON c.id=a.club_id JOIN app_user u ON u.id=l.applicant_id"+where+" ORDER BY l.created_at DESC,l.id DESC LIMIT 200";
         return actor.admin()?sql.list(query):sql.list(query,actor.id(),actor.id());
     }
+    public List<Map<String,Object>> mine(long user) {
+        return sql.list("SELECT l.id,l.quantity,l.status,e.name AS equipment_name FROM loan l JOIN equipment e ON e.id=l.equipment_id WHERE l.applicant_id=? ORDER BY l.created_at DESC,l.id DESC LIMIT 10",user);
+    }
     public List<Map<String,Object>> forActivity(long id) {
         return sql.list("SELECT * FROM loan WHERE activity_id=? AND status IN ('PENDING','APPROVED') ORDER BY equipment_id,id",id);
     }

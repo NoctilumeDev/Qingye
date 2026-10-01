@@ -8,7 +8,7 @@
   <view class="suggestions">
     <view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion"><text>{{item}}</text><image src="/assets/icons/arrow-right-up-line-green.png" /></view>
   </view>
-  <view class="field"><textarea class="textarea" value="{{question}}" maxlength="300" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：这周末有什么摄影活动？" placeholder-style="color:#65767d" /></view>
+  <view class="field"><textarea class="textarea" value="{{question}}" maxlength="300" disabled="{{busy}}" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：这周末有什么摄影活动？" placeholder-style="color:#65767d" /></view>
   <button id="assistant-query" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="ask">{{busy ? '正在查找校园记录…' : '帮我查查'}}</button>
   <view wx:if="{{answer}}" class="card answer">
     <text selectable="true">{{answer}}</text>

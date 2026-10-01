@@ -378,6 +378,24 @@ test('an empty assistant question gives feedback without sending a query', async
   assistant.input({ detail: { value: '  ' } }); await assistant.ask()
   assert.equal(calls, 0); assert.equal(assistant.data.busy, false); assert.match(hints[0].title, /先输入/)
 })
+test('assistant requests keep the question stable and discard the previous answer', async () => {
+  const response = deferred(); let calls = 0
+  const assistant = page('assistant', () => { calls++; return response.promise })
+  assistant.setData({ question: '我的报名活动', answer: '上一条答案', intent: 'EQUIPMENT', items: [{ id: 1 }] })
+  const pending = assistant.ask()
+  assert.equal(assistant.data.answer, ''); assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.intent, '')
+  assistant.input({ detail: { value: '另一个问题' } }); assistant.suggestion({ currentTarget: { dataset: { question: '查相机' } } }); await assistant.ask()
+  assert.equal(assistant.data.question, '我的报名活动'); assert.equal(calls, 1)
+  response.resolve({ answer: '你还没有报名活动', items: [], intent: 'MY_REGISTRATIONS' }); await pending
+  assert.equal(assistant.data.busy, false); assert.equal(assistant.data.intent, 'MY_REGISTRATIONS')
+})
+test('a failed assistant query leaves no stale facts and permits a retry', async () => {
+  let fail = true
+  const assistant = page('assistant', async () => { if (fail) throw new Error('offline'); return { answer: '只读查询', items: [], intent: 'OUT_OF_SCOPE' } })
+  assistant.setData({ question: '查相机', answer: '旧库存', items: [{ id: 1 }], intent: 'EQUIPMENT' }); await assistant.ask()
+  assert.equal(assistant.data.busy, false); assert.equal(assistant.data.answer, ''); assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.intent, '')
+  fail = false; await assistant.ask(); assert.equal(assistant.data.answer, '只读查询'); assert.equal(assistant.data.intent, 'OUT_OF_SCOPE')
+})
 
 test('loan defaults follow the selected activity and retain subsequent manual adjustments', async () => {
   const first = { ...row(11), title: '摄影活动' }, second = { ...row(12), startTime: '2027-01-02T16:30:00', endTime: '2027-01-02T18:30:00' }, queries = []
