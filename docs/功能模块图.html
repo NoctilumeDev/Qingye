@@ -5,149 +5,175 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>青野 · 功能模块图</title>
   <style>
-    :root { color-scheme: light; --green: #187553; --ink: #243d36; --line: #91a79c; }
+    :root { color-scheme: light; }
     * { box-sizing: border-box; }
-    body { margin: 0; color: var(--ink); background: #f5f9f7; font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
-    main { width: min(100%, 900px); margin: 0 auto; padding: 28px 24px; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-    h1 { margin: 0; font-size: 24px; }
-    button { padding: 9px 13px; border: 1px solid #bbcdc3; border-radius: 6px; background: #fff; color: var(--green); font: inherit; font-size: 12px; cursor: pointer; }
-    button:hover { background: #edf5f0; }
+    body { margin: 0; color: #263c32; background: #fff; font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+    main { max-width: 1320px; margin: 0 auto; padding: 28px 24px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+    h1 { margin: 0; font-size: 23px; }
+    button { padding: 9px 13px; border: 1px solid #bbc9c1; border-radius: 5px; background: #fff; color: #187553; font: inherit; font-size: 12px; cursor: pointer; }
+    button:hover { background: #f0f6f2; }
     button:focus-visible { outline: 3px solid #267bb4; outline-offset: 3px; }
-    .reading { margin: 14px 0 18px; color: #62796d; font-size: 13px; line-height: 1.8; }
-    figure { margin: 0; padding: 22px 20px 16px; border: 1px solid #dbe7e0; background: #fff; }
-    .diagram { position: relative; }
-    .connections { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-    .connections path { fill: none; stroke: var(--line); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
-    .node { position: relative; z-index: 1; border: 1px solid #bbcdc3; border-radius: 5px; text-align: center; background: #fff; }
-    .root { width: 360px; max-width: calc(100% - 36px); margin: 0 auto 34px; padding: 16px; background: var(--green); border-color: var(--green); color: #fff; }
-    .root strong { display: block; font-size: 25px; letter-spacing: 3px; }
-    .root span { display: block; margin-top: 5px; font-size: 13px; line-height: 1.6; }
-    .role-group { position: relative; padding-left: 32px; margin-top: 34px; }
-    .role-group:first-of-type { margin-top: 0; }
-    .role-title { width: 350px; max-width: calc(100% - 24px); margin: 0 auto 30px; padding: 12px 16px; background: #e9f4ec; }
-    .role-label { color: #71887b; font-size: 10px; letter-spacing: 1px; }
-    h2 { margin: 5px 0 4px; color: #1c694b; font-size: 18px; line-height: 1.5; }
-    .role-title p { margin: 0; color: #587464; font-size: 11px; line-height: 1.7; }
-    .organizer .role-title { background: #eaf3fb; border-color: #b8ccdf; }
-    .organizer h2 { color: #2d678d; }
-    .admin .role-title { background: #fff2e8; border-color: #e2c6b4; }
-    .admin h2 { color: #9c542f; }
-    .module-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 28px 24px; padding-left: 28px; }
-    .module { min-width: 0; break-inside: avoid; }
-    .module-title { width: min(100%, 220px); margin: 0 auto; padding: 9px 10px; font-size: 15px; font-weight: 600; line-height: 1.5; background: #f5faf7; }
-    .operations { position: relative; display: grid; gap: 6px; margin: 20px 0 0; padding: 0 0 0 20px; list-style: none; }
-    .operations::before { content: ""; position: absolute; left: 8px; top: -20px; bottom: 18px; width: 1px; background: var(--line); }
-    .operations::after { content: ""; position: absolute; left: 8px; right: 50%; top: -20px; border-top: 1px solid var(--line); }
-    .operation { position: relative; display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 8px; border: 1px solid #dce7e0; border-radius: 4px; color: #405c4c; background: #fff; font-size: 12px; text-align: center; line-height: 1.6; }
-    .operation::before { content: ""; position: absolute; right: 100%; top: 50%; width: 12px; border-top: 1px solid var(--line); }
-    figcaption { margin-top: 20px; color: #62796d; font-size: 12px; line-height: 1.7; text-align: center; }
-    .note { margin: 12px 0 0; color: #62796d; font-size: 12px; line-height: 1.8; }
+    figure { margin: 0; }
+    .canvas { overflow-x: auto; }
+    svg { display: block; width: 100%; min-width: 940px; height: auto; }
+    .lines { fill: none; stroke: #303d37; stroke-width: 1.8; }
+    .root-box, .role-box, .module-box { fill: #fff; stroke: #303d37; stroke-width: 1.8; }
+    text { fill: #263c32; text-anchor: middle; }
+    .root-name { font-size: 25px; font-weight: 600; }
+    .root-description { font-size: 17px; }
+    .role-name { font-size: 22px; }
+    .module-name { font-size: 21px; }
+    figcaption { margin-top: 4px; color: #52665a; font-size: 12px; text-align: center; }
+    .note { margin: 15px 0 0; color: #52665a; font-size: 12px; line-height: 1.8; text-align: center; }
     @media (max-width: 600px) {
       main { padding: 18px 12px; }
-      h1 { font-size: 20px; }
-      button { padding: 8px 9px; font-size: 11px; }
-      figure { padding: 20px 10px 14px; }
-      .reading { font-size: 12px; }
-      .role-group { padding-left: 20px; margin-top: 30px; }
-      .role-title { padding: 11px 10px; max-width: calc(100% - 12px); }
-      h2 { font-size: 17px; }
-      .module-grid { grid-template-columns: 1fr; padding-left: 20px; gap: 25px; }
-      .module-title { font-size: 14px; }
-      .operation { min-height: 38px; font-size: 12px; }
-      figcaption, .note { font-size: 11px; }
+      h1 { font-size: 19px; }
+      button { padding: 8px; font-size: 11px; }
+      .note { text-align: left; }
     }
-    @page { size: A4 portrait; margin: 9mm; }
+    @page { size: A4 landscape; margin: 12mm; }
     @media print {
-      body { background: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-      main { width: 100%; padding: 0; }
-      h1 { font-size: 17px; }
+      main { max-width: none; padding: 0; }
+      header { margin-bottom: 12px; }
+      h1 { font-size: 18px; }
       button { display: none; }
-      .reading { margin: 7px 0 9px; font-size: 10px; }
-      figure { border: 0; padding: 0; }
-      .root { width: 310px; margin-bottom: 14px; padding: 6px 12px; }
-      .root strong { font-size: 19px; line-height: 1.2; }
-      .root span { margin-top: 2px; font-size: 10px; line-height: 1.3; }
-      .role-group { padding-left: 28px; margin-top: 12px; }
-      .role-title { width: 310px; max-width: none; margin-bottom: 18px; padding: 4px 10px; line-height: 1.3; }
-      .role-label { display: none; }
-      h2 { margin: 2px 0; font-size: 13px; line-height: 1.3; }
-      .role-title p { font-size: 9px; line-height: 1.4; }
-      .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 22px; padding-left: 28px; }
-      .module-title { width: 190px; padding: 4px 8px; font-size: 11px; }
-      .operations { gap: 3px; margin-top: 10px; padding-left: 20px; }
-      .operations::before { top: -10px; bottom: 10px; }
-      .operations::after { top: -10px; }
-      .operation { min-height: 20px; padding: 1px 6px; font-size: 9px; line-height: 1.5; }
-      figcaption { margin-top: 8px; font-size: 9px; }
-      .note { margin-top: 6px; font-size: 8px; line-height: 1.3; }
+      .canvas { overflow: visible; }
+      svg { min-width: 0; }
+      figcaption, .note { font-size: 10px; }
     }
   </style>
 </head>
 <body>
   <main>
     <header><h1 id="diagram-title">青野 · 功能模块图</h1><button type="button" onclick="window.print()">打印 / 保存 PDF</button></header>
-    <p class="reading">从上往下读：青野 → 共用功能 / 两类工作台 → 功能模块 → 具体操作。连线表示包含关系。</p>
     <figure aria-labelledby="diagram-title">
-      <div class="diagram">
-        <svg class="connections" aria-hidden="true"></svg>
-        <div class="root node"><strong>青野</strong><span>校园社团活动与共享资源管理系统<br>一个原生微信小程序</span></div>
-        <section class="role-group common" aria-labelledby="role-common">
-      <div class="role-title node"><span class="role-label">功能分组 01</span><h2 id="role-common">共用功能</h2><p>同学、社团负责人和管理员均可使用</p></div>
-      <div class="module-grid"><section class="module"><h3 class="module-title node">活动参与</h3><ul class="operations"><li class="operation">搜索、分类与活动详情</li><li class="operation">活动报名与满员候补</li><li class="operation">取消报名与候补递补</li></ul></section><section class="module"><h3 class="module-title node">社团参与</h3><ul class="operations"><li class="operation">浏览校园社团</li><li class="operation">申请加入社团</li><li class="operation">退出所在社团</li></ul></section><section class="module"><h3 class="module-title node">个人与消息</h3><ul class="operations"><li class="operation">昵称编辑与本人活动记录</li><li class="operation">消息查看、单条或全部已读</li><li class="operation">勾选消息后软删除</li></ul></section><section class="module"><h3 class="module-title node">校园查询</h3><ul class="operations"><li class="operation">中文查询活动、器材</li><li class="operation">查询本人的报名与借用</li><li class="operation">活动推荐与推荐理由</li></ul></section></div>
-    </section>
-<section class="role-group organizer" aria-labelledby="role-organizer">
-      <div class="role-title node"><span class="role-label">功能分组 02</span><h2 id="role-organizer">社团负责人工作台</h2><p>负责人身份来自社团成员关系，管理范围限于本社团</p></div>
-      <div class="module-grid"><section class="module"><h3 class="module-title node">社团维护</h3><ul class="operations"><li class="operation">修改本社团资料</li><li class="operation">查看成员与入社申请</li><li class="operation">通过或拒绝入社申请</li></ul></section><section class="module"><h3 class="module-title node">活动组织</h3><ul class="operations"><li class="operation">创建、修改待审活动</li><li class="operation">查看本社团活动参与名单</li><li class="operation">取消本社团活动</li></ul></section><section class="module"><h3 class="module-title node">器材申请</h3><ul class="operations"><li class="operation">查询指定时段可预约量</li><li class="operation">为本社团活动申请器材</li><li class="operation">查看借用状态、取消预约</li></ul></section></div>
-    </section>
-<section class="role-group admin" aria-labelledby="role-admin">
-      <div class="role-title node"><span class="role-label">功能分组 03</span><h2 id="role-admin">管理员工作台</h2><p>负责校园公共资源维护与业务审核</p></div>
-      <div class="module-grid"><section class="module"><h3 class="module-title node">社团管理</h3><ul class="operations"><li class="operation">创建与维护社团</li><li class="operation">查看社团成员</li><li class="operation">设置与交接负责人</li></ul></section><section class="module"><h3 class="module-title node">活动审核</h3><ul class="operations"><li class="operation">查看待审核活动</li><li class="operation">批准活动并发布</li><li class="operation">退回活动并说明原因</li></ul></section><section class="module"><h3 class="module-title node">器材借还</h3><ul class="operations"><li class="operation">器材资料、数量维护与停用</li><li class="operation">审批器材预约</li><li class="operation">核验实物并确认领取</li><li class="operation">整单归还与借用记录</li></ul></section><section class="module"><h3 class="module-title node">运行状态</h3><ul class="operations"><li class="operation">查看缓存与消息通道状态</li><li class="operation">查看模型是否配置</li><li class="operation">查看消息任务处理统计</li></ul></section></div>
-    </section>
-      </div>
+      <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 610" role="img" aria-labelledby="tree-title tree-description">
+  <title id="tree-title">青野功能模块图</title>
+  <desc id="tree-description">青野分为学生、社团负责人、管理员、共用四个并列功能分组，每组向下连接所属功能。</desc>
+  <defs><marker id="arrow" viewBox="0 0 6 6" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="#303d37"/></marker></defs>
+  <g class="lines"><path d="M640 110 V166 M175 166 H1105"/></g>
+  <rect class="root-box" x="410" y="26" width="460" height="84"/>
+  <text class="root-name" x="640" y="62">青野</text>
+  <text class="root-description" x="640" y="89">校园社团活动与共享资源管理系统</text>
+<g class="function-group" data-group="学生" aria-label="学生功能">
+      <g class="lines"><path d="M175 166 V216" marker-end="url(#arrow)"/>
+      <path d="M175 274 V313 M94 313 H256"/></g>
+      <rect class="role-box" x="84" y="218" width="182" height="56"/>
+      <text class="role-name" x="175" y="253">学生</text>
+<g class="module" aria-label="活动浏览">
+          <path class="lines" d="M94 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="72" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="94" y="428">活</tspan><tspan x="94" y="454">动</tspan><tspan x="94" y="480">浏</tspan><tspan x="94" y="506">览</tspan></text>
+        </g>
+<g class="module" aria-label="报名候补">
+          <path class="lines" d="M148 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="126" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="148" y="428">报</tspan><tspan x="148" y="454">名</tspan><tspan x="148" y="480">候</tspan><tspan x="148" y="506">补</tspan></text>
+        </g>
+<g class="module" aria-label="社团参与">
+          <path class="lines" d="M202 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="180" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="202" y="428">社</tspan><tspan x="202" y="454">团</tspan><tspan x="202" y="480">参</tspan><tspan x="202" y="506">与</tspan></text>
+        </g>
+<g class="module" aria-label="活动推荐">
+          <path class="lines" d="M256 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="234" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="256" y="428">活</tspan><tspan x="256" y="454">动</tspan><tspan x="256" y="480">推</tspan><tspan x="256" y="506">荐</tspan></text>
+        </g>
+</g>
+<g class="function-group" data-group="社团负责人" aria-label="社团负责人功能">
+      <g class="lines"><path d="M485 166 V216" marker-end="url(#arrow)"/>
+      <path d="M485 274 V313 M404 313 H566"/></g>
+      <rect class="role-box" x="394" y="218" width="182" height="56"/>
+      <text class="role-name" x="485" y="253">社团负责人</text>
+<g class="module" aria-label="社团维护">
+          <path class="lines" d="M404 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="382" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="404" y="428">社</tspan><tspan x="404" y="454">团</tspan><tspan x="404" y="480">维</tspan><tspan x="404" y="506">护</tspan></text>
+        </g>
+<g class="module" aria-label="成员审核">
+          <path class="lines" d="M458 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="436" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="458" y="428">成</tspan><tspan x="458" y="454">员</tspan><tspan x="458" y="480">审</tspan><tspan x="458" y="506">核</tspan></text>
+        </g>
+<g class="module" aria-label="活动组织">
+          <path class="lines" d="M512 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="490" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="512" y="428">活</tspan><tspan x="512" y="454">动</tspan><tspan x="512" y="480">组</tspan><tspan x="512" y="506">织</tspan></text>
+        </g>
+<g class="module" aria-label="器材申请">
+          <path class="lines" d="M566 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="544" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="566" y="428">器</tspan><tspan x="566" y="454">材</tspan><tspan x="566" y="480">申</tspan><tspan x="566" y="506">请</tspan></text>
+        </g>
+</g>
+<g class="function-group" data-group="管理员" aria-label="管理员功能">
+      <g class="lines"><path d="M795 166 V216" marker-end="url(#arrow)"/>
+      <path d="M795 274 V313 M687 313 H903"/></g>
+      <rect class="role-box" x="704" y="218" width="182" height="56"/>
+      <text class="role-name" x="795" y="253">管理员</text>
+<g class="module" aria-label="社团管理">
+          <path class="lines" d="M687 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="665" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="687" y="428">社</tspan><tspan x="687" y="454">团</tspan><tspan x="687" y="480">管</tspan><tspan x="687" y="506">理</tspan></text>
+        </g>
+<g class="module" aria-label="活动审核">
+          <path class="lines" d="M741 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="719" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="741" y="428">活</tspan><tspan x="741" y="454">动</tspan><tspan x="741" y="480">审</tspan><tspan x="741" y="506">核</tspan></text>
+        </g>
+<g class="module" aria-label="器材维护">
+          <path class="lines" d="M795 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="773" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="795" y="428">器</tspan><tspan x="795" y="454">材</tspan><tspan x="795" y="480">维</tspan><tspan x="795" y="506">护</tspan></text>
+        </g>
+<g class="module" aria-label="借还管理">
+          <path class="lines" d="M849 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="827" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="849" y="428">借</tspan><tspan x="849" y="454">还</tspan><tspan x="849" y="480">管</tspan><tspan x="849" y="506">理</tspan></text>
+        </g>
+<g class="module" aria-label="运行状态">
+          <path class="lines" d="M903 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="881" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="903" y="428">运</tspan><tspan x="903" y="454">行</tspan><tspan x="903" y="480">状</tspan><tspan x="903" y="506">态</tspan></text>
+        </g>
+</g>
+<g class="function-group" data-group="共用" aria-label="共用功能">
+      <g class="lines"><path d="M1105 166 V216" marker-end="url(#arrow)"/>
+      <path d="M1105 274 V313 M997 313 H1213"/></g>
+      <rect class="role-box" x="1014" y="218" width="182" height="56"/>
+      <text class="role-name" x="1105" y="253">共用</text>
+<g class="module" aria-label="登录与会话">
+          <path class="lines" d="M997 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="975" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="997" y="415">登</tspan><tspan x="997" y="441">录</tspan><tspan x="997" y="467">与</tspan><tspan x="997" y="493">会</tspan><tspan x="997" y="519">话</tspan></text>
+        </g>
+<g class="module" aria-label="个人资料">
+          <path class="lines" d="M1051 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="1029" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="1051" y="428">个</tspan><tspan x="1051" y="454">人</tspan><tspan x="1051" y="480">资</tspan><tspan x="1051" y="506">料</tspan></text>
+        </g>
+<g class="module" aria-label="个人记录">
+          <path class="lines" d="M1105 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="1083" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="1105" y="428">个</tspan><tspan x="1105" y="454">人</tspan><tspan x="1105" y="480">记</tspan><tspan x="1105" y="506">录</tspan></text>
+        </g>
+<g class="module" aria-label="消息管理">
+          <path class="lines" d="M1159 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="1137" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="1159" y="428">消</tspan><tspan x="1159" y="454">息</tspan><tspan x="1159" y="480">管</tspan><tspan x="1159" y="506">理</tspan></text>
+        </g>
+<g class="module" aria-label="校园助手">
+          <path class="lines" d="M1213 313 V348" marker-end="url(#arrow)"/>
+          <rect class="module-box" x="1191" y="350" width="44" height="220"/>
+          <text class="module-name"><tspan x="1213" y="428">校</tspan><tspan x="1213" y="454">园</tspan><tspan x="1213" y="480">助</tspan><tspan x="1213" y="506">手</tspan></text>
+        </g>
+</g>
+</svg></div>
       <figcaption>图 1　青野系统功能模块图</figcaption>
     </figure>
-    <p class="note">两类工作台在同一个小程序内按权限显示。负责人和管理员同时拥有共用功能。数据库、算法及 Redis / MQ / 大模型的设计说明见同目录《项目简介》。</p>
+    <p class="note">学生、社团负责人、管理员均可使用“共用”功能。负责人身份属于具体社团，管理范围限于本社团。<br>连线表示功能归属；各项操作与技术设计见同目录《项目简介》。</p>
   </main>
-  <script>
-    // 连线随真实节点位置计算；父子归属不受窄屏、换行或打印影响。
-    const diagram = document.querySelector('.diagram');
-    const svg = diagram.querySelector('.connections');
-    function drawConnections() {
-      const base = diagram.getBoundingClientRect();
-      const box = element => {
-        const r = element.getBoundingClientRect();
-        return { left: r.left - base.left, right: r.right - base.left, top: r.top - base.top, bottom: r.bottom - base.top, x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
-      };
-      const root = box(diagram.querySelector('.root'));
-      const roles = [...diagram.querySelectorAll('.role-group')];
-      const narrow = innerWidth <= 600 && !matchMedia('print').matches;
-      const mainX = narrow ? 3 : 8;
-      const last = box(roles.at(-1).querySelector('.role-title'));
-      const paths = [`M ${root.x} ${root.bottom} V ${root.bottom + 12} H ${mainX} V ${last.y}`];
-      roles.forEach(role => {
-        const title = box(role.querySelector('.role-title'));
-        const forkX = box(role).left + (narrow ? 21 : 35);
-        const modules = [...role.querySelectorAll('.module-title')].map(box);
-        const lastY = modules.at(-1).top - 12;
-        paths.push(`M ${mainX} ${title.y} H ${title.left}`);
-        const firstY = Math.min(title.bottom + 10, modules[0].top - 12);
-        paths.push(`M ${title.x} ${title.bottom} V ${firstY} H ${forkX} V ${lastY}`);
-        modules.forEach(module => paths.push(`M ${forkX} ${module.top - 12} H ${module.x} V ${module.top}`));
-      });
-      svg.setAttribute('viewBox', `0 0 ${base.width} ${base.height}`);
-      svg.replaceChildren(...paths.map(d => {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', d);
-        return path;
-      }));
-    }
-    drawConnections();
-    new ResizeObserver(drawConnections).observe(diagram);
-    document.fonts.ready.then(drawConnections);
-    window.addEventListener('beforeprint', drawConnections);
-    window.addEventListener('afterprint', drawConnections);
-    matchMedia('print').addEventListener('change', drawConnections);
-  </script>
 </body>
 </html>
