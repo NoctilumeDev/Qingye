@@ -3,37 +3,38 @@
   bottom:0;
   left:0;
   right:0;
-  padding:16rpx 48rpx calc(22rpx + env(safe-area-inset-bottom));
-  background:linear-gradient(transparent,#f5f8ef 35%);
-  z-index:50
+  padding:12rpx 32rpx calc(15rpx + env(safe-area-inset-bottom));
+  z-index:50;
 }
 
 .tabs {
   background:#fff;
-  border:1rpx solid #e2e9d8;
-  box-shadow:0 12rpx 45rpx #233d2612;
-  border-radius:50rpx;
-  padding:12rpx;
+  border:1rpx solid #e4ecee;
+  box-shadow:0 8rpx 30rpx #243b370d;
+  border-radius:32rpx;
+  padding:8rpx;
   display:flex;
-  justify-content:space-around
+  justify-content:space-around;
 }
 
 .tab {
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:14rpx;
-  color:#84917d;
-  font-size:25rpx;
-  padding:19rpx 32rpx;
-  border-radius:40rpx
+  gap:5rpx;
+  color:#65767d;
+  font-size:20rpx;
+  padding:9rpx 35rpx;
+  flex:1;
 }
 
 .active {
-  background:#23734f;
-  color:#fff
+  color:#187553;
+  font-weight:650;
 }
 
 .icon {
-  font-size:31rpx
+  width:38rpx;
+  height:38rpx;
 }

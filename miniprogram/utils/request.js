@@ -1,4 +1,5 @@
 const { baseUrl } = require('./config')
+const modalColors = { confirmColor: '#187553', cancelColor: '#65767d' }
 function request(path, method = 'GET', data) {
   const token = wx.getStorageSync('qingye-token') || ''
   return new Promise((resolve, reject) => {
@@ -21,6 +22,6 @@ function guard() {
   return true
 }
 function confirm(content, editable = false) {
-  return new Promise(resolve => wx.showModal({ title: '青野', content, editable, placeholderText: '可以填写审核意见', success: res => resolve(res.confirm ? (res.content || true) : false), fail: () => resolve(false) }))
+  return new Promise(resolve => wx.showModal({ ...modalColors, title: '青野', content, editable, placeholderText: '可以填写审核意见', success: res => resolve(res.confirm ? (res.content || true) : false), fail: () => resolve(false) }))
 }
-module.exports = { request, guard, confirm }
+module.exports = { request, guard, confirm, modalColors }

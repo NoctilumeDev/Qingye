@@ -5,11 +5,11 @@ const vm = require('node:vm')
 const fs = require('node:fs')
 const path = require('node:path')
 const client = path.resolve(__dirname, '../miniprogram')
-function page(name, request, wx = {}) {
+function page(name, request, wx = {}, confirmation = async () => true) {
   let instance
   vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
     Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.setData = values => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value } } },
-    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: async () => true } : require(path.join(client, 'utils/view.js')) },
+    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: confirmation } : require(path.join(client, 'utils/view.js')) },
     wx: { stopPullDownRefresh() {}, ...wx }, setTimeout, clearTimeout, Date
   })
   return instance
@@ -93,4 +93,45 @@ test('registration cannot submit twice while awaiting the backend', async () => 
   const a = activity.register(); await activity.register()
   assert.equal(calls, 1); pending.resolve({}); await a
   assert.equal(activity.data.busy, false)
+})
+
+test('bulk read submits once and reloads the authoritative read state', async () => {
+  const pending = deferred(), calls = []
+  const notices = page('notifications', (url, verb) => {
+    calls.push([url, verb]); return verb === 'POST' ? pending.promise : Promise.resolve([{ id: 1, readAt: '2026-10-01T12:00:00', createdAt: '2026-10-01T11:00:00' }])
+  }, { showToast() {} })
+  notices.data.items = [{ id: 1 }]; notices.data.unread = 1
+  const first = notices.readAll(); await notices.readAll(); await notices.clearSelected()
+  assert.equal(calls.length, 1); assert.equal(notices.data.unread, 1)
+  pending.resolve({}); await first
+  assert.equal(notices.data.unread, 0); assert.equal(notices.data.busy, false)
+  assert.equal(calls.length, 2)
+})
+
+test('cancelled or failed clearing keeps the current messages visible', async () => {
+  let calls = 0
+  const cancelled = page('notifications', async () => { calls++; return [] }, {}, async () => false)
+  cancelled.data.items = [{ id: 1 }]; cancelled.data.selectedIds = [1]; cancelled.data.selecting = true; await cancelled.clearSelected()
+  assert.equal(calls, 0); assert.equal(cancelled.data.items.length, 1); assert.equal(cancelled.data.busy, false)
+  const failed = page('notifications', async () => { throw new Error('network failure') })
+  failed.data.items = [{ id: 1 }]; failed.data.selectedIds = [1]; await failed.clearSelected()
+  assert.equal(failed.data.items.length, 1); assert.equal(failed.data.busy, false)
+})
+
+test('selecting messages sends only chosen IDs and never marks them read', async () => {
+  const calls = []
+  const notices = page('notifications', async (url, verb, body) => {
+    calls.push({ url, verb, body }); return verb === 'POST' ? {} : [{ id: 1, createdAt: '2026-10-01T11:00:00' }]
+  }, { showToast() {} })
+  notices.data.items = [{ id: 1 }, { id: 2 }]
+  notices.beginClear(); notices.tapNotice({ currentTarget: { dataset: { id: 2 } } })
+  assert.equal(calls.length, 0)
+  assert.deepEqual(Array.from(notices.data.selectedIds), [2])
+  notices.toggleAll(); assert.equal(notices.data.selectedIds.length, 2)
+  notices.toggleAll(); assert.equal(notices.data.selectedIds.length, 0)
+  notices.tapNotice({ currentTarget: { dataset: { id: 2 } } }); await notices.clearSelected()
+  assert.equal(calls[0].url, '/notifications/clear'); assert.equal(calls[0].verb, 'POST')
+  assert.deepEqual(Array.from(calls[0].body.ids), [2])
+  assert.equal(notices.data.items.length, 1); assert.equal(notices.data.items[0].id, 1)
+  assert.equal(notices.data.selecting, false); assert.equal(notices.data.unread, 1)
 })

@@ -1,14 +1,6 @@
 <view wx:if="{{item}}" class="page">
-    <view class="poster {{item.tone}}">
-      <image wx:if="{{item.poster}}" src="{{item.poster}}" mode="aspectFill" />
-      <block wx:else="">
-        <text class="poster-symbol">{{item.symbol}}</text>
-        <view class="poster-word">
-          <view>SEE YOU</view>
-          <view>ON CAMPUS!</view>
-        </view>
-        <view class="poster-orbit" />
-      </block>
+    <view class="poster">
+      <image src="{{item.cover}}" mode="aspectFill" binderror="imageError" />
       <text class="poster-tag">{{item.categoryName}} / {{item.phase}}</text>
     </view>
     <view class="section">
@@ -17,8 +9,8 @@
     </view>
     <view class="title activity-title">{{item.title}}</view>
     <view class="info card">
-      <view>◷ {{item.displayTime}} — {{displayEnd}}</view>
-      <view>⌁ {{item.location}}</view>
+      <view class="info-line"><image src="/assets/icons/time-line-ink.png" /><text>{{item.displayTime}} — {{displayEnd}}</text></view>
+      <view class="info-line"><image src="/assets/icons/map-pin-line-ink.png" /><text>{{item.location}}</text></view>
       <view class="muted">报名截止：{{displayDeadline}}</view>
     </view>
     <view class="section">

@@ -378,6 +378,67 @@ class BusinessIntegrationTest {
         assertThat(messages.list(manager.id())).noneMatch(n->text(n,"title").equals("器材归还提醒"));
         assertThat(sql.count("SELECT COUNT(*) FROM message_task WHERE source_kind IN ('ACTIVITY','LOAN') AND status='CANCELLED'")).isEqualTo(2);
     }
+    @Test void bulkReadCoversMoreThanDisplayedMessagesAndPreservesFirstReadTime() throws Exception {
+        for(int i=0;i<105;i++) sql.insert("INSERT INTO notification(user_id,title,body,delivered) VALUES (?,'通知','内容',TRUE)",student.id());
+        long foreign=sql.insert("INSERT INTO notification(user_id,title,body,delivered) VALUES (?,'其他账号','内容',TRUE)",other.id());
+        long pending=sql.insert("INSERT INTO notification(user_id,title,body) VALUES (?,'待送达','内容')",student.id());
+        long hidden=sql.insert("INSERT INTO notification(user_id,title,body,delivered,deleted_at) VALUES (?,'已清理','内容',TRUE,?)",student.id(),NOW);
+        assertThat(http(student,"GET","/notifications",null,200).size()).isEqualTo(100);
+        http(null,"POST","/notifications/read-all",null,401);
+        http(student,"POST","/notifications/read-all",null,200);
+        assertThat(sql.count("SELECT COUNT(*) FROM notification WHERE user_id=? AND read_at IS NOT NULL",student.id())).isEqualTo(105);
+        for(long id:List.of(foreign,pending,hidden)) assertThat(sql.one("SELECT read_at FROM notification WHERE id=?",id).get("readAt")).isNull();
+        clock.set(NOW.plusMinutes(1));
+        http(student,"POST","/notifications/read-all",null,200);
+        assertThat(sql.count("SELECT COUNT(*) FROM notification WHERE user_id=? AND read_at=?",student.id(),NOW)).isEqualTo(105);
+    }
+    @Test void clearingMessagesIsOwnedIdempotentAndDoesNotDeleteBusinessOrTaskRecords() throws Exception {
+        activities.register(student,activityA);
+        for(var task:messages.pending(NOW)) tasks.complete(id(task,"id"));
+        long notice=id(messages.list(student.id()).get(0),"id");
+        long unselected=sql.insert("INSERT INTO notification(user_id,title,body,delivered) VALUES (?,'保留这条','内容',TRUE)",student.id());
+        long foreign=sql.insert("INSERT INTO notification(user_id,title,body,delivered) VALUES (?,'其他账号','内容',TRUE)",other.id());
+        long pending=sql.insert("INSERT INTO notification(user_id,title,body) VALUES (?,'稍后提醒','内容')",student.id());
+        long records=sql.count("SELECT COUNT(*) FROM notification"),taskCount=sql.count("SELECT COUNT(*) FROM message_task");
+        var selected=new Forms.Messages(List.of(notice,notice,foreign,pending));
+        http(null,"POST","/notifications/clear",selected,401);
+        http(student,"POST","/notifications/clear",new Forms.Messages(List.of()),400);
+        http(student,"POST","/notifications/clear",new Forms.Messages(List.of(0L)),400);
+        http(student,"POST","/notifications/clear",new Forms.Messages(Collections.nCopies(101,notice)),400);
+        http(student,"POST","/notifications/clear",selected,200);
+        assertThat(http(student,"GET","/notifications",null,200).get(0).path("id").asLong()).isEqualTo(unselected);
+        assertThat(sql.count("SELECT COUNT(*) FROM notification")).isEqualTo(records);
+        assertThat(sql.count("SELECT COUNT(*) FROM message_task")).isEqualTo(taskCount);
+        assertThat(sql.count("SELECT COUNT(*) FROM registration WHERE activity_id=? AND user_id=? AND status='REGISTERED'",activityA,student.id())).isEqualTo(1);
+        assertThat(sql.one("SELECT deleted_at FROM notification WHERE id=?",notice).get("deletedAt")).isEqualTo(NOW.toString());
+        for(long id:List.of(foreign,pending,unselected)) assertThat(sql.one("SELECT deleted_at FROM notification WHERE id=?",id).get("deletedAt")).isNull();
+        clock.set(NOW.plusMinutes(1));
+        http(student,"POST","/notifications/clear",selected,200);
+        http(student,"POST","/notifications/"+notice+"/read",null,200);
+        assertThat(sql.one("SELECT deleted_at,read_at FROM notification WHERE id=?",notice).get("deletedAt")).isEqualTo(NOW.toString());
+        assertThat(sql.one("SELECT read_at FROM notification WHERE id=?",notice).get("readAt")).isNull();
+        // A delayed/repeated delivery cannot resurrect a cleared notice; future notices still arrive.
+        sql.update("UPDATE notification SET delivered=TRUE WHERE id IN (?,?)",notice,pending);
+        assertThat(http(student,"GET","/notifications",null,200).get(0).path("id").asLong()).isEqualTo(pending);
+        assertThat(messages.list(student.id())).hasSize(2);
+        assertThat(messages.list(other.id())).hasSize(1);
+    }
+    @Test void demoNameRefreshKeepsCustomNicknamesAndOnlyTouchesBuiltInAccounts() {
+        sql.update("UPDATE app_user SET name='林老师 · 管理员' WHERE id=?",admin.id());
+        sql.update("UPDATE app_user SET openid='demo:student',name='周野 · 同学' WHERE id=?",student.id());
+        sql.update("UPDATE app_user SET openid='demo:photo',name='自己取的昵称' WHERE id=?",manager.id());
+        sql.update("UPDATE app_user SET openid='demo:sport',name='王五' WHERE id=?",secondManager.id());
+        sql.update("UPDATE app_user SET openid='wx:external',name='苏禾 · 同学' WHERE id=?",other.id());
+        new DemoData(sql,clock,true).run(null);
+        assertThat(users.profile(student.id()).get("name")).isEqualTo("李四 · 同学");
+        assertThat(users.profile(manager.id()).get("name")).isEqualTo("自己取的昵称");
+        assertThat(users.profile(admin.id()).get("name")).isEqualTo("林老师 · 管理员");
+        assertThat(users.profile(secondManager.id()).get("name")).isEqualTo("王五 · 篮球社负责人");
+        assertThat(access.manages(users.actor(secondManager.id()),clubB)).isTrue();
+        assertThat(users.profile(other.id()).get("name")).isEqualTo("苏禾 · 同学");
+        new DemoData(sql,clock,true).run(null);
+        assertThat(users.profile(student.id()).get("name")).isEqualTo("李四 · 同学");
+    }
     @Test void assistantIntentsUseFactsAndFormerManagerRetainsOwnLoanHistory() throws Exception {
         long loan=apply(manager,activityA,1,14,15);
         activities.register(student,activityA);

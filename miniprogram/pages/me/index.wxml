@@ -1,30 +1,23 @@
 <view class="page">
-    <view class="profile">
-      <view class="avatar">{{initial}}</view>
-      <view>
-        <view class="profile-name" bindtap="rename">{{user.name}} ✎</view>
-        <text class="muted">把校园生活，过成喜欢的样子。</text>
-      </view>
-    </view>
-    <view class="menu card">
-      <view class="menu-row" bindtap="notifications">
-        <text>✉ 我的消息</text>
-        <text class="badge">{{unread ? unread + ' 条未读' : '去看看'}} ↗</text>
-      </view>
-      <view wx:if="{{user.workbench}}" class="menu-row" bindtap="workbench">
-        <text>▦ 校园工作台</text>
-        <text class="link">{{user.admin ? '管理员' : '社团负责人'}} ↗</text>
-      </view>
-      <view class="menu-row" bindtap="logout">
-        <text>切换体验身份 / 退出登录</text>
-        <text class="link">↗</text>
-      </view>
-    </view>
-    <view class="section">
-      <text class="section-title">我的活动</text>
-      <text class="muted">每一次参与，都算数</text>
-    </view>
-    <activity-card wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
-    <view wx:if="{{!items.length}}" class="empty">你的校园故事还没开始。<view>去发现页，挑一个喜欢的活动吧。</view>
+  <view class="profile">
+    <view class="avatar"><image wx:if="{{user.avatar && !avatarFailed}}" src="{{user.avatar}}" mode="aspectFill" binderror="avatarError" /><text wx:else="">{{initial}}</text></view>
+    <view class="profile-content">
+      <view class="profile-name" bindtap="rename"><text>{{user.name}}</text><image src="/assets/icons/edit-line-muted.png" /></view>
+      <text class="muted">把校园生活，过成喜欢的样子。</text>
     </view>
   </view>
+  <view class="profile-stats">
+    <view class="profile-stat" bindtap="myActivities" hover-class="stat-pressed" aria-role="button" aria-label="查看参与的活动"><text>{{items.length}}</text><view class="stat-label">参与的活动<image src="/assets/icons/arrow-right-s-line-muted.png" /></view></view>
+    <view class="profile-stat" bindtap="notifications" hover-class="stat-pressed" aria-role="button" aria-label="查看未读消息"><text>{{unread}}</text><view class="stat-label">未读消息<image src="/assets/icons/arrow-right-s-line-muted.png" /></view></view>
+    <view class="profile-stat" bindtap="identity" hover-class="stat-pressed" aria-role="button" aria-label="{{user.workbench ? '进入校园工作台' : '查看社团与身份'}}"><text>{{user.admin ? '管理员' : user.workbench ? '负责人' : '同学'}}</text><view class="stat-label">校园身份<image src="/assets/icons/arrow-right-s-line-muted.png" /></view></view>
+  </view>
+  <view class="menu card">
+    <view class="menu-row" bindtap="notifications"><view class="menu-label"><image src="/assets/icons/notification-3-line-ink.png" /><text>我的消息</text></view><view class="menu-end"><text wx:if="{{unread}}" class="notice-count">{{unread}}</text><image src="/assets/icons/arrow-right-s-line-muted.png" /></view></view>
+    <view wx:if="{{user.workbench}}" class="menu-row" bindtap="workbench"><view class="menu-label"><image src="/assets/icons/dashboard-line-ink.png" /><text>校园工作台</text></view><view class="menu-end"><text class="link">{{user.admin ? '管理员' : '社团负责人'}}</text><image src="/assets/icons/arrow-right-s-line-muted.png" /></view></view>
+    <view class="menu-row" bindtap="logout"><view class="menu-label"><image src="/assets/icons/logout-box-r-line-ink.png" /><text>切换身份 / 退出登录</text></view><image class="chevron" src="/assets/icons/arrow-right-s-line-muted.png" /></view>
+  </view>
+  <view class="campus-footer"><image src="/assets/campus/campus-friends-v1.jpg" mode="aspectFill" /></view>
+  <view id="my-activities" class="section"><text class="section-title">我的活动</text><text class="muted">每一次参与，都算数</text></view>
+  <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
+  <view wx:if="{{!items.length}}" class="empty">你的校园故事还没开始。<view>去发现页，挑一个喜欢的活动吧。</view><button class="secondary small gap" bindtap="discover">去发现活动</button></view>
+</view>

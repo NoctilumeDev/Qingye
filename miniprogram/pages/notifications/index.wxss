@@ -2,6 +2,41 @@
   font-size:47rpx
 }
 
+.notice-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16rpx;
+  margin:32rpx 0 18rpx;
+  flex-wrap:wrap
+}
+
+.notice-actions {
+  display:flex;
+  gap:14rpx
+}
+
+.notice-actions button[disabled] {
+  opacity:.45
+}
+
+.selection-toolbar button[disabled] {
+  opacity:.45
+}
+
+.selected-notice {
+  border-color:#187553
+}
+
+.notice-checkbox {
+  margin-right:12rpx;
+  vertical-align:middle
+}
+
+.notice-pressed {
+  opacity:.85
+}
+
 .notice-title {
   font-size:28rpx;
   font-weight:700;
@@ -9,13 +44,13 @@
 }
 
 .dot {
-  color:#5b9847;
+  color:#187553;
   font-size:19rpx
 }
 
 .notice-body {
   font-size:26rpx;
-  color:#66785f;
+  color:#60736f;
   line-height:1.9;
   margin:22rpx 0
 }

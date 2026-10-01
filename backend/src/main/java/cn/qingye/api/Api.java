@@ -172,6 +172,14 @@ public class Api {
         messages.read(id,actor.id(),LocalDateTime.now(clock));
         return ok();
     }
+    @PostMapping("/notifications/read-all") Object readAll(@RequestAttribute Actor actor) {
+        messages.readAll(actor.id(),LocalDateTime.now(clock));
+        return data(Map.of("ok",true));
+    }
+    @PostMapping("/notifications/clear") Object clearNotifications(@RequestAttribute Actor actor,@Valid @RequestBody Forms.Messages input) {
+        messages.clear(actor.id(),input.ids(),LocalDateTime.now(clock));
+        return data(Map.of("ok",true));
+    }
     @GetMapping("/recommendations") Object recommended(@RequestAttribute Actor actor) {
         return data(recommendation.forUser(actor));
     }

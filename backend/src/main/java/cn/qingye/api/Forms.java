@@ -1,6 +1,7 @@
 package cn.qingye.api;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
+import java.util.List;
 public final class Forms {
     private Forms() {
     }
@@ -23,5 +24,7 @@ public final class Forms {
     public record DemoLogin(@Positive long userId) {
     }
     public record Question(@NotBlank @Size(max=300) String question) {
+    }
+    public record Messages(@NotEmpty @Size(max=100) List<@NotNull @Positive Long> ids) {
     }
 }

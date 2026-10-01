@@ -1,91 +1,85 @@
+.page {
+  padding-top:14rpx;
+}
+
 .poster {
-  height:390rpx;
-  border-radius:34rpx;
-  background:#d4eaa1;
+  height:480rpx;
+  border-radius:26rpx;
+  background:#e1eff6;
   position:relative;
-  overflow:hidden
+  overflow:hidden;
 }
 
-.poster.blue {
-  background:#d0e8f9
-}
-
-.poster.orange {
-  background:#f7dbb0
-}
-
-.poster.red {
-  background:#f8d4c5
-}
-
-.poster image {
+.poster > image {
   width:100%;
-  height:100%
-}
-
-.poster-symbol {
-  position:absolute;
-  font-size:170rpx;
-  right:50rpx;
-  top:62rpx;
-  transform:rotate(-12deg)
-}
-
-.poster-word {
-  position:absolute;
-  left:30rpx;
-  bottom:44rpx;
-  font-size:45rpx;
-  font-weight:850;
-  line-height:1.15
+  height:100%;
+  display:block;
 }
 
 .poster-tag {
   position:absolute;
-  left:28rpx;
-  top:26rpx;
-  font-size:22rpx;
-  padding:10rpx 18rpx;
-  background:#fff9;
-  border-radius:14rpx
-}
-
-.poster-orbit {
-  position:absolute;
-  width:500rpx;
-  height:500rpx;
-  border:3rpx solid #fff8;
-  border-radius:50%;
-  right:-160rpx;
-  top:-50rpx
+  left:22rpx;
+  top:22rpx;
+  font-size:21rpx;
+  padding:8rpx 16rpx;
+  background:#fff;
+  color:#187553;
+  border-radius:12rpx;
 }
 
 .activity-title {
-  font-size:43rpx;
-  line-height:1.45
+  font-size:40rpx;
+  line-height:1.4;
+}
+
+.section {
+  margin:30rpx 0 18rpx;
 }
 
 .info {
-  margin-top:28rpx;
-  line-height:2.3;
-  font-size:26rpx
+  margin-top:24rpx;
+  padding:24rpx;
+  font-size:25rpx;
+}
+
+.info-line {
+  display:flex;
+  align-items:flex-start;
+  gap:13rpx;
+  line-height:1.7;
+  margin-bottom:16rpx;
+}
+
+.info-line > image {
+  width:31rpx;
+  height:31rpx;
+  flex-shrink:0;
+  margin-top:5rpx;
+}
+
+.info-line > text {
+  flex:1;
+}
+
+.info .muted {
+  font-size:22rpx;
 }
 
 .description {
   display:block;
-  line-height:2;
+  line-height:1.95;
   white-space:pre-wrap;
-  color:#60765f;
-  font-size:28rpx
+  color:#60736f;
+  font-size:27rpx;
 }
 
 .signup {
-  margin-top:42rpx
+  margin-top:32rpx;
 }
 
 .participant {
   display:flex;
   justify-content:space-between;
   padding:24rpx 0;
-  border-bottom:1rpx solid #edf0e7
+  border-bottom:1rpx solid #edf0f0;
 }

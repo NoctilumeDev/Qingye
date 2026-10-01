@@ -1,6 +1,6 @@
 {
   "pages": ["pages/login/index", "pages/home/index", "pages/clubs/index", "pages/me/index", "pages/activity/index", "pages/equipment/index", "pages/editor/index", "pages/workbench/index", "pages/notifications/index", "pages/assistant/index"],
-  "window": { "navigationBarTitleText": "青野", "navigationBarBackgroundColor": "#f5f8ef", "navigationBarTextStyle": "black", "backgroundColor": "#f5f8ef" },
+  "window": { "navigationBarTitleText": "青野", "navigationBarBackgroundColor": "#f7fafb", "navigationBarTextStyle": "black", "backgroundColor": "#f7fafb" },
   "tabBar": { "custom": true, "list": [{ "pagePath": "pages/home/index", "text": "发现" }, { "pagePath": "pages/clubs/index", "text": "社团" }, { "pagePath": "pages/me/index", "text": "我的" }] },
   "sitemapLocation": "sitemap.json",
   "style": "v2",

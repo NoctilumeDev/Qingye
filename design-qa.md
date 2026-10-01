@@ -1,0 +1,48 @@
+# 青野校园主视觉复核
+
+日期：2026-10-01。范围是用户选定概念图的校园照片氛围与信息卡片，落地到现有原生小程序，不增加概念图中的新业务模块。
+
+## 对照证据
+
+- 原始视觉目标：`docs/design/reference.png`，1024 × 1536。来自用户提供的 GPT 概念图。
+- 实际渲染：原生微信开发者工具。第一轮窗口 430 × 834 CSS px，屏幕 430 × 932，pixelRatio = 3，截图 434 × 940 px；中途模拟器型号和缩放发生变化。最终窗口 366 × 742 CSS px，屏幕 366 × 809，pixelRatio = 3.5，工具截图 512 × 1131 px。截图是工具的显示缩放结果，不等同于按 pixelRatio 直接乘算。
+- 状态：演示同学，浅色主题、现有 MySQL 数据，首页推荐为摄影与篮球活动。
+- 第一轮全屏对照：`docs/design/iteration-1-home-comparison.png`；细节：`hero-comparison.png`、`equipment-comparison.png`、`me-comparison.png`。
+- 最终原始截图：`home.png`、`home-feed.png`、`activity-list.png`、`equipment.png`、`activity.png`、`me.png`、`clubs.png`、`assistant.png`、`rename-modal.png`。最终全屏对照为 `final-home-comparison.png`、`final-list-comparison.png`、`final-equipment-comparison.png`、`final-activity-comparison.png`、`final-me-comparison.png`，均已把源图和原生截图放进同一个比较输入并打开检查。
+- 重点区域对照：`final-cards-comparison.png`、`final-controls-comparison.png`、`final-clubs-comparison.png`、`final-assistant-comparison.png`、`final-dialog-comparison.png`。后面三张以用户指出的旧样式截图为修正前证据；入社状态不同，只比较样式和颜色，不用状态差异判断视觉漂移。
+- 比较图裁出概念板中的对应手机，原生截图先等比归一到 434px 宽，裁去平台状态栏；源图和实际内容再统一到 400px 宽，保持各自纵横比。概念板手机比实际设备更修长，不拉伸实际截图来隐藏差异。保留原生导航标题和三个底部入口。装饰画板、假设备状态栏和画板外书法标识不属于运行界面。
+- 业务差异明确保留：三个底部入口，器材由负责人申请；没有新增收藏、打卡、同好社交或器材搜索；数据、人物姓名、活动日期和器材类别使用现有业务记录。未提供头像时展示姓名首字，不虚构身份照片。
+
+## 第一轮发现
+
+- [P2，已解决] 底部导航的半透明白色让背后的卡片文字透出，降低导航文字清晰度。证据：`iteration-1-home-feed.png`、`iteration-1-home-comparison.png`。修正：`.tabs` 背景改为实白色，保留轻阴影和圆角。最终 `home-feed.png`、`final-me-comparison.png` 中导航标签清楚，未再透出背景文字。
+- [P2，已解决] 演示器材“开发板套件”仍使用通用箱子图标，与已使用产品照片的三种器材不一致。证据：第一轮 `equipment-comparison.png`。修正：生成同系列开发板产品图并绑定默认素材。`equipment-board.png`、`final-equipment-comparison.png` 中开发板完整显示，默认四类产品图片一致。
+
+## 用户补充的样式和交互修正
+
+- [P2，已解决] 社团整张浅蓝 / 浅绿卡和助手浅绿大横幅属于旧主题。移除整块彩色底，社团使用白色图文卡和绿色入社按钮，助手使用白色说明卡。次要按钮统一白底描边。最终证据：`final-clubs-comparison.png`、`final-assistant-comparison.png`，文字和主要操作未被装饰抢占。
+- [P2，已解决] 原生昵称弹窗仍使用默认蓝色确认文字。公用确认参数和昵称弹窗都传入 `confirmColor: #187553`、`cancelColor: #65767d`。重新编译后用林老师打开真实、无 mock 的系统弹窗，`final-dialog-comparison.png` 清楚显示绿色“确定”，没有改变输入内容或保存资料。
+- 个人页活动、未读消息、校园身份统计均有点击入口与箭头提示；活动为空时提供返回发现页按钮。学生身份进入社团，管理员进入工作台。
+- 消息支持独立全部已读和“选择 → 勾选 / 全选 → 按条数确认 → 软删除”。`notifications-selected.png`、`notifications-partial.png`、`notifications-read.png`、`notifications-cleared.png`、`me-read.png` 核对了选中、未选保留、已读、空状态和红色数量标记消失；选择消息不会顺便标记已读。
+- 姓名最终为张三、李四、王五、赵六，并保留原身份说明，林老师不变。最终 `me.png` / `login.png` 已按新姓名重新截图；身份由当前社团关系和管理员字段决定。
+
+## 五项视觉复核
+
+- 字体：普通信息使用系统无衬线字体、中文优先苹方，Windows 回退微软雅黑；标题与卡片文字按层级组织，语义标签 20–21rpx，主体信息约 23–29rpx，页面主标题最高 50rpx。最终窄屏标题、昵称身份、工具栏和时间均未横向溢出；较长活动标题使用两行。手写标语包含在生成图片里。没有引入大体积中文字库。
+- 间距：首页照片、四个快捷入口、两列推荐卡与横向活动列表分开组织；保留圆角，不做方框、硬阴影或纸片拼贴。器材卡增加申请身份与数量说明，因此比概念图更高；详情的时间和地点保持独立可读行。
+- 配色：照片承担鲜艳天空蓝、草绿和篮球橙；界面使用 `#f7fafb`、白色及 `#187553` 深绿操作色。暖色只用于快捷入口和未读标记。普通副文字统一 `#65767d`，对白色对比约 4.73:1；按钮的绿色与白色文字清楚，禁用态降低透明度并同时禁用操作。
+- 图片：已逐张检查校园照片、手写文字及产品构图；缩小使用 JPEG，器材用 aspectFit 完整显示。已有自定义海报与器材图片优先，失败时回到默认素材。图标来自固定版本 Remix Icon，不使用 emoji 或代码绘画代替主视觉。
+- 文案：现有校园业务说明、截止时间、候补状态和权限提示保留；活动卡按钮用“去看看”，避免将详情导航伪装为直接报名。
+
+## 最终验证
+
+1. 两项第一轮 P2 及用户追加的旧主题、弹窗颜色问题，均有修正后的原生截图和合并对照，当前没有未处理 P0 / P1 / P2。
+2. 已检查学生主要入口、搜索 / 筛选、助手、报名 / 取消、统计入口、管理员工作台三个页签、四种表单、身份切换及本轮消息完整交互。页面操作保留真实后端、权限和数据库事实。
+3. 最新十页原生编译、11 项前端回归、30 项后端测试通过；正常 Redis / RabbitMQ HTTP 联调通过。最终模拟器 `grep -i error` 返回空匹配内容。详细范围与执行边界见 `VERIFICATION.md`。
+
+## 后续打磨
+
+- [P3] 如用户以后提供校园实拍和社团真实海报，可沿现有图片字段替换默认生成素材。
+- 真机和真实微信登录尚未验证，本记录不代表微信审核或正式上线。
+
+final result: passed

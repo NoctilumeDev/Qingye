@@ -3,11 +3,13 @@ import cn.qingye.business.Problem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.DependsOn;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.*;
 
 @Repository
+@DependsOn("schemaUpgrade")
 public class Sql {
     private final JdbcTemplate jdbc;
     public Sql(JdbcTemplate jdbc) {

@@ -23,7 +23,7 @@ def main():
             assert (CLIENT / (page + suffix)).is_file(), page + suffix
     for file in CLIENT.rglob("*.js"):
         subprocess.run(["node", "--check", str(file)], check=True, capture_output=True)
-    allowed = {"view", "text", "image", "scroll-view", "input", "textarea", "button", "picker", "switch", "block", "activity-card"}
+    allowed = {"view", "text", "image", "scroll-view", "input", "textarea", "button", "picker", "switch", "checkbox", "block", "activity-card"}
     for file in CLIENT.rglob("*.wxml"):
         wrapped = '<root xmlns:wx="urn:wechat">' + file.read_text(encoding="utf-8") + '</root>'
         wrapped = re.sub(r'\{\{(.*?)\}\}', lambda m: '{{' + html.escape(html.unescape(m.group(1)), quote=False) + '}}', wrapped, flags=re.S)

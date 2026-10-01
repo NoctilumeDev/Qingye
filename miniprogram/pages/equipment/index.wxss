@@ -1,39 +1,82 @@
-.equipment-visual {
-  background:#e0eef7;
-  border-radius:22rpx;
-  height:180rpx;
+.title {
+  font-size:43rpx;
+}
+
+.subtitle {
+  font-size:25rpx;
+}
+
+.equipment {
+  padding:23rpx;
+  border-radius:25rpx;
+}
+
+.equipment-row {
   display:flex;
-  justify-content:center;
+  gap:24rpx;
   align-items:center;
-  margin-bottom:24rpx;
-  overflow:hidden
 }
 
-.equipment-visual text {
-  font-size:96rpx;
-  transform:rotate(-8deg)
+.equipment-visual {
+  background:#f1f3f3;
+  border-radius:18rpx;
+  width:154rpx;
+  height:154rpx;
+  flex-shrink:0;
+  overflow:hidden;
 }
 
-.equipment-visual image {
+.equipment-visual > image {
   width:100%;
-  height:100%
+  height:100%;
+  display:block;
+}
+
+.equipment-content {
+  min-width:0;
+  flex:1;
 }
 
 .equipment-name {
-  font-size:32rpx;
-  font-weight:750
+  font-size:31rpx;
+  font-weight:700;
+  line-height:1.4;
+}
+
+.equipment-category {
+  font-size:21rpx;
+  color:#65767d;
+  margin-top:6rpx;
 }
 
 .stock {
   display:flex;
-  gap:45rpx;
-  color:#7b8977;
-  font-size:22rpx;
-  margin-top:25rpx
+  flex-wrap:wrap;
+  gap:6rpx;
+  color:#65767d;
+  font-size:23rpx;
+  margin-top:12rpx;
 }
 
 .stock-number {
-  font-size:37rpx;
-  font-weight:750;
-  color:#23734f
+  font-weight:650;
+  color:#187553;
+}
+
+.equipment-state {
+  font-size:20rpx;
+  color:#65767d;
+  margin-top:8rpx;
+}
+
+.equipment-description {
+  font-size:23rpx;
+  color:#71817f;
+  margin-top:19rpx;
+  line-height:1.65;
+}
+
+.actions {
+  margin-top:16rpx;
+  align-items:center;
 }

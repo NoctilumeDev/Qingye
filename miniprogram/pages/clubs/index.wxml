@@ -1,25 +1,23 @@
 <view class="page">
-    <text class="eyebrow">FIND YOUR PEOPLE</text>
-    <view class="title gap">同好，就在这里。</view>
-    <view class="subtitle">兴趣让我们相遇，社团让故事继续。</view>
-    <view class="section">
-      <text class="section-title">校园社团</text>
-      <text class="muted">{{clubs.length}} 个有趣的角落</text>
+  <text class="eyebrow">FIND YOUR PEOPLE</text>
+  <view class="title gap">同好，就在这里。</view>
+  <view class="subtitle">兴趣让我们相遇，社团让故事继续。</view>
+  <view class="section"><text class="section-title">校园社团</text><text class="muted">{{clubs.length}} 个有趣的角落</text></view>
+  <view wx:for="{{clubs}}" wx:key="id" class="club card">
+    <view class="club-main">
+      <image class="club-cover" src="{{item.cover}}" mode="aspectFill" />
+      <view class="club-content"><view class="club-title">{{item.name}}</view><view class="club-description">{{item.description}}</view></view>
     </view>
-    <view wx:for="{{clubs}}" wx:key="id" class="club card {{item.color}}">
-      <view class="row">
-        <text class="club-symbol">✳</text>
-        <text class="badge">{{item.memberCount}} 位同学</text>
-      </view>
-      <view class="club-title">{{item.name}}</view>
-      <view class="club-description">{{item.description}}</view>
-      <view class="actions">
+    <view class="club-bottom">
+      <view class="club-members"><image src="/assets/icons/team-line-green.png" /><text>{{item.memberCount}} 位同学</text></view>
+      <view class="club-actions">
         <text wx:if="{{item.myStatus === 'ACTIVE'}}" class="badge">{{item.myRole === 'MANAGER' ? '我是负责人' : '已加入'}}</text>
         <text wx:elif="{{item.myStatus === 'PENDING'}}" class="badge orange">入社申请审核中</text>
-        <button wx:else="" class="secondary small" data-id="{{item.id}}" bindtap="join">申请加入 ↗</button>
+        <button wx:else="" class="primary small" data-id="{{item.id}}" bindtap="join">申请加入</button>
         <button wx:if="{{item.myStatus === 'ACTIVE' && item.myRole !== 'MANAGER'}}" class="secondary small" data-id="{{item.id}}" bindtap="leave">退出社团</button>
       </view>
     </view>
-    <view wx:if="{{loading}}" class="loading">正在打开社团名册…</view>
-    <view wx:if="{{!loading && !clubs.length}}" class="empty">校园社团正在筹备中，过会儿再来看看。</view>
   </view>
+  <view wx:if="{{loading}}" class="loading">正在打开社团名册…</view>
+  <view wx:if="{{!loading && !clubs.length}}" class="empty">校园社团正在筹备中，过会儿再来看看。</view>
+</view>

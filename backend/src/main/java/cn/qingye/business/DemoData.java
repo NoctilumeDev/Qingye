@@ -17,8 +17,10 @@ public class DemoData implements ApplicationRunner {
         this.demo=demo;
     }
     @Override @Transactional public void run(ApplicationArguments args) {
-        if (!demo || sql.count("SELECT COUNT(*) FROM app_user")>0) return;
-        long admin=user("admin","林老师 · 管理员",true),photo=user("photo","许晴 · 摄影社负责人",false),student=user("student","周野 · 同学",false),sport=user("sport","顾燃 · 篮球社负责人",false),other=user("other","苏禾 · 同学",false);
+        if (!demo) return;
+        renameBuiltInUsers();
+        if (sql.count("SELECT COUNT(*) FROM app_user")>0) return;
+        long admin=user("admin","林老师 · 管理员",true),photo=user("photo","张三 · 摄影社负责人",false),student=user("student","李四 · 同学",false),sport=user("sport","王五 · 篮球社负责人",false),other=user("other","赵六 · 同学",false);
         long photography=club("追光摄影社","记录校园里每一束值得停留的光。带上好奇心，一起出发。","blue",admin,photo);
         long basketball=club("绿茵运动社","球场见，草坪见。把课后的时间留给运动和朋友。","green",admin,sport);
         long coding=club("星火创作社","代码、设计和奇妙想法，在这里碰面。","orange",admin,photo);
@@ -35,6 +37,13 @@ public class DemoData implements ApplicationRunner {
         equipment("便携投影仪","展示","社团分享会与活动展示的好搭档。",3);
         equipment("开发板套件","科技","从点亮一颗灯开始，把想法变成作品。",20);
         sql.insert("INSERT INTO loan(activity_id,applicant_id,equipment_id,quantity,planned_start,planned_end,reason,request_key,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",demoActivity,photo,camera,2,now,now.plusHours(4),"准备活动拍摄","demo-ready-to-pickup","APPROVED",admin,now);
+    }
+    private void renameBuiltInUsers() {
+        // Only unchanged built-in demo names are updated; user-chosen nicknames stay intact.
+        for(var entry:new String[][] {
+            {"photo","许晴 · 摄影社负责人","张三","张三 · 摄影社负责人"}, {"student","周野 · 同学","李四","李四 · 同学"},
+            {"sport","顾燃 · 篮球社负责人","王五","王五 · 篮球社负责人"}, {"other","苏禾 · 同学","赵六","赵六 · 同学"}
+        }) sql.update("UPDATE app_user SET name=? WHERE openid=? AND name IN (?,?)",entry[3],"demo:"+entry[0],entry[1],entry[2]);
     }
     private long user(String key,String name,boolean admin) {
         return sql.insert("INSERT INTO app_user(openid,name,admin) VALUES (?,?,?)","demo:"+key,name,admin);

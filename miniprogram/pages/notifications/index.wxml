@@ -1,17 +1,34 @@
 <view class="page">
     <text class="eyebrow">YOUR CAMPUS UPDATES</text>
-    <view class="title gap">好消息，<view>记得查收。</view>
-    </view>
+    <view class="title gap">消息</view>
     <view class="subtitle">报名、候补和器材借用的进展，都在这里。</view>
+    <view wx:if="{{!selecting}}" class="notice-toolbar">
+      <text class="muted">{{unread ? unread + ' 条未读' : '没有未读消息'}}</text>
+      <view class="notice-actions">
+        <button class="secondary small" bindtap="readAll" disabled="{{!unread || loading || busy}}">全部已读</button>
+        <button class="secondary small" bindtap="beginClear" disabled="{{!items.length || loading || busy}}">清理消息</button>
+      </view>
+    </view>
+    <view wx:else="" class="selection-toolbar">
+      <view class="notice-toolbar">
+        <text class="muted">已选 {{selectedIds.length}} 条消息</text>
+        <view class="notice-actions">
+          <button class="secondary small" bindtap="toggleAll" disabled="{{loading || busy}}">{{allSelected ? '取消全选' : '全选'}}</button>
+          <button class="secondary small" bindtap="cancelSelection" disabled="{{loading || busy}}">取消</button>
+        </view>
+      </view>
+      <button class="primary" bindtap="clearSelected" loading="{{busy}}" disabled="{{!selectedIds.length || loading || busy}}">清理选中（{{selectedIds.length}}）</button>
+      <view class="footnote">轻点消息选择，未选中的消息会保留。</view>
+    </view>
     <view class="gap">
-      <view wx:for="{{items}}" wx:key="id" class="card notice" data-id="{{item.id}}" bindtap="read">
+      <view wx:for="{{items}}" wx:key="id" class="card notice {{item.selected ? 'selected-notice' : ''}}" data-id="{{item.id}}" bindtap="tapNotice" hover-class="notice-pressed">
         <view class="row">
-          <view class="notice-title">
+          <view class="notice-title"><checkbox wx:if="{{selecting}}" checked="{{item.selected}}" color="#187553" class="notice-checkbox" disabled="{{busy || loading}}" />
             <text wx:if="{{!item.readAt}}" class="dot">● </text>{{item.title}}</view>
           <text class="muted">{{item.displayTime}}</text>
         </view>
         <view class="notice-body">{{item.body}}</view>
-        <text class="footnote">{{item.readAt ? '已读' : '轻点标记已读'}}</text>
+        <text class="footnote">{{selecting ? (item.selected ? '已选择' : '轻点选择') : (item.readAt ? '已读' : '轻点标记已读')}}</text>
       </view>
     </view>
     <view wx:if="{{loading}}" class="loading">正在取出你的消息…</view>

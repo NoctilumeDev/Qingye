@@ -14,10 +14,21 @@ public class MessageStore {
         sql.insert("INSERT INTO message_task(notification_id,available_at,source_kind,source_id) VALUES (?,?,?,?)",notification,when,source,sourceId);
     }
     public List<Map<String,Object>> list(long user) {
-        return sql.list("SELECT id,title,body,read_at,created_at FROM notification WHERE user_id=? AND delivered=TRUE ORDER BY id DESC LIMIT 100",user);
+        return sql.list("SELECT id,title,body,read_at,created_at FROM notification WHERE user_id=? AND delivered=TRUE AND deleted_at IS NULL ORDER BY id DESC LIMIT 100",user);
     }
     public void read(long id,long user,LocalDateTime now) {
-        sql.update("UPDATE notification SET read_at=? WHERE id=? AND user_id=? AND delivered=TRUE",now,id,user);
+        sql.update("UPDATE notification SET read_at=? WHERE id=? AND user_id=? AND delivered=TRUE AND deleted_at IS NULL AND read_at IS NULL",now,id,user);
+    }
+    public void readAll(long user,LocalDateTime now) {
+        sql.update("UPDATE notification SET read_at=? WHERE user_id=? AND delivered=TRUE AND deleted_at IS NULL AND read_at IS NULL",now,user);
+    }
+    public void clear(long user,List<Long> ids,LocalDateTime now) {
+        if(ids.isEmpty()) return;
+        var selected=new LinkedHashSet<>(ids);
+        var args=new ArrayList<Object>();
+        args.add(now);args.add(user);args.addAll(selected);
+        String placeholders=String.join(",",Collections.nCopies(selected.size(),"?"));
+        sql.update("UPDATE notification SET deleted_at=? WHERE user_id=? AND delivered=TRUE AND deleted_at IS NULL AND id IN ("+placeholders+")",args.toArray());
     }
     public void cancelReminders(String kind,long id) {
         sql.update("UPDATE message_task SET status='CANCELLED' WHERE source_kind=? AND source_id=? AND status='PENDING'",kind,id);

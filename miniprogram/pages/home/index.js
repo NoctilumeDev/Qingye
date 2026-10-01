@@ -22,5 +22,7 @@ Page({
   search(e) { this.setData({ keyword: e.detail.value }); this.load(true) },
   open(e) { wx.navigateTo({ url: '/pages/activity/index?id=' + e.detail.id }) },
   equipment() { wx.navigateTo({ url: '/pages/equipment/index' }) },
-  assistant() { wx.navigateTo({ url: '/pages/assistant/index' }) }
+  assistant() { wx.navigateTo({ url: '/pages/assistant/index' }) },
+  clubs() { wx.switchTab({ url: '/pages/clubs/index' }) },
+  activities() { wx.pageScrollTo({ selector: '#activity-list', duration: 250 }) }
 })

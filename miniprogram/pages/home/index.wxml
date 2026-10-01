@@ -1,53 +1,29 @@
-<view class="page">
-    <view class="row">
-      <text class="eyebrow">QINGYE / CAMPUS LIFE</text>
-      <text class="campus-badge">✳ 校园进行时</text>
-    </view>
-    <view class="hero">
-      <view class="hero-title">今天校园，<view>有点好玩。</view>
-      </view>
-      <view class="hero-description">找到你喜欢的活动，遇见同频的人。</view>
-      <text class="ball">🏀</text>
-      <view class="court-line" />
-      <text class="hero-sticker">GO OUT + PLAY!</text>
-    </view>
-    <view class="shortcuts">
-      <view class="shortcut blue" bindtap="equipment">
-        <text class="shortcut-icon">↗</text>
-        <view>
-          <view class="shortcut-title">借点好装备</view>
-          <text>共享器材，一起出发</text>
-        </view>
-      </view>
-      <view class="shortcut lime" bindtap="assistant">
-        <text class="shortcut-icon">✦</text>
-        <view>
-          <view class="shortcut-title">问问青野</view>
-          <text>校园记录，随手查查</text>
-        </view>
-      </view>
-    </view>
-    <view class="search">
-      <text>⌕</text>
-      <input placeholder="搜一搜，今天想参加什么？" confirm-type="search" bindconfirm="search" />
-    </view>
-    <scroll-view class="chips" scroll-x="true">
-      <view class="chip {{category === item.key ? 'selected' : ''}}" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="category">{{item.name}}</view>
-    </scroll-view>
-    <block wx:if="{{recommendations.length}}">
-      <view class="section">
-        <text class="section-title">可能正合你意</text>
-        <text class="muted">FOR YOU ↗</text>
-      </view>
-      <activity-card class="activity-entry" wx:for="{{recommendations}}" wx:key="id" item="{{item}}" bindopen="open" />
-    </block>
-    <view class="section">
-      <text class="section-title">校园活动日历</text>
-      <text class="muted">来凑个热闹</text>
-    </view>
-    <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
-    <view wx:if="{{loading}}" class="loading">正在寻找校园里的好玩事…</view>
-    <view wx:if="{{!loading && !items.length}}" class="empty">暂时没有符合条件的活动。<view>换个分类，或过会儿再来看看。</view>
-    </view>
-    <view wx:if="{{finished && items.length}}" class="footnote">校园的精彩，还在继续生长。✳</view>
+<view class="page home">
+  <view class="brand"><image src="/assets/icons/sparkling-fill-green.png" /><text>青野</text><text class="brand-en">QINGYE</text></view>
+  <view class="brand-caption">和有趣的人，一起在校园里见面。</view>
+  <view class="search">
+    <image src="/assets/icons/search-line-muted.png" />
+    <input value="{{keyword}}" placeholder="搜活动，找到想去的那一场" confirm-type="search" bindconfirm="search" />
   </view>
+  <view class="hero"><image src="/assets/campus/campus-hero-v1.jpg" mode="aspectFill" /></view>
+  <view class="shortcuts">
+    <view class="shortcut" bindtap="activities" hover-class="shortcut-pressed"><view class="shortcut-icon blue"><image src="/assets/icons/calendar-event-line-blue.png" /></view><text>校园活动</text></view>
+    <view class="shortcut" bindtap="equipment" hover-class="shortcut-pressed"><view class="shortcut-icon green"><image src="/assets/icons/archive-line-green.png" /></view><text>器材室</text></view>
+    <view class="shortcut" bindtap="clubs" hover-class="shortcut-pressed"><view class="shortcut-icon blue"><image src="/assets/icons/team-line-green.png" /></view><text>找同好</text></view>
+    <view class="shortcut" bindtap="assistant" hover-class="shortcut-pressed"><view class="shortcut-icon orange"><image src="/assets/icons/chat-smile-2-line-orange.png" /></view><text>问问青野</text></view>
+  </view>
+  <block wx:if="{{recommendations.length}}">
+    <view class="section recommendation-heading"><text class="section-title">可能正合你意</text><view class="more" bindtap="activities">查看活动<image src="/assets/icons/arrow-right-s-line-muted.png" /></view></view>
+    <view class="recommendation-grid">
+      <activity-card class="activity-entry" wx:for="{{recommendations}}" wx:key="id" item="{{item}}" variant="tile" bindopen="open" />
+    </view>
+  </block>
+  <view id="activity-list" class="section"><text class="section-title">校园活动</text><text class="muted">去见面，去参与</text></view>
+  <scroll-view class="chips" scroll-x="true">
+    <view class="chip {{category === item.key ? 'selected' : ''}}" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="category">{{item.name}}</view>
+  </scroll-view>
+  <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
+  <view wx:if="{{loading}}" class="loading">正在寻找校园里的好玩事…</view>
+  <view wx:if="{{!loading && !items.length}}" class="empty">暂时没有符合条件的活动。<view>换个分类，或过会儿再来看看。</view></view>
+  <view wx:if="{{finished && items.length}}" class="footnote">校园的精彩，还在继续生长。</view>
+</view>

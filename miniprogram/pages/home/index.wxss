@@ -1,143 +1,158 @@
-.campus-badge {
-  font-size:21rpx;
-  color:#66795e
+.home {
+  padding-top:16rpx;
 }
 
-.hero {
-  position:relative;
-  overflow:hidden;
-  background:#d4eaa1;
-  border-radius:34rpx;
-  padding:37rpx 30rpx 42rpx;
-  margin-top:28rpx;
-  min-height:280rpx
-}
-
-.hero-title {
-  font-size:55rpx;
-  font-weight:850;
-  line-height:1.22;
-  letter-spacing:-2rpx;
-  position:relative;
-  z-index:2
-}
-
-.hero-description {
-  color:#557649;
-  font-size:22rpx;
-  margin-top:25rpx;
-  position:relative;
-  z-index:2
-}
-
-.ball {
-  position:absolute;
-  font-size:122rpx;
-  right:12rpx;
-  top:45rpx;
-  transform:rotate(-15deg)
-}
-
-.court-line {
-  position:absolute;
-  width:450rpx;
-  height:450rpx;
-  border:3rpx solid #fff9;
-  border-radius:50%;
-  right:-180rpx;
-  top:-100rpx
-}
-
-.hero-sticker {
-  position:absolute;
-  right:18rpx;
-  bottom:45rpx;
-  background:#f8c694;
-  padding:10rpx 12rpx;
-  font-size:17rpx;
-  font-weight:850;
-  transform:rotate(7deg)
-}
-
-.shortcuts {
-  display:flex;
-  gap:18rpx;
-  margin-top:23rpx
-}
-
-.shortcut {
-  border-radius:24rpx;
-  padding:24rpx 17rpx;
+.brand {
   display:flex;
   align-items:center;
-  gap:15rpx;
-  flex:1
+  gap:9rpx;
+  font-size:36rpx;
+  font-weight:750;
 }
 
-.shortcut.blue {
-  background:#d0e8f9
+.brand > image {
+  width:45rpx;
+  height:45rpx;
 }
 
-.shortcut.lime {
-  background:#e2edc5
+.brand-en {
+  font-size:18rpx;
+  letter-spacing:3rpx;
+  margin-left:auto;
+  color:#65767d;
+  font-weight:500;
 }
 
-.shortcut-icon {
-  font-size:48rpx
-}
-
-.shortcut-title {
-  font-size:26rpx;
-  font-weight:700;
-  margin-bottom:8rpx
-}
-
-.shortcut text {
-  font-size:19rpx;
-  color:#6a7d6c
-}
-
-.shortcut .shortcut-icon {
-  font-size:45rpx;
-  color:#23734f
+.brand-caption {
+  color:#65767d;
+  font-size:22rpx;
+  margin:10rpx 0 19rpx;
 }
 
 .search {
   display:flex;
   align-items:center;
-  gap:15rpx;
-  background:#fff;
-  border:1rpx solid #e3e9db;
-  padding:20rpx 24rpx;
-  border-radius:20rpx;
-  margin:32rpx 0 24rpx
+  gap:13rpx;
+  background:#edf2f4;
+  padding:16rpx 22rpx;
+  border-radius:40rpx;
+  margin-bottom:20rpx;
 }
 
-.search text {
-  font-size:37rpx;
-  color:#7b8c73
+.search > image {
+  width:32rpx;
+  height:32rpx;
 }
 
 .search input {
   flex:1;
-  font-size:25rpx
+  min-width:0;
+  font-size:24rpx;
+  height:42rpx;
+}
+
+.hero {
+  height:515rpx;
+  border-radius:26rpx;
+  overflow:hidden;
+  background:#e1eff6;
+}
+
+.hero > image {
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.shortcuts {
+  display:flex;
+  justify-content:space-between;
+  padding:25rpx 8rpx 0;
+}
+
+.shortcut {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12rpx;
+  min-width:120rpx;
+  font-size:23rpx;
+}
+
+.shortcut-pressed {
+  opacity:.65;
+}
+
+.shortcut-icon {
+  width:78rpx;
+  height:78rpx;
+  border-radius:28rpx;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.shortcut-icon > image {
+  width:47rpx;
+  height:47rpx;
+}
+
+.shortcut-icon.blue {
+  background:#e4f1fa;
+}
+
+.shortcut-icon.green {
+  background:#e3f0e9;
+}
+
+.shortcut-icon.orange {
+  background:#fcf0df;
+}
+
+.section {
+  margin:35rpx 0 20rpx;
+}
+
+.more {
+  display:flex;
+  align-items:center;
+  color:#65767d;
+  font-size:22rpx;
+  min-height:54rpx;
+}
+
+.more > image {
+  width:26rpx;
+  height:26rpx;
+}
+
+.recommendation-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18rpx;
+  align-items:stretch;
+}
+
+.recommendation-grid > activity-card {
+  min-width:0;
 }
 
 .chips {
-  white-space:nowrap
+  white-space:nowrap;
+  margin-bottom:24rpx;
 }
 
 .chip {
   display:inline-block;
-  padding:14rpx 27rpx;
-  font-size:25rpx;
-  color:#687a60;
-  background:#e9eedf;
-  border-radius:30rpx;
-  margin-right:14rpx
+  padding:13rpx 26rpx;
+  font-size:24rpx;
+  color:#6c7c82;
+  background:#edf2f4;
+  border-radius:32rpx;
+  margin-right:12rpx;
 }
 
 .chip.selected {
-  background:#23734f;
-  color:#fff
+  background:#187553;
+  color:#fff;
 }

@@ -1,0 +1,8 @@
+Remix Icon v4.6.0
+Copyright RemixIcon.com
+https://github.com/Remix-Design/RemixIcon/tree/v4.6.0
+Released under the Apache License, Version 2.0 (LICENSE.txt).
+
+These PNG files were exported from the official v4.6.0 icon font,
+colored for Qingye and resized to 64 x 64 pixels. Original icon contours
+are preserved. The full font is not included in the mini-program.
