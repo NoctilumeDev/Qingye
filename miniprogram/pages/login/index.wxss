@@ -2,6 +2,12 @@
   padding-top:15rpx;
 }
 
+.login-failure { margin-top:40rpx; padding:36rpx; background:#fff; border:1rpx solid #e4ecee; border-radius:28rpx; }
+.failure-code { display:block; color:#187553; font-size:72rpx; font-weight:750; margin-bottom:28rpx; }
+.failure-description { margin:24rpx 0 36rpx; color:#65767d; font-size:27rpx; line-height:1.8; }
+.failure-actions { display:flex; flex-direction:column; gap:16rpx; }
+.failure-actions button { width:100%; }
+
 .brand {
   display:flex;
   align-items:center;
