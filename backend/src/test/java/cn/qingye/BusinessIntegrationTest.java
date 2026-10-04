@@ -103,6 +103,16 @@ class BusinessIntegrationTest {
     private void approve(long id) {
         loans.decide(admin,id,new Forms.Decision(true,""));
     }
+    @Test void databaseWallTimesRoundTripWithoutJvmZoneConversion() {
+        var expected = NOW.plusDays(2);
+        sql.update("UPDATE activity SET start_time=?,end_time=?,signup_deadline=? WHERE id=?",
+                expected,expected.plusHours(2),NOW.plusDays(1),activityA);
+        var actual = sql.one("SELECT start_time,end_time,signup_deadline FROM activity WHERE id=?",activityA);
+        assertThat(time(actual,"startTime")).isEqualTo(expected);
+        assertThat(time(actual,"endTime")).isEqualTo(expected.plusHours(2));
+        assertThat(time(actual,"signupDeadline")).isEqualTo(NOW.plusDays(1));
+    }
+
     @Test void lastSeatHasOneRegistrationAndCancellationPromotesEarliestWaiter() throws Exception {
         var result=concurrently(()->activities.register(student,activityA),()->activities.register(other,activityA));
         assertThat(result).allMatch(x->x instanceof Map);

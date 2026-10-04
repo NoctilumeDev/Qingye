@@ -5,6 +5,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.context.annotation.DependsOn;
 import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
@@ -27,8 +29,12 @@ public class Sql {
                         key.append(upper ? Character.toUpperCase(c) : c); upper=false;
                     }
                 }
-                Object value = rs.getObject(i);
-                row.put(key.toString(), value instanceof Timestamp t ? t.toLocalDateTime().toString() : value);
+                // Business DATETIME fields are Shanghai wall times, not instants.
+                // Typed retrieval avoids conversion through the JVM's default zone.
+                Object value = meta.getColumnType(i) == Types.TIMESTAMP
+                        ? rs.getObject(i, LocalDateTime.class) : rs.getObject(i);
+                row.put(key.toString(), value instanceof LocalDateTime t ? t.toString()
+                        : value instanceof Timestamp t ? t.toLocalDateTime().toString() : value);
             }
             return row;
         }, args);

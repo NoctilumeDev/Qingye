@@ -47,27 +47,33 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 校园助手只支持中文校园只读查询。模型只能产生白名单参数，不能生成 SQL、用户身份或最终事实回答；未配置或异常时使用本地规则。助手明确拒绝他人私有记录、凭据、权限冒充和写操作；模型计划必须与本地查询类型一致，响应仅包含展示字段。完整外部请求有截止时间，同一账号同时最多一次、单实例最多四次外部解析，其余请求使用本地规则。模型密钥仅通过本机环境变量提供，不随源码交付。以后接模型可在环境变量设置 `QINGYE_LLM_URL`（完整 chat-completions 地址）、`QINGYE_LLM_KEY`、`QINGYE_LLM_MODEL`。
 
-## 复验
+## 工程维护与复验
 
-首次创建独立测试库：
+青野继续位于dome，原提交历史保留。自己的测试和门禁限定在`qingye/`；[独立CI](../.github/workflows/qingye-ci.yml)按该目录变更触发，不以浏览器演示构建代替后端验收。
 
-```sql
-CREATE DATABASE IF NOT EXISTS qingye_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-在已设置数据库环境变量的 PowerShell 中运行：
+Java17、Maven3.9、Python3.10+、Node24.14.0。从本目录运行：
 
 ```powershell
-cd backend
-mvn test
-cd ..
-.\scripts\test-mysql.ps1
-python .\scripts\check-client.py
-node --test .\scripts\test-client.cjs
+python -B scripts/check.py quick  # 门禁 + 客户端 + H2，不连接MySQL
+# 显式准备独立 qingye_test 与仅有该库权限的测试账号后：
+$env:QINGYE_TEST_URL = 'jdbc:mysql://127.0.0.1:3306/qingye_test?characterEncoding=utf8&serverTimezone=Asia/Shanghai'
+$env:QINGYE_TEST_USER = '<测试账号>'
+$env:QINGYE_TEST_PASSWORD = '<测试密码>'
+python -B scripts/check.py all    # 再执行真实MySQL测试
 ```
 
-MySQL 测试仅允许 `qingye_test`，运行时会清空该测试库的业务数据，不操作 `qingye` 或旧项目数据库。该脚本使用 `mvn -o test`；依赖缓存不全时先用普通 `mvn test` 下载依赖。原生编译检查可加 `--compiler-dir <现有微信工具的 wcc-exec 目录>`。
+单项为`hygiene`、`client`、`h2`、`mysql`。缺工具/测试凭据或非qingye_test URL直接拒绝；MySQL测试会清空测试业务表，必须专库专用。H2命令只在子进程移除MySQL测试环境，保留调用者配置。`client`检查JSON/JS/WXML结构和实际页面脚本测试；微信原生编译另运行`python -B scripts/check-client.py --compiler-dir <现有wcc-exec目录>`，结构检查不冒充编译或真机证明。旧`test-mysql.ps1`只作为本机便利入口，CI与维护统一使用上述显式变量。
+
+数据库DATETIME按上海本地业务时间保存，读取使用LocalDateTime，避免经JVM默认时区转换。新增CI首次在UTC宿主击穿了原日期映射，原[失败运行](https://github.com/NoctilumeDev/dome/actions/runs/37214544021)保留；修正按同样UTC条件复验。
+
+### 遗留物收口门禁
+
+阶段退出：实现 → 测试 → 文档/公开读回 → 遗留物收口 → 结束。`hygiene`只读检查本模块Git跟踪的已知构建/运行态/私有配置及当前文档本地链接，另有负控制；不扫描或清理其他dome项目，不自动删除图片或数据库，不单独证明LOCAL_DORMANT。
+
+负责人还须逐项核对owner、当前consumer和proof obligation：页面/README/展示/Release依赖素材及正式证据绑定资产保留；纯历史废案在确认无当前职责后删除；首败、关键反例、最终见证和回执保留。不能因为没搜到引用就断言图片无用，也不能因为历史说明引用就永远保留废案。构建实例可重建才清；原Release/evidence包不拿新包冒充。唯一数据未知则REVIEW_REQUIRED。
+
+本地收尾先确认源码、锁文件、SQL、配置模板与脚本已在远端，再停止自己创建的进程并清理本轮依赖/编译/临时实例；共享MySQL、中间件、其他项目及未提交用户改动保留。门禁通常只留阶段结果和必要例外，详细删除看Git diff；不创建永久删除清单，不按仓库体积考核。
 
 截至 2026-10-02，H2 / MySQL 各 43 项、前端 39 项、十页原生编译通过；已检查并发、权限、真实中间件传输与降级。本轮 6 类真实 DeepSeek 查询、16 个本地拒绝样例及认证、参数边界通过，测试前后九张业务表内容一致；供应商正文卡住可在截止时间内降级。回收站清理、恢复、未读状态、账号隔离、空状态及定时清理已在实际编译页面验收。用户在安卓真机确认助手、预约、昵称三组键盘避让正常；其他机型未逐一验证。真实微信登录、正式 HTTPS / 微信审核、学校部署和高负载容量不属于当前验收范围。
 
-源码与初始化 SQL 约 6,347 行，包含测试与演示数据，继续守住 8,000 行上限。文档保留项目简介、模块图及主页预览截图，过程材料可在 Git 历史中查看。
+维护以业务边界、源码可读性和可复验行为为准，不以行数作为正确性或清理指标。文档保留项目简介、模块图及主页预览截图，过程材料可在 Git 历史中查看。

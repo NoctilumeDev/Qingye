@@ -2,3 +2,10 @@ local.*
 *.pid
 runtime/
 project.private.config.json
+
+.tools/
+**/__pycache__/
+*.pyc
+coverage/
+playwright-report/
+test-results/
