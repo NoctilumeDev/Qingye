@@ -19,10 +19,10 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class IntegrationBoundaryTest {
-    @Test void modelOutOfScopeCannotOverrideLocalQueryTypes() throws Exception {
+    @Test void explicitModelClarificationIsNotReplacedByACanonicalFallback() throws Exception {
         var json=new ObjectMapper().findAndRegisterModules();
         byte[] body=json.writeValueAsBytes(Map.of("choices",List.of(Map.of("finish_reason","stop","message",
-                Map.of("content","{\"intent\":\"OUT_OF_SCOPE\",\"category\":null,\"keyword\":null,\"start\":null,\"end\":null}")))));
+                Map.of("content","{\"action\":\"CLARIFY\",\"intent\":null,\"entity\":null,\"category\":null,\"timeOption\":null,\"reason\":\"MISSING_INFO\"}")))));
         var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
         server.createContext("/plan",exchange->{
             exchange.getRequestBody().readAllBytes();
@@ -41,11 +41,8 @@ class IntegrationBoundaryTest {
             var responses=questions.stream().map(question->service.ask(student,question)).toList();
             System.out.println("MODEL_STUB_RESPONSE_BYTES="+new String(body,StandardCharsets.UTF_8));
             System.out.println("MODEL_STUB_QUERY_RESULTS="+json.writeValueAsString(responses));
-            assertThat(responses.stream().map(response->response.get("intent")).toList())
-                    .isEqualTo(List.of("ACTIVITIES","EQUIPMENT","MY_REGISTRATIONS","MY_LOANS"));
-            assertThat(responses).allSatisfy(response->assertThat(response.get("mode")).isEqualTo("LOCAL"));
-            verify(loans).mine(student.id());
-            verify(activities).list(student,"mine",null,null,0,null,null);
+            assertThat(responses).allSatisfy(response->assertThat(response).containsEntry("status","CLARIFY").containsEntry("mode","MODEL_PLAN"));
+            verifyNoInteractions(loans,activities);
         } finally { server.stop(0); }
     }
     @Test void failedCacheInvalidationBypassesOldEntriesUntilTheirTtlExpires() {
@@ -66,7 +63,7 @@ class IntegrationBoundaryTest {
     }
     @Test void modelHttpAdapterAcceptsOnlyQueryParametersAndDegradesOnProviderFailure() throws Exception {
         var json=new ObjectMapper().findAndRegisterModules();
-        var payload=new AtomicReference<>("{\"intent\":\"EQUIPMENT\",\"category\":null,\"keyword\":\"相机\",\"start\":null,\"end\":null}");
+        var payload=new AtomicReference<>("{\"action\":\"QUERY\",\"intent\":\"EQUIPMENT\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"CURRENT\",\"reason\":null}");
         var request=new AtomicReference<Map<?,?>>();
         var status=new AtomicReference<>(200);
         var finish=new AtomicReference<>("stop");
@@ -82,7 +79,7 @@ class IntegrationBoundaryTest {
         server.start();
         try {
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/plan","test-fixture","deepseek-flash");
-            assertThat(planner.plan("查相机器材")).hasValueSatisfying(plan->assertThat(plan.keyword()).isEqualTo("相机"));
+            assertThat(planner.plan("查相机器材")).hasValueSatisfying(plan->assertThat(plan.entity()).isEqualTo("相机"));
             assertThat(request.get().get("response_format")).isEqualTo(Map.of("type","json_object"));
             assertThat(request.get().get("thinking")).isEqualTo(Map.of("type","disabled"));
             assertThat(request.get().get("max_tokens")).isEqualTo(300);
@@ -97,8 +94,12 @@ class IntegrationBoundaryTest {
                 "{\"intent\":\"EQUIPMENT\"} {\"sql\":\"DROP TABLE loan\"}",
                 "[]","null","","this is not JSON")) {
                 payload.set(invalid);
-                assertThat(planner.plan("查相机器材")).as(invalid).isEmpty();
+                assertThat(planner.plan("查相机器材").map(plan->plan.action().equals("QUERY")).orElse(false)).as(invalid).isFalse();
             }
+            payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"TODAY\",\"reason\":null}");
+            assertThat(planner.plan("我的相机借用")).hasValueSatisfying(plan->assertThat(plan.action()).isEqualTo("CLARIFY"));
+            payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":null,\"category\":null,\"timeOption\":\"ANY\",\"reason\":null,\"userId\":99}");
+            assertThat(planner.plan("我的借用")).hasValueSatisfying(plan->assertThat(plan.action()).isEqualTo("REJECT"));
             payload.set("{\"intent\":\"EQUIPMENT\"}");
             finish.set("length");
             assertThat(planner.plan("查相机器材")).isEmpty();

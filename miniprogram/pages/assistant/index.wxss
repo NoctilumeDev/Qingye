@@ -70,6 +70,18 @@
   white-space:pre-wrap;
 }
 
+.understanding {
+  padding:18rpx;
+  margin-bottom:20rpx;
+  border-radius:16rpx;
+  background:#f2f8f5;
+}
+.understanding-title, .understanding-note { display:block; }
+.understanding-title { color:#244c3b; font-weight:600; font-size:25rpx; }
+.understanding-note { color:#65767d; font-size:23rpx; margin-top:6rpx; }
+.correct { display:inline-block; margin:12rpx 0 0; padding:0 18rpx; line-height:2; font-size:23rpx; color:#187553; background:#fff; }
+.corrections { display:flex; flex-wrap:wrap; gap:10rpx; margin-top:20rpx; }
+
 .result {
   display:flex;
   align-items:center;

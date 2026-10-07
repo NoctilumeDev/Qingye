@@ -8,11 +8,18 @@
   <view class="suggestions">
     <view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion"><text>{{item}}</text><image src="/assets/icons/arrow-right-up-line-green.png" /></view>
   </view>
-  <view class="field"><textarea class="textarea" value="{{question}}" maxlength="300" disabled="{{busy}}" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：这周末有什么摄影活动？" placeholder-style="color:#65767d" /></view>
+  <view class="field"><textarea class="textarea" value="{{question}}" focus="{{correcting}}" maxlength="300" disabled="{{busy}}" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：这周末有什么摄影活动？" placeholder-style="color:#65767d" /></view>
   <button id="assistant-query" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="ask">{{busy ? '正在查找校园记录…' : '帮我查查'}}</button>
   <view wx:if="{{answer}}" class="card answer">
+    <view wx:if="{{interpretation}}" class="understanding">
+      <text class="understanding-title">{{interpretation}}</text>
+      <text wx:if="{{status === 'QUERY'}}" class="understanding-note">有时会听岔，理解不对可以改一下。</text>
+      <button class="correct" bindtap="correct" disabled="{{busy}}">改一下</button>
+    </view>
     <text selectable="true">{{answer}}</text>
+    <button wx:if="{{status === 'CONFIRM_SCOPE' && confirmationToken}}" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="confirmScope">按这个范围继续查询</button>
     <view wx:for="{{items}}" wx:key="id" class="result {{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS' ? 'navigable' : ''}}" data-id="{{item.id}}" bindtap="open"><text>{{item.displayName}}</text><image wx:if="{{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS'}}" src="/assets/icons/arrow-right-s-line-muted.png" /></view>
+    <view class="corrections"><view wx:for="{{corrections}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion">{{item}}</view></view>
   </view>
   <view class="footnote">查询不会替你报名、审批或借用器材。这些操作请在对应页面确认。</view>
   <view class="keyboard-space" style="height:{{keyboardHeight}}px" />

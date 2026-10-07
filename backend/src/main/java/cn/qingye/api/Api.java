@@ -189,8 +189,11 @@ public class Api {
     @GetMapping("/recommendations") Object recommended(@RequestAttribute Actor actor) {
         return data(recommendation.forUser(actor));
     }
-    @PostMapping("/assistant") Object assistant(@RequestAttribute Actor actor,@Valid @RequestBody Forms.Question input) {
-        return data(assistant.ask(actor,input.question()));
+    @PostMapping("/assistant") Object assistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.Question input) {
+        return data(assistant.ask(actor,input.question(),session));
+    }
+    @PostMapping("/assistant/confirm") Object confirmAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantConfirmation input) {
+        return data(assistant.confirm(actor,input.token(),session));
     }
     @GetMapping("/workbench/status") Object status(@RequestAttribute Actor actor) {
         access.admin(actor);

@@ -397,6 +397,43 @@ test('a failed assistant query leaves no stale facts and permits a retry', async
   fail = false; await assistant.ask(); assert.equal(assistant.data.answer, '只读查询'); assert.equal(assistant.data.intent, 'OUT_OF_SCOPE')
 })
 
+test('assistant shows the executed interpretation and correction never submits by itself', async () => {
+  let calls = 0
+  const assistant = page('assistant', async () => { calls++; return { status: 'QUERY', intent: 'MY_LOANS', answer: '你的借用记录', items: [], interpretation: '我按「你的借用记录 · 当前登录用户」帮你查了。', corrections: ['查相机', '我的借用记录'] } })
+  assistant.setData({ question: '查相机' }); await assistant.ask()
+  assert.equal(assistant.data.status, 'QUERY'); assert.match(assistant.data.interpretation, /你的借用记录/)
+  assistant.correct(); assert.equal(assistant.data.correcting, true); assert.equal(calls, 1)
+  assistant.input({ detail: { value: '我的借用记录' } }); assert.equal(calls, 1)
+  await assistant.ask(); assert.equal(calls, 2); assert.equal(assistant.data.correcting, false)
+})
+test('assistant keeps clarification and refusal distinct and clears old interpretation on failure', async () => {
+  let status = 'CLARIFY', fail = false
+  const assistant = page('assistant', async () => { if (fail) throw new Error('offline'); return { status, intent: '', answer: status, items: [], interpretation: status === 'CLARIFY' ? '尚未确定查询计划' : '请求不允许执行', corrections: ['查相机'] } })
+  assistant.setData({ question: '查器材' }); await assistant.ask()
+  assert.equal(assistant.data.status, 'CLARIFY'); assert.match(assistant.data.interpretation, /尚未确定/)
+  status = 'REJECT'; await assistant.ask(); assert.equal(assistant.data.status, 'REJECT')
+  fail = true; await assistant.ask(); assert.equal(assistant.data.interpretation, ''); assert.equal(assistant.data.corrections.length, 0)
+})
+
+test('personal scope waits for consent and confirmation sends only the displayed token once', async () => {
+  const queries = [], response = deferred()
+  const assistant = page('assistant', (url, method, body) => { queries.push({ url, method, body }); return url === '/assistant' ? Promise.resolve({ status: 'CONFIRM_SCOPE', intent: 'MY_LOANS', answer: '不会按器材、日期或状态筛选', interpretation: '我的全部借用记录', confirmationToken: 'displayed-token', items: [] }) : response.promise })
+  assistant.setData({ question: '我今天借的相机有哪些' }); await assistant.ask()
+  assert.equal(queries.length, 1); assert.equal(assistant.data.items.length, 0)
+  const pending = assistant.confirmScope(); await assistant.confirmScope()
+  assert.equal(queries.length, 2); assert.equal(queries[1].url, '/assistant/confirm'); assert.deepEqual(JSON.parse(JSON.stringify(queries[1].body)), { token: 'displayed-token' })
+  response.resolve({ status: 'QUERY', intent: 'MY_LOANS', answer: '全部借用记录', items: [] }); await pending
+  assert.equal(assistant.data.status, 'QUERY'); assert.equal(assistant.data.confirmationToken, '')
+})
+test('editing or leaving invalidates a displayed consent and late previews cannot restore it', async () => {
+  const pending = deferred(); const assistant = page('assistant', () => pending.promise)
+  assistant.setData({ question: '我的借用记录', confirmationToken: 'old' })
+  assistant.input({ detail: { value: '我的报名记录' } }); assert.equal(assistant.data.confirmationToken, '')
+  const query = assistant.ask(); assistant.onHide()
+  pending.resolve({ status: 'CONFIRM_SCOPE', intent: 'MY_LOANS', answer: '全部借用', confirmationToken: 'late', items: [] }); await query
+  assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.busy, false)
+})
+
 test('loan defaults follow the selected activity and retain subsequent manual adjustments', async () => {
   const first = { ...row(11), title: '摄影活动' }, second = { ...row(12), startTime: '2027-01-02T16:30:00', endTime: '2027-01-02T18:30:00' }, queries = []
   const editor = page('editor', async url => {

@@ -25,6 +25,8 @@ public final class Forms {
     }
     public record Question(@NotBlank @Size(max=300) String question) {
     }
+    public record AssistantConfirmation(@NotBlank @Pattern(regexp="[a-fA-F0-9-]{36}") String token) {
+    }
     public record Messages(@NotEmpty @Size(max=100) List<@NotNull @Positive Long> ids) {
     }
 }
