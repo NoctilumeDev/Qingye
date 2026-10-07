@@ -1,5 +1,10 @@
 package cn.qingye;
 import cn.qingye.integration.*;
+import cn.qingye.business.AssistantService;
+import cn.qingye.db.ActivityStore;
+import cn.qingye.db.LoanStore;
+import cn.qingye.business.LoanService;
+import cn.qingye.model.Actor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,35 @@ import java.util.concurrent.Executors;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class IntegrationBoundaryTest {
+    @Test void modelOutOfScopeCannotOverrideLocalQueryTypes() throws Exception {
+        var json=new ObjectMapper().findAndRegisterModules();
+        byte[] body=json.writeValueAsBytes(Map.of("choices",List.of(Map.of("finish_reason","stop","message",
+                Map.of("content","{\"intent\":\"OUT_OF_SCOPE\",\"category\":null,\"keyword\":null,\"start\":null,\"end\":null}")))));
+        var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
+        server.createContext("/plan",exchange->{
+            exchange.getRequestBody().readAllBytes();
+            exchange.sendResponseHeaders(200,body.length);
+            try(var output=exchange.getResponseBody()) { output.write(body); }
+        });
+        server.start();
+        try {
+            var clock=Clock.systemUTC();
+            var planner=new LlmPlanner(new ExternalHttp(json),json,clock,"http://127.0.0.1:"+server.getAddress().getPort()+"/plan","fixture-only","test-model");
+            var activities=mock(ActivityStore.class);
+            var loans=mock(LoanStore.class);
+            var service=new AssistantService(activities,loans,mock(LoanService.class),planner,clock);
+            var student=new Actor(3,"student",false);
+            var questions=List.of("有哪些校园活动？","查相机","我的报名活动有哪些？","我的借用器材有哪些？");
+            var responses=questions.stream().map(question->service.ask(student,question)).toList();
+            System.out.println("MODEL_STUB_RESPONSE_BYTES="+new String(body,StandardCharsets.UTF_8));
+            System.out.println("MODEL_STUB_QUERY_RESULTS="+json.writeValueAsString(responses));
+            assertThat(responses.stream().map(response->response.get("intent")).toList())
+                    .isEqualTo(List.of("ACTIVITIES","EQUIPMENT","MY_REGISTRATIONS","MY_LOANS"));
+            assertThat(responses).allSatisfy(response->assertThat(response.get("mode")).isEqualTo("LOCAL"));
+            verify(loans).mine(student.id());
+            verify(activities).list(student,"mine",null,null,0,null,null);
+        } finally { server.stop(0); }
+    }
     @Test void failedCacheInvalidationBypassesOldEntriesUntilTheirTtlExpires() {
         var redis=mock(StringRedisTemplate.class);
         @SuppressWarnings("unchecked") var values=(ValueOperations<String,String>)mock(ValueOperations.class);

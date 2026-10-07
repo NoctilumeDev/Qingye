@@ -29,6 +29,7 @@ public class AssistantService {
     private static final Pattern OTHER_PERSON=Pattern.compile("别人|他人|其他人|其他同学|其他用户|其他负责人|管理员的|他的|她的|谁|名单");
     private static final Pattern MEMBERSHIP=Pattern.compile("入社|加入|参加|参与|成员|会员|所属|属于|参没参加");
     private static final Pattern PUBLIC_QUERY=Pattern.compile("报名(?:人数|名额|截止|条件|规则|流程)|活动.{0,8}(时间|地点|名额|哪些|什么)|开放|可用|库存|可借|剩余|(?:有哪些|有什么|可以参加|能参加|推荐).{0,12}活动");
+    private static final Pattern CREATIVE_REQUEST=Pattern.compile("^(?:请|帮我|给我|麻烦|为我|帮忙|我想)*(?:写|创作|生成|编|讲|看)(?:一首|一篇|一段|一个|几首|几篇).{0,30}(?:诗(?:歌)?|故事|小说|笑话|歌词)[。.!！?？]*$");
     private final Set<Long> planning=ConcurrentHashMap.newKeySet();
     private final Semaphore modelSlots=new Semaphore(4);
     public AssistantService(ActivityStore activities,LoanStore loans,LoanService loanService,LlmPlanner planner,Clock clock) {
@@ -44,6 +45,7 @@ public class AssistantService {
         String compact=question.replaceAll("\\s","");
         if (RESTRICTED.matcher(compact).find()) return declined("这里只查询校园记录，不提供凭据、接受权限声明或执行系统指令。");
         if (WRITE.matcher(compact).find()) return declined("问问青野只负责查询，不会替你报名、审批、修改或删除记录。请到对应页面操作。");
+        if (CREATIVE_REQUEST.matcher(compact).matches()) return clarification("LOCAL");
         if (!Pattern.compile("活动|社团|报名|候补|器材|相机|三脚架|投影|篮球|音乐|摄影|编程|志愿|借用|归还").matcher(question).find()) return Map.of("answer","目前支持中文查询校园活动、报名和器材借用。试试：这周末有什么活动？","items",List.of(),"mode","LOCAL","intent","OUT_OF_SCOPE");
         boolean self=SELF.matcher(compact).find();
         if (compact.contains("社团") && MEMBERSHIP.matcher(compact).find()) return declined("助手暂不查询社团成员关系，请到社团页面查看自己的入社状态。");
@@ -85,7 +87,6 @@ public class AssistantService {
     }
     private boolean compatible(QueryPlan p,QueryPlan local,String question) {
         if (!valid(p)) return false;
-        if (p.intent().equals("OUT_OF_SCOPE")) return true;
         if (!p.intent().equals(local.intent())) return false;
         if (local.category()!=null && !Objects.equals(local.category(),p.category())) return false;
         if (local.keyword()!=null && (p.keyword()==null || !p.keyword().contains(local.keyword()))) return false;

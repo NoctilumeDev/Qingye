@@ -269,7 +269,7 @@ class BusinessIntegrationTest {
         @SuppressWarnings("unchecked") var publicRows=(List<Map<String,Object>>)service.ask(student,"有什么摄影活动").get("items");
         assertThat(publicRows).allSatisfy(row->assertThat(row).containsOnlyKeys("id","title","startTime","endTime","location","category"));
     }
-    @Test void incidentalCampusWordsDoNotCreateQueriesAndModelClarificationIsNotProviderFailure() {
+    @Test void incidentalCampusWordsAndCreativeRequestsDoNotCreateQueries() {
         var planner=mock(LlmPlanner.class);
         var activityFacts=mock(ActivityStore.class);
         var loanFacts=mock(LoanStore.class);
@@ -280,8 +280,13 @@ class BusinessIntegrationTest {
         assertThat(answer.get("items")).isEqualTo(List.of());
         assertThat(answer.get("answer").toString()).contains("请换个说法");
         verifyNoInteractions(planner,activityFacts,loanFacts);
-        assertThat(service.ask(student,"给我看一首关于相机的诗").get("mode")).isEqualTo("MODEL_PLAN");
-        verifyNoInteractions(activityFacts,loanFacts);
+        for(String creative:List.of("给我看一首关于相机的诗","请写一篇关于摄影活动的故事","帮我编一个关于器材的笑话")) {
+            var response=service.ask(student,creative);
+            assertThat(response.get("intent")).isEqualTo("OUT_OF_SCOPE");
+            assertThat(response.get("mode")).isEqualTo("LOCAL");
+            assertThat(response.get("items")).isEqualTo(List.of());
+        }
+        verifyNoInteractions(planner,activityFacts,loanFacts);
         reset(planner);
         assertThat(service.ask(student,"香蕉西行纪相机打麻将哈哈哈哈").get("intent")).isEqualTo("OUT_OF_SCOPE");
         for(String foreign:List.of("How many cameras are available?","今週末に参加できるイベントはありますか？")) {
@@ -296,6 +301,7 @@ class BusinessIntegrationTest {
             assertThat(service.ask(student,question).get("intent")).isNotEqualTo("OUT_OF_SCOPE");
         }
         assertThat(service.ask(student,"本周摄影活动").get("intent")).isEqualTo("ACTIVITIES");
+        assertThat(service.ask(student,"有哪些诗歌朗诵活动？").get("intent")).isEqualTo("ACTIVITIES");
     }
     @Test void httpAuthenticationValidationAndClubAuthorizationAreEnforced() throws Exception {
         mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
