@@ -39,7 +39,7 @@ public class AssistantService {
         return ask(actor,question,null);
     }
     public Map<String,Object> ask(Actor actor,String question,String session) {
-        confirmations.invalidate(actor.id(),session);
+        String requestId=confirmations.begin(actor.id(),session);
         // Gate 1: local scope, before any network call.
         question=Normalizer.normalize(question,Normalizer.Form.NFKC).replaceAll("\\p{Cf}","").strip();
         String compact=question.replaceAll("\\s","");
@@ -61,7 +61,7 @@ public class AssistantService {
         if (!valid(plan)) return stopped("CLARIFY","PLAN_INVALID",mode);
         if (!plan.action().equals("QUERY")) return stopped(plan.action(),plan.reason(),mode);
         if (plan.intent().startsWith("MY_") && !shortcut.filter(plan::equals).isPresent()) {
-            var issued=confirmations.issue(actor.id(),session,plan,mode);
+            var issued=confirmations.issue(actor.id(),session,requestId,plan,mode);
             if (issued.isEmpty()) return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE",mode);
             boolean loans=plan.intent().equals("MY_LOANS");
             return Map.of("status","CONFIRM_SCOPE","intent",plan.intent(),"items",List.of(),"mode",mode,

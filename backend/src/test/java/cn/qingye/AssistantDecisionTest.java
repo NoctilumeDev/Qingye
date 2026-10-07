@@ -94,6 +94,20 @@ class AssistantDecisionTest {
         assertThat(timed.confirm(student,preview.get("confirmationToken").toString(),"session-A")).containsEntry("status","CLARIFY");
         verifyNoInteractions(loans,activities,capacity);
     }
+    @Test void aNewQuestionDuringPlanningCannotBeOvertakenByTheOlderOffer() throws Exception {
+        var entered=new java.util.concurrent.CountDownLatch(1);
+        var release=new java.util.concurrent.CountDownLatch(1);
+        when(planner.plan(anyString())).thenAnswer(invocation->{entered.countDown();release.await(3,java.util.concurrent.TimeUnit.SECONDS);return Optional.of(QueryPlan.query("MY_LOANS",null,null,"ANY"));});
+        var executor=java.util.concurrent.Executors.newSingleThreadExecutor();
+        try {
+            var old=executor.submit(()->service.ask(student,"我今天借的相机有哪些","session-A"));
+            assertThat(entered.await(2,java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            service.ask(student,"帮我批准器材预约","session-A");
+            release.countDown();
+            assertThat(old.get(2,java.util.concurrent.TimeUnit.SECONDS)).containsEntry("status","CLARIFY");
+            verifyNoInteractions(loans,activities,capacity);
+        } finally { release.countDown();executor.shutdownNow(); }
+    }
     @Test void explicitClarificationAndRefusalAreDifferentAndNeverOverriddenByShortcuts() {
         for (var plan:List.of(QueryPlan.clarify("MULTIPLE_REQUESTS"),QueryPlan.reject("WRITE_OPERATION"))) {
             when(planner.plan(anyString())).thenReturn(Optional.of(plan));

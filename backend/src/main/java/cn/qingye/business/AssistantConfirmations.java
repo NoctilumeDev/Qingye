@@ -10,21 +10,37 @@ import java.util.*;
 final class AssistantConfirmations {
     record Offer(long user,String sessionHash,QueryPlan plan,String mode,Instant expiresAt) {}
     record Issued(String token,Instant expiresAt) {}
+    private record Owner(long user,String sessionHash) {}
+    private record Request(String id,Instant expiresAt) {}
     private final Clock clock;
     private final Map<String,Offer> offers=new HashMap<>();
+    private final Map<Owner,Request> requests=new HashMap<>();
     AssistantConfirmations(Clock clock) { this.clock=clock; }
 
-    synchronized void invalidate(long user,String session) {
+    private void purgeExpired() {
         offers.values().removeIf(offer->!clock.instant().isBefore(offer.expiresAt()));
-        if (session!=null) offers.values().removeIf(offer->offer.user()==user && offer.sessionHash().equals(hash(session)));
+        requests.values().removeIf(request->!clock.instant().isBefore(request.expiresAt()));
     }
-    synchronized Optional<Issued> issue(long user,String session,QueryPlan plan,String mode) {
-        if (session==null || session.isBlank()) return Optional.empty();
-        invalidate(user,session);
+    synchronized String begin(long user,String session) {
+        purgeExpired();
+        if (session==null || session.isBlank()) return null;
+        var owner=new Owner(user,hash(session));
+        offers.values().removeIf(offer->offer.user()==user && offer.sessionHash().equals(owner.sessionHash()));
+        if (requests.size()>=512 && !requests.containsKey(owner)) return null;
+        var request=new Request(UUID.randomUUID().toString(),clock.instant().plusSeconds(300));
+        requests.put(owner,request);
+        return request.id();
+    }
+    synchronized Optional<Issued> issue(long user,String session,String requestId,QueryPlan plan,String mode) {
+        purgeExpired();
+        if (session==null || requestId==null) return Optional.empty();
+        var owner=new Owner(user,hash(session));
+        var current=requests.get(owner);
+        if (current==null || !current.id().equals(requestId)) return Optional.empty();
         if (offers.size()>=512) return Optional.empty();
         String token=UUID.randomUUID().toString();
         Instant expires=clock.instant().plusSeconds(300);
-        offers.put(token,new Offer(user,hash(session),plan,mode,expires));
+        offers.put(token,new Offer(user,owner.sessionHash(),plan,mode,expires));
         return Optional.of(new Issued(token,expires));
     }
     synchronized Optional<Offer> consume(long user,String session,String token) {
