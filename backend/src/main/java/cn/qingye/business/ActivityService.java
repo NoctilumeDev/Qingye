@@ -46,14 +46,14 @@ public class ActivityService {
     public long create(Actor actor,Forms.Activity input) {
         valid(input);
         var club=clubs.lock(input.clubId());
-        access.manager(actor,input.clubId());
+        access.managerMutation(actor,input.clubId());
         if (!flag(club,"enabled")) throw Problem.conflict("社团已停用");
         return activities.create(input.clubId(),actor.id(),input.title(),input.description(),input.category(),input.location(),input.poster(),input.startTime(),input.endTime(),input.signupDeadline(),input.capacity());
     }
     public void edit(Actor actor,long id,Forms.Activity input) {
         valid(input);
         var a=activities.lock(id);
-        access.manager(actor,id(a,"clubId"));
+        access.managerMutation(actor,id(a,"clubId"));
         if (input.clubId()!=id(a,"clubId")) throw Problem.bad("活动所属社团不能更改");
         if (!Set.of("PENDING","REJECTED").contains(text(a,"status"))) throw Problem.conflict("已发布活动请取消后重新创建，避免影响现有报名和预约");
         activities.edit(id,input.title(),input.description(),input.category(),input.location(),input.poster(),input.startTime(),input.endTime(),input.signupDeadline(),input.capacity());
@@ -61,6 +61,7 @@ public class ActivityService {
     public void decide(Actor actor,long id,Forms.Decision input) {
         access.admin(actor);
         var a=activities.lock(id);
+        access.adminMutation(actor);
         if (!"PENDING".equals(text(a,"status"))) throw Problem.conflict("活动已审核");
         if (input.approve() && !time(a,"signupDeadline").isAfter(LocalDateTime.now(clock))) throw Problem.conflict("报名截止时间已过，请负责人调整后重新提交");
         activities.decision(id,input.approve()?"PUBLISHED":"REJECTED",actor.id(),input.note(),LocalDateTime.now(clock));
@@ -101,7 +102,7 @@ public class ActivityService {
     }
     public void cancel(Actor actor,long id) {
         var a=activities.lock(id);
-        access.manager(actor,id(a,"clubId"));
+        access.managerMutation(actor,id(a,"clubId"));
         if ("CANCELLED".equals(text(a,"status"))) return;
         activities.cancel(id);
         for (var loan:loans.forActivity(id)) {
@@ -112,6 +113,8 @@ public class ActivityService {
             activities.cancelRegistration(id(r,"id"));
             messages.notice(id(r,"userId"),"活动已取消",text(a,"title")+"已取消，请留意社团后续安排。",LocalDateTime.now(clock),"NOTICE",null);
         }
+        // Equipment locks above may have waited again; denial rolls back all changes/notices.
+        access.managerMutation(actor,id(a,"clubId"));
     }
     public List<Map<String,Object>> participants(Actor actor,long id) {
         var a=activities.view(id);

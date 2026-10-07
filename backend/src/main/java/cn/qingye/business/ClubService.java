@@ -35,7 +35,7 @@ public class ClubService {
     }
     public void edit(Actor actor,long id,Forms.Club input) {
         clubs.lock(id);
-        access.manager(actor,id);
+        access.managerMutation(actor,id);
         clubs.edit(id,input.name(),input.description(),input.color());
     }
     public void join(Actor actor,long id) {
@@ -58,13 +58,13 @@ public class ClubService {
     }
     public void decide(Actor actor,long club,long user,Forms.Member input) {
         clubs.lock(club);
-        access.manager(actor,club);
+        access.managerMutation(actor,club);
         var member=clubs.membership(club,user);
         if (member==null) throw Problem.missing();
         String role=input.role()==null?"MEMBER":input.role();
-        if ("MANAGER".equals(role)) access.admin(actor);
+        if ("MANAGER".equals(role)) access.adminMutation(actor);
         if (!"PENDING".equals(text(member,"status"))) {
-            if (actor.admin() && input.approve() && "ACTIVE".equals(text(member,"status"))) {
+            if (access.currentAdministrator(actor) && input.approve() && "ACTIVE".equals(text(member,"status"))) {
                 if ("MANAGER".equals(text(member,"role")) && "MEMBER".equals(role) && clubs.managerCount(club)<=1) throw Problem.conflict("请先指定新的负责人，再交接当前负责人");
                 clubs.membership(club,user,role,"ACTIVE");
                 return;

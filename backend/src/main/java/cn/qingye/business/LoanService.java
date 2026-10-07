@@ -48,6 +48,7 @@ public class LoanService {
         int peak=CapacityScan.peak(now,end,reservations);
         if (input.totalQuantity()<Math.max(peak,loans.borrowed(id))) throw Problem.conflict("新数量低于已有预约峰值或当前借出数量");
         if (!input.enabled() && (loans.borrowed(id)>0 || loans.approvedFuture(id,now)>0)) throw Problem.conflict("请先处理有效预约和未归还器材，再停用");
+        access.adminMutation(actor);
         loans.editEquipment(id,input.name(),input.category(),input.description(),input.image(),input.totalQuantity(),input.enabled());
     }
     public long apply(Actor actor,Forms.Loan input) {
@@ -56,6 +57,7 @@ public class LoanService {
         access.manager(actor,id(a,"clubId"));
         if (!"PUBLISHED".equals(text(a,"status")) || !time(a,"endTime").isAfter(LocalDateTime.now(clock))) throw Problem.conflict("请为尚未结束的已发布活动申请器材");
         var e=loans.equipment(input.equipmentId(),true);
+        access.managerMutation(actor,id(a,"clubId"));
         var existing=loans.byKey(input.requestKey());
         if (existing!=null) {
             if (id(existing,"applicantId")!=actor.id() || id(existing,"activityId")!=input.activityId() || id(existing,"equipmentId")!=input.equipmentId() || integer(existing,"quantity")!=input.quantity() || !time(existing,"plannedStart").equals(input.plannedStart()) || !time(existing,"plannedEnd").equals(input.plannedEnd())) throw Problem.conflict("申请标识已用于其他申请");
@@ -84,6 +86,7 @@ public class LoanService {
             int peak=CapacityScan.peak(time(l,"plannedStart"),time(l,"plannedEnd"),loans.reservations(id(l,"equipmentId"),time(l,"plannedStart"),time(l,"plannedEnd")));
             if (peak+integer(l,"quantity")>integer(e,"totalQuantity")) throw Problem.conflict("该时间段最多还能预约 "+Math.max(0,integer(e,"totalQuantity")-peak)+" 件，不能批准");
         }
+        access.adminMutation(actor);
         loans.decision(id,input.approve()?"APPROVED":"REJECTED",actor.id(),input.note(),now);
         messages.notice(id(l,"applicantId"),"器材申请审核结果",text(e,"name")+(input.approve()?"预约已批准，请在预约时间内到工作台确认领取。":"预约未通过："+input.note()),now,"NOTICE",null);
         var reminder=time(l,"plannedEnd").minusHours(1);
@@ -92,6 +95,7 @@ public class LoanService {
     public void checkout(Actor actor,long id) {
         access.admin(actor);
         var l=lock(id);
+        access.adminMutation(actor);
         var now=LocalDateTime.now(clock);
         if ("CHECKED_OUT".equals(text(l,"status"))) return;
         if (!"APPROVED".equals(text(l,"status"))) throw Problem.conflict("只有已批准的预约可以领取");
@@ -105,6 +109,7 @@ public class LoanService {
     public void returned(Actor actor,long id) {
         access.admin(actor);
         var l=lock(id);
+        access.adminMutation(actor);
         if ("RETURNED".equals(text(l,"status"))) return;
         if (!"CHECKED_OUT".equals(text(l,"status"))) throw Problem.conflict("只有已领取的器材可以确认归还");
         loans.returned(id,LocalDateTime.now(clock));
@@ -113,7 +118,7 @@ public class LoanService {
     public void cancel(Actor actor,long id) {
         var l=lock(id);
         var a=activities.view(id(l,"activityId"));
-        access.manager(actor,id(a,"clubId"));
+        access.managerMutation(actor,id(a,"clubId"));
         if ("CANCELLED".equals(text(l,"status"))) return;
         if (!Set.of("PENDING","APPROVED").contains(text(l,"status"))) throw Problem.conflict("领取前才能取消，已领取器材请归还");
         loans.cancel(id);

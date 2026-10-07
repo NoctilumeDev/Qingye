@@ -34,4 +34,10 @@ public class UserStore {
     public boolean manager(long userId,long clubId) {
         return sql.count("SELECT COUNT(*) FROM club_member m JOIN club c ON c.id=m.club_id WHERE m.user_id=? AND m.club_id=? AND m.role='MANAGER' AND m.status='ACTIVE' AND c.enabled=TRUE",userId,clubId)>0;
     }
+    public boolean currentAdministrator(long userId) {
+        return sql.count("SELECT COUNT(*) FROM app_user WHERE id=? AND enabled=TRUE AND admin=TRUE",userId)>0;
+    }
+    public boolean currentManager(long userId,long clubId) {
+        return sql.count("SELECT COUNT(*) FROM app_user u WHERE u.id=? AND u.enabled=TRUE AND (u.admin=TRUE OR EXISTS (SELECT 1 FROM club_member m JOIN club c ON c.id=m.club_id WHERE m.user_id=u.id AND m.club_id=? AND m.role='MANAGER' AND m.status='ACTIVE' AND c.enabled=TRUE))",userId,clubId)>0;
+    }
 }
