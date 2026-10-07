@@ -28,6 +28,8 @@ final class QueryAssessment {
         "(?:今天|明天|这周末|本周末|这周|本周|周末)?(?:校园|社团|运动|篮球|摄影|音乐|编程|科技|志愿)?活动");
     private static final Pattern RECORD_SHORTCUT = Pattern.compile(
         "(?:我的|本人)(?:报名(?:活动|记录)?|器材借用|借用(?:器材|记录)?|候补(?:活动|记录)?)");
+    private static final Pattern REQUEST_PREFIX = Pattern.compile(
+        "(?:请|帮我|给我|麻烦|我想|想|现在|只|仅|直接)*(?:查(?:一下|询)?|查看|看看?)");
 
     final String request;
     final Set<String> allowedIntents;
@@ -53,6 +55,7 @@ final class QueryAssessment {
         var excluded = new HashSet<String>();
         String context = "";
         String hint = "";
+        String requestPrefix = "";
         for (String part : BOUNDARY.split(input)) {
             String clause = part.strip();
             if (clause.isEmpty()) continue;
@@ -66,19 +69,33 @@ final class QueryAssessment {
                 if (removed.isEmpty()) candidates.clear();
                 else candidates.removeIf(previous -> !Collections.disjoint(names(previous), removed));
                 context = "";
+                requestPrefix = "";
                 continue;
             }
             if (REVISION.matcher(clause).find()) {
                 candidates.clear();
                 context = "";
+                requestPrefix = "";
             }
             boolean query = QUERY.matcher(clause).find();
             if (!query) {
                 if (!PAST.matcher(clause).find()
                         && (EQUIPMENT.contains(clause) || clause.startsWith("就是") || ACTIVITY_SHORTCUT.matcher(clause).matches())) {
                     context = clause;
+                } else if (!PAST.matcher(clause).find() && names(clause).size()==1) {
+                    String target = names(clause).iterator().next();
+                    if (clause.replace(target, "").matches("[\\d\\s]+")) context = target;
                 }
                 continue;
+            }
+            // '现在' can modify an unfinished request verb; it is not always a new request.
+            if (REQUEST_PREFIX.matcher(clause.replaceAll("\\s", "")).matches()) {
+                requestPrefix = clause;
+                continue;
+            }
+            if (!requestPrefix.isEmpty()) {
+                clause = requestPrefix + clause;
+                requestPrefix = "";
             }
             // A bare verb/pronoun may refer to the last explicit topic, never to discarded history.
             if (names(clause).isEmpty() && !clause.contains("活动") && !clause.contains("器材")
@@ -90,6 +107,7 @@ final class QueryAssessment {
             excluded.removeAll(names(clause));
             candidates.add(clause);
         }
+        if (!requestPrefix.isEmpty() && !context.isEmpty()) candidates.add(context + " " + requestPrefix);
         if (candidates.isEmpty()) {
             String compact = input.replaceAll("[\\s，。！？,.!?]", "");
             if (EQUIPMENT.contains(compact) || ACTIVITY_SHORTCUT.matcher(compact).matches()

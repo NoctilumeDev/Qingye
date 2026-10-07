@@ -35,6 +35,8 @@ class AssistantDecisionTest {
             new Example("先查我的报名，再查器材库存，两个都保留", "OUT_OF_SCOPE", null),
             new Example("这是随手打的一段废话，今天看了些乱七八糟的东西，相机，香蕉和雨伞。", "OUT_OF_SCOPE", null),
             new Example("我昨天借过摄像机，今天还了手机，现在帮我看看相机还能不能借", "EQUIPMENT", "相机"),
+            new Example("我今天没有寄相机，帮我查一下现在有没有相机。", "EQUIPMENT", "相机"),
+            new Example("相机 2026 10 08 12345，帮我看现在还能不能借", "EQUIPMENT", "相机"),
             new Example("相机库存先不查，只查看本周公开活动", "ACTIVITIES", null)
         );
         return examples.stream().flatMap(example ->
