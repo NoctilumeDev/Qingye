@@ -41,6 +41,7 @@ class BusinessIntegrationTest {
     @Autowired UserStore users;
     @Autowired ActivityStore activityStore;
     @Autowired Access access;
+    @Autowired AssistantService assistant;
     @Autowired ObjectMapper json;
     @Autowired MockMvc mvc;
     @Autowired MutableClock clock;
@@ -301,6 +302,37 @@ class BusinessIntegrationTest {
         verify(loanFacts).equipment();
         assertThat(service.ask(student,"校园有啥活动").get("intent")).isEqualTo("ACTIVITIES");
         assertThat(service.ask(student,"能借三脚架吗").get("status")).isEqualTo("CLARIFY");
+    }
+    @Test void personalScopeConfirmationUsesTheSameHttpSessionAndDoesNotReplan() throws Exception {
+        long own=loanStore.create(activityA,student.id(),equipment,1,NOW.plusHours(2),NOW.plusHours(3),"private",UUID.randomUUID().toString());
+        loanStore.create(activityA,other.id(),equipment,1,NOW.plusHours(2),NOW.plusHours(3),"other private",UUID.randomUUID().toString());
+        var model=mock(LlmPlanner.class);
+        when(model.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("MY_LOANS",null,null,"ANY")));
+        Object original=org.springframework.test.util.ReflectionTestUtils.getField(assistant,"planner");
+        String session="Bearer "+auth.demo(student.id()).get("token");
+        try {
+            org.springframework.test.util.ReflectionTestUtils.setField(assistant,"planner",model);
+            var preview=mvc.perform(post("/api/assistant").header("Authorization",session).contentType("application/json")
+                .content(json.writeValueAsBytes(new Forms.Question("我今天借的相机有哪些")))).andExpect(status().isOk()).andReturn().getResponse();
+            var proposed=json.readTree(preview.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)).path("data");
+            assertThat(proposed.path("status").asText()).isEqualTo("CONFIRM_SCOPE");assertThat(proposed.path("items").size()).isZero();
+            String token=proposed.path("confirmationToken").asText();
+            byte[] body=json.writeValueAsBytes(new Forms.AssistantConfirmation(token));
+            for(String wrong:List.of("Bearer "+auth.demo(other.id()).get("token"),"Bearer "+auth.demo(student.id()).get("token"))) {
+                var refused=mvc.perform(post("/api/assistant/confirm").header("Authorization",wrong).contentType("application/json").content(body)).andExpect(status().isOk()).andReturn().getResponse();
+                assertThat(json.readTree(refused.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)).path("data").path("status").asText()).isEqualTo("CLARIFY");
+            }
+            when(model.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("MY_REGISTRATIONS",null,null,"ANY")));
+            var confirmed=mvc.perform(post("/api/assistant/confirm").header("Authorization",session).contentType("application/json").content(body)).andExpect(status().isOk()).andReturn().getResponse();
+            var result=json.readTree(confirmed.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)).path("data");
+            assertThat(result.path("intent").asText()).isEqualTo("MY_LOANS");assertThat(result.path("items").size()).isEqualTo(1);
+            assertThat(result.path("items").get(0).path("id").asLong()).isEqualTo(own);
+            verify(model,times(1)).plan(anyString());
+            var replay=mvc.perform(post("/api/assistant/confirm").header("Authorization",session).contentType("application/json").content(body)).andReturn().getResponse();
+            assertThat(json.readTree(replay.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)).path("data").path("status").asText()).isEqualTo("CLARIFY");
+            mvc.perform(post("/api/assistant/confirm").contentType("application/json").content(body)).andExpect(status().isUnauthorized());
+            mvc.perform(post("/api/assistant/confirm").header("Authorization",session).contentType("application/json").content("{\"token\":\"invalid\"}")).andExpect(status().isBadRequest());
+        } finally { org.springframework.test.util.ReflectionTestUtils.setField(assistant,"planner",original); }
     }
     @Test void httpAuthenticationValidationAndClubAuthorizationAreEnforced() throws Exception {
         mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());
