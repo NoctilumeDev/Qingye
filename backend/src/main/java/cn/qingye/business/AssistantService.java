@@ -5,7 +5,6 @@ import cn.qingye.model.*;
 import org.springframework.stereotype.Service;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.text.Normalizer;
 import java.util.concurrent.*;
@@ -46,16 +45,23 @@ public class AssistantService {
         if (RESTRICTED.matcher(compact).find()) return declined("这里只查询校园记录，不提供凭据、接受权限声明或执行系统指令。");
         if (WRITE.matcher(compact).find()) return declined("问问青野只负责查询，不会替你报名、审批、修改或删除记录。请到对应页面操作。");
         if (CREATIVE_REQUEST.matcher(compact).matches()) return clarification("LOCAL");
-        if (!Pattern.compile("活动|社团|报名|候补|器材|相机|三脚架|投影|篮球|音乐|摄影|编程|志愿|借用|归还").matcher(question).find()) return Map.of("answer","目前支持中文查询校园活动、报名和器材借用。试试：这周末有什么活动？","items",List.of(),"mode","LOCAL","intent","OUT_OF_SCOPE");
+        if (!Pattern.compile("活动|社团|报名|候补|器材|相机|摄像机|摄像头|手机|三脚架|投影|篮球|音乐|摄影|编程|志愿|借用|归还").matcher(question).find()) return Map.of("answer","目前支持中文查询校园活动、报名和器材借用。试试：这周末有什么活动？","items",List.of(),"mode","LOCAL","intent","OUT_OF_SCOPE");
+        // Whole-input authority guards remain effective even if a later clause says 'never mind'.
+        if (PERSONAL.matcher(compact).find() && OTHER_PERSON.matcher(compact).find())
+            return declined("助手不查询他人的报名或借用记录。可以问：我的报名活动有哪些？或：相机现在还有多少？");
+        var assessment=QueryAssessment.assess(question,clock);
+        if (assessment.allowedIntents.isEmpty()) return clarification("LOCAL");
+        question=assessment.request;
+        compact=question.replaceAll("\\s","");
         boolean self=SELF.matcher(compact).find();
         if (compact.contains("社团") && MEMBERSHIP.matcher(compact).find()) return declined("助手暂不查询社团成员关系，请到社团页面查看自己的入社状态。");
         if (PERSONAL.matcher(compact).find() && (OTHER_PERSON.matcher(compact).find() || !self && !PUBLIC_QUERY.matcher(compact).find()))
             return declined("助手不查询他人的报名或借用记录。可以问：我的报名活动有哪些？或：相机现在还有多少？");
         if (self && Pattern.compile("报名|候补|参加").matcher(compact).find() && Pattern.compile("借用|借过|借了|归还").matcher(compact).find()) return declined("请一次查询一种记录：我的报名活动，或我的器材借用。");
-        if (!hasQueryIntent(question)) return clarification("LOCAL");
-        var local=localPlan(question);
-        var remote=plan(actor.id(),question).filter(p->compatible(p,local,compact));
-        var plan=remote.orElse(local);
+        var remote=plan(actor.id(),question).filter(p->compatible(p,assessment));
+        var decision=remote.or(()->assessment.fallback);
+        if (decision.isEmpty()) return clarification("LOCAL");
+        var plan=decision.get();
         // Gate 2: a closed intent/parameter set. The model cannot supply SQL or identity.
         if (!valid(plan)) throw Problem.bad("查询参数无效");
         if (plan.intent().equals("OUT_OF_SCOPE")) return clarification("MODEL_PLAN");
@@ -85,14 +91,17 @@ public class AssistantService {
         try { return planner.plan(question); }
         finally { planning.remove(user);modelSlots.release(); }
     }
-    private boolean compatible(QueryPlan p,QueryPlan local,String question) {
+    private boolean compatible(QueryPlan p,QueryAssessment assessment) {
         if (!valid(p)) return false;
-        if (!p.intent().equals(local.intent())) return false;
-        if (local.category()!=null && !Objects.equals(local.category(),p.category())) return false;
+        if (!assessment.allowedIntents.contains(p.intent())) return false;
+        var local=assessment.constraints;
+        String question=assessment.request.replaceAll("\\s","");
+        if (assessment.requiresKeyword && p.keyword()==null) return false;
+        if (p.keyword()!=null && assessment.excludedEntities.contains(p.keyword())) return false;
+        if (!Objects.equals(local.category(),p.category())) return false;
         if (local.keyword()!=null && (p.keyword()==null || !p.keyword().contains(local.keyword()))) return false;
         if (p.keyword()!=null && !question.contains(p.keyword().replaceAll("\\s",""))) return false;
-        if (local.start()!=null && (!Objects.equals(local.start(),p.start()) || !Objects.equals(local.end(),p.end()))) return false;
-        return p.start()==null || local.start()!=null || Pattern.compile("\\d|时间|日期|月|日|时|点|上午|下午|晚上|周").matcher(question).find();
+        return Objects.equals(local.start(),p.start()) && Objects.equals(local.end(),p.end());
     }
     private Map<String,Object> visible(Map<String,Object> row,String intent) {
         var fields=switch(intent) {
@@ -112,42 +121,8 @@ public class AssistantService {
         var now=LocalDateTime.now(clock);
         return p.start()==null || (p.start().isBefore(p.end()) && !p.start().isBefore(now.minusDays(1)) && !p.end().isAfter(now.plusYears(1)) && Duration.between(p.start(),p.end()).compareTo(Duration.ofDays(31))<=0);
     }
-    private boolean hasQueryIntent(String question) {
-        if (Pattern.compile("查|找|看|搜|什么|有啥|哪些|哪[里个]|多少|几[台个件]|剩余|可用|有没有|是否|能否|可以|还有|我的|想参加|想借|能借|借用|归还|报名|候补|时间|地点|有.{0,6}(器材|相机|三脚架|投影仪|开发板)").matcher(question).find()) return true;
-        // Topic-only shortcuts remain usable, but a name buried in unrelated text is insufficient.
-        return question.replaceAll("[\\s，。！？,.!?]","").matches("(?:(?:今天|明天|这周末|本周末|这周|本周|周末)?(?:校园|社团|运动|篮球|摄影|音乐|编程|科技|志愿)?活动)|器材|相机|三脚架|投影仪|开发板|社团");
-    }
     private Map<String,Object> clarification(String mode) {
-        return Map.of("answer","这句话还没有明确的校园查询，请换个说法。比如：相机现在还有多少？或：这周末有什么活动？","items",List.of(),"mode",mode,"intent","OUT_OF_SCOPE");
-    }
-    private QueryPlan localPlan(String q) {
-        boolean self=SELF.matcher(q).find();
-        String intent=self && Pattern.compile("借|归还").matcher(q).find()?"MY_LOANS":self && Pattern.compile("报名|候补|参加|活动").matcher(q).find()?"MY_REGISTRATIONS":Pattern.compile("器材|相机|三脚架|投影|借用|篮球数量").matcher(q).find()?"EQUIPMENT":"ACTIVITIES";
-        if (intent.startsWith("MY_")) return new QueryPlan(intent,null,null,null,null);
-        String category=Pattern.compile("运动|篮球|足球|跑步").matcher(q).find()?"SPORT":Pattern.compile("摄影|音乐|艺术").matcher(q).find()?"ART":Pattern.compile("编程|科技|开发").matcher(q).find()?"TECH":q.contains("志愿")?"VOLUNTEER":null;
-        String keyword=null;
-        for(String word:List.of("相机","三脚架","投影仪","开发板")) if(q.contains(word)) keyword=word;
-        LocalDateTime start=null,end=null;
-        var today=LocalDate.now(clock);
-        if(q.contains("周末")) {
-            var saturday=today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(5);
-            start=saturday.atStartOfDay();
-            end=saturday.plusDays(2).atStartOfDay();
-            if(start.isBefore(LocalDateTime.now(clock))) start=LocalDateTime.now(clock);
-        }
-        else if(q.contains("明天")) {
-            start=today.plusDays(1).atStartOfDay();
-            end=start.plusDays(1);
-        }
-        else if(q.contains("今天")) {
-            start=today.atStartOfDay();
-            end=start.plusDays(1);
-        }
-        else if(q.contains("这周") || q.contains("本周")) {
-            start=LocalDateTime.now(clock);
-            end=today.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atStartOfDay();
-        }
-        return new QueryPlan(intent,category,keyword,start,end);
+        return Map.of("answer","本次查询对象还不够明确或包含多个请求，请换个说法，一次查询一个对象。比如：相机现在还有多少？或：这周末有什么活动？","items",List.of(),"mode",mode,"intent","OUT_OF_SCOPE");
     }
     private String fact(Map<String,Object> row) {
         if(row.containsKey("equipmentName")) return text(row,"equipmentName")+" ×"+integer(row,"quantity")+"，"+loanStatus(text(row,"status"));
