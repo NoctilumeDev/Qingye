@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.sql.DataSource;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -33,6 +34,7 @@ class AuthorityRevocationTest {
     @Autowired DataSource datasource;
     @Autowired MockMvc mvc;
     @Autowired AuthService auth;
+    @Autowired Clock clock;
     @MockitoSpyBean ActivityStore activities;
     @MockitoSpyBean LoanStore loans;
     long admin,manager,club,activity;
@@ -47,7 +49,7 @@ class AuthorityRevocationTest {
         manager=sql.insert("INSERT INTO app_user(openid,name) VALUES ('demo:manager','manager')");
         club=sql.insert("INSERT INTO club(name,created_by) VALUES ('owned club',?)",admin);
         sql.insert("INSERT INTO club_member(club_id,user_id,role,status) VALUES (?,?,'MANAGER','ACTIVE')",club,manager);
-        var now=LocalDateTime.now();
+        var now=LocalDateTime.now(clock);
         activity=sql.insert("INSERT INTO activity(club_id,created_by,title,category,location,start_time,end_time,signup_deadline,capacity,status) VALUES (?,?,?,'ART','fixture',?,?,?,?,?)",
                 club,manager,"owned contention",now.plusDays(2),now.plusDays(2).plusHours(2),now.plusDays(1),1,"PENDING");
     }
@@ -71,7 +73,7 @@ class AuthorityRevocationTest {
     @Test void cancellationRollsBackEarlierWritesWhenAuthorityChangesDuringLaterEquipmentWait() throws Exception {
         sql.update("UPDATE activity SET status='PUBLISHED' WHERE id=?",activity);
         long equipment=sql.insert("INSERT INTO equipment(name,category,total_quantity) VALUES ('owned camera','fixture',2)");
-        var now=LocalDateTime.now();
+        var now=LocalDateTime.now(clock);
         long loan=sql.insert("INSERT INTO loan(activity_id,applicant_id,equipment_id,quantity,planned_start,planned_end,request_key,status) VALUES (?,?,?,1,?,?,?,'PENDING')",
                 activity,manager,equipment,now.plusHours(1),now.plusHours(2),"owned-later-wait");
         var before=sql.one("SELECT * FROM activity WHERE id=?",activity);
