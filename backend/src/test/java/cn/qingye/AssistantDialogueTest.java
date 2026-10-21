@@ -142,4 +142,18 @@ class AssistantDialogueTest {
             new QueryPlan("CLARIFY","EQUIPMENT",null,"ART",null,null,null,null,"MISSING_INFO")))assertThat(bad.valid()).as(bad.toString()).isFalse();
         noFacts();
     }
+    @Test void equipmentClarificationOnlyOffersExecutableTimeFacetsFromTheContract() {
+        var partial=new QueryPlan("CLARIFY","EQUIPMENT","相机",null,null,null,"ANY",null,"MISSING_TIME");
+        when(planner.plan(anyString())).thenReturn(Optional.of(partial));
+        var result=service.ask(me,"相机什么时候可借","s");assertThat(result).containsEntry("status","CLARIFY");
+        assertThat(result.get("question").toString()).contains("当前库存","明天","指定日期").doesNotContain("过去","全部时间","未来（未开始）","现在（进行中）");noFacts();
+    }
+    @Test void compoundClarificationKeepsItsBatchIdentityWithoutAuthorizingItsCompletePart() {
+        var complete=QueryPlan.query("EQUIPMENT","相机",null,"CURRENT");
+        var partial=new QueryPlan("CLARIFY","BATCH",null,null,null,null,null,null,"MISSING_TIME",List.of(complete,draft()));
+        assertThat(partial.valid()).isTrue();when(planner.plan(anyString())).thenReturn(Optional.of(partial));
+        var result=service.ask(me,"先查相机，另外看看蓝晒活动","s");
+        assertThat(result).containsEntry("status","CLARIFY").containsEntry("draft",partial).doesNotContainKey("confirmationToken");
+        assertThat(result.get("question").toString()).contains("第 2 项","公开活动");noFacts();
+    }
 }

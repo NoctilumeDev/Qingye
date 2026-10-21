@@ -94,12 +94,21 @@ public class AssistantService {
         return result;
     }
     private String followupQuestion(QueryPlan p) {
-        if(p.reason().equals("MISSING_TIME"))return "你想查看过去、即将举办的，还是全部时间？也可以补充具体日期。";
+        if(p.reason().equals("MISSING_TIME"))return timeQuestion(p);
         if(p.reason().equals("DATE_MEANING"))return "这里的日期指活动／计划借用时段，还是实际报名、领取或归还日期？后者目前不支持按日期筛选，可改选支持的条件。";
         if(p.reason().equals("UNKNOWN_ENTITY"))return "你指哪场活动或哪种器材？可以补充原名、社团，或明确选择全部。";
         if(p.reason().equals("MULTIPLE_REQUESTS"))return "这些请求之间需要什么关系？当前支持最多四项独立查询，不支持跨对象关联比较。";
         if(p.intent()!=null)return "已保留前面的查询方向。请补充仍不明确的名称、时间或状态；明确要全部也可以直接说全部。";
         return "你想查公开活动、器材库存、自己的报名还是自己的借用？请补充必要信息，也可以直接选择分区。";
+    }
+    private String timeQuestion(QueryPlan p) {
+        if(p.queries()!=null) {
+            var questions=new ArrayList<String>();
+            for(int i=0;i<p.queries().size();i++)if(p.queries().get(i).timeOption()==null)questions.add("第 "+(i+1)+" 项："+timeQuestion(p.queries().get(i)));
+            if(!questions.isEmpty())return String.join("\n",questions);
+        }
+        if(!AssistantContract.INTENTS.contains(Objects.toString(p.intent(),"")))return "请先说明查询公开活动、器材库存、自己的报名还是自己的借用，再补充相应时间。";
+        return "查询"+AssistantContract.intentLabel(p.intent())+"的时间可选："+String.join("、",AssistantContract.timeLabels(p.intent()))+"。请补充所需时间，已有名称和状态保留。";
     }
     /** Explicit local facets remain usable when the model is unavailable or uncertain. */
     public Map<String,Object> query(Actor actor,QueryPlan plan,String session) {

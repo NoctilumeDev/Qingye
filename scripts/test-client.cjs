@@ -565,6 +565,14 @@ test('manual independent query queue is bounded, editable and uses a single batc
   await assistant.previewQueued(); assert.equal(calls[0].url, '/assistant/queries'); assert.equal(calls[0].body.queries.length, 4); assert.equal(assistant.data.items.length, 0)
 })
 
+test('equipment selection and mapped drafts show only its own supported time choices', async () => {
+  let sent
+  const assistant = page('assistant', async (url, method, body) => { sent = body; return { status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', answer: '明天预约库存', items: [] } })
+  assistant.facetPick({ currentTarget: { dataset: { field: 'objectIndex' } }, detail: { value: '1' } })
+  assert.equal(assistant.data.times[assistant.data.timeIndex], '当前库存'); assert.ok(!assistant.data.timeKeys.some(k => ['ANY', 'PAST', 'FUTURE'].includes(k)))
+  assistant.applyDraft({ intent: 'EQUIPMENT', entity: '相机', timeOption: 'TOMORROW', status: 'ANY' }); await assistant.searchFacets(); assert.equal(sent.timeOption, 'TOMORROW'); assert.equal(sent.entity, '相机')
+})
+
 test('opening detail and returning preserves passive continuation rather than stranding the results', async () => {
   let calls = 0, navigation
   const plan = { action: 'QUERY', intent: 'ACTIVITIES', entity: null, category: null, location: null, timeOption: 'ANY', status: 'ANY', date: null }

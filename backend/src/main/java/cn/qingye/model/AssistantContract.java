@@ -27,6 +27,11 @@ public final class AssistantContract {
     @SuppressWarnings("unchecked") private static List<String> list(String key){return (List<String>)SPEC.get(key);}
     @SuppressWarnings("unchecked") public static List<String> states(String intent){return ((Map<String,List<String>>)SPEC.get("states")).getOrDefault(intent,List.of("ANY"));}
     @SuppressWarnings("unchecked") public static List<String> times(String intent){return ((Map<String,List<String>>)SPEC.get("timeOptionsByIntent")).getOrDefault(intent,TIMES);}
+    @SuppressWarnings("unchecked") public static List<String> timeLabels(String intent){
+        var overrides=((Map<String,Map<String,String>>)SPEC.get("timeLabelsByIntent")).getOrDefault(intent,Map.of());var labels=list("timeLabels");
+        return times(intent).stream().map(key->overrides.getOrDefault(key,labels.get(TIMES.indexOf(key)))).toList();
+    }
+    public static String intentLabel(String intent){return list("intentLabels").get(INTENTS.indexOf(intent));}
     @SuppressWarnings("unchecked") public static Map<String,List<String>> equipmentNameGroups(){return (Map<String,List<String>>)SPEC.get("equipmentNameGroups");}
     public static Map<String,Object> describe(){return SPEC;}
 }

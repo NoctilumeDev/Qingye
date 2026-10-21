@@ -89,6 +89,8 @@ class IntegrationBoundaryTest {
             assertThat(planner.plan("查相机和下周摄影活动")).hasValueSatisfying(p->assertThat(p.batch()).isTrue());
             var partial=new QueryPlan("CLARIFY","ACTIVITIES","摄影社",null,null,null,"ANY",null,"MISSING_TIME");
             payload.set(json.writeValueAsString(partial));assertThat(planner.plan("摄影社活动")).contains(partial);
+            var composite=new QueryPlan("CLARIFY","BATCH",null,null,null,null,null,null,"MISSING_TIME",List.of(single,partial));
+            payload.set(json.writeValueAsString(composite));assertThat(planner.plan("相机和摄影社活动")).contains(composite);
             var nested=json.valueToTree(QueryPlan.batch(List.of(single,single)));
             ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).put("userId",4);
             payload.set(json.writeValueAsString(nested));assertThat(planner.plan("查全部")).hasValueSatisfying(p->assertThat(p.action()).isEqualTo("REJECT"));

@@ -1,5 +1,5 @@
 {
-  "version": "qingye-query-v4",
+  "version": "qingye-query-v4.1",
   "maxQueries": 4,
   "maxClarifications": 2,
   "intents": ["ACTIVITIES", "EQUIPMENT", "MY_REGISTRATIONS", "MY_LOANS"],
@@ -16,6 +16,7 @@
   "stateLabels": {"ANY":"全部状态", "NON_CANCELLED":"未取消", "REGISTERED":"已报名", "WAITLISTED":"候补", "CANCELLED":"已取消", "PENDING":"待审核", "APPROVED":"已批准", "REJECTED":"未通过", "CHECKED_OUT":"已领取未归还", "RETURNED":"已归还"},
   "equipmentNameGroups": {"相机":["相机","单反相机"],"三脚架":["三脚架","轻便三脚架"],"投影仪":["投影仪","便携投影仪"]},
   "timeOptionsByIntent": {"EQUIPMENT":["CURRENT","TODAY","TOMORROW","DAY_AFTER_TOMORROW","THIS_WEEK","NEXT_WEEK","WEEKEND","DATE"]},
+  "timeLabelsByIntent": {"EQUIPMENT":{"CURRENT":"当前库存"}},
   "querySemantics": {
     "ACTIVITIES":"启用社团的已发布活动；标题或社团名称包含词，地点精确匹配；时间按活动起止时段",
     "MY_REGISTRATIONS":"当前会话用户现存的全部报名记录，含取消和停用社团；时间按活动时段，不是报名时间；报名不证明出席",

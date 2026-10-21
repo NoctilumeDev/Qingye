@@ -27,7 +27,7 @@ public record QueryPlan(String action, String intent, String entity, String cate
         boolean draft="CLARIFY".equals(action);
         if(!draft&&!"QUERY".equals(action)) return false;
         if(draft ? !AssistantContract.CLARIFICATIONS.contains(Objects.toString(reason,"")) : reason!=null) return false;
-        if(queries!=null) return draft&&emptyConditions()&&!queries.isEmpty()&&queries.size()<=AssistantContract.MAX_QUERIES
+        if(queries!=null) return draft&&(intent==null||intent.equals("BATCH"))&&entity==null&&category==null&&timeOption==null&&date==null&&status==null&&location==null&&!queries.isEmpty()&&queries.size()<=AssistantContract.MAX_QUERIES
             &&queries.stream().allMatch(q->q!=null&&q.queries()==null&&!"REJECT".equals(q.action())&&q.valid());
         if(intent!=null&&!AssistantContract.INTENTS.contains(intent)||!draft&&intent==null) return false;
         if (entity!=null && (entity.isBlank() || entity.length()>80 || !entity.equals(entity.strip()) || entity.codePoints().anyMatch(Character::isISOControl))) return false;

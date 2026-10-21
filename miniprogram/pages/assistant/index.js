@@ -36,18 +36,19 @@ Page({
     const field = e.currentTarget.dataset.field, value = Number(e.detail.value)
     this.setData({ [field]: value })
     if (field === 'objectIndex') {
-      const intent = contract.intents[value]
-      this.setData({ states: contract.states[intent].map(s => contract.stateLabels[s]), stateIndex: 0, categoryIndex: 0, location: '', entity: '', timeIndex: contract.times.indexOf(intent === 'EQUIPMENT' ? 'CURRENT' : 'ANY') })
+      const intent = contract.intents[value], keys = contract.timeOptionsByIntent[intent] || contract.times
+      this.setData({ states: contract.states[intent].map(s => contract.stateLabels[s]), stateIndex: 0, categoryIndex: 0, location: '', entity: '', timeKeys: keys, times: keys.map(k => this.timeLabel(k, intent)), timeIndex: keys.indexOf(intent === 'EQUIPMENT' ? 'CURRENT' : 'ANY') })
     }
   },
   bodyOf(p) { return Object.fromEntries(['intent', 'entity', 'category', 'timeOption', 'date', 'status', 'location'].map(k => [k, p[k] == null ? null : p[k]])) },
+  timeLabel(key, intent) { return (contract.timeLabelsByIntent[intent] || {})[key] || contract.timeLabels[contract.times.indexOf(key)] },
   summaryOf(p) {
-    const object = contract.intentLabels[contract.intents.indexOf(p.intent)] || '对象待补充', time = contract.timeLabels[contract.times.indexOf(p.timeOption)] || '时间待补充'
+    const object = contract.intentLabels[contract.intents.indexOf(p.intent)] || '对象待补充', time = this.timeLabel(p.timeOption, p.intent) || '时间待补充'
     return [object, p.entity === 'ALL' ? '全部器材' : p.entity, time, p.date, p.category && contract.categoryLabels[contract.categories.indexOf(p.category)], p.location, p.status && contract.stateLabels[p.status]].filter(Boolean).join(' · ')
   },
   syncQueue(queries, editingIndex = -1) { this.setData({ queuedQueries: queries, queuedSummaries: queries.map(p => this.summaryOf(p)), editingIndex }) },
   facetBody() {
-    const d = this.data, intent = contract.intents[d.objectIndex], timeOption = contract.times[d.timeIndex]
+    const d = this.data, intent = contract.intents[d.objectIndex], timeOption = d.timeKeys[d.timeIndex]
     if (timeOption === 'DATE' && !d.date) { wx.showToast({ title: '请选择具体日期', icon: 'none' }); return null }
     if (intent === 'EQUIPMENT' && ['ANY', 'PAST', 'FUTURE'].includes(timeOption)) { wx.showToast({ title: '库存请选择当前或具体时段', icon: 'none' }); return null }
     return { intent, entity: d.entity.trim() || (intent === 'EQUIPMENT' ? 'ALL' : null), category: ['ACTIVITIES', 'MY_REGISTRATIONS'].includes(intent) ? [null, ...contract.categories][d.categoryIndex] : null,
@@ -77,12 +78,15 @@ Page({
   applyDraft(p) {
     if (!p) return
     const change = {}, index = contract.intents.indexOf(p.intent)
-    if (index >= 0) { change.objectIndex = index; change.states = contract.states[p.intent].map(s => contract.stateLabels[s]) }
+    if (index >= 0) {
+      change.objectIndex = index; change.states = contract.states[p.intent].map(s => contract.stateLabels[s]); change.timeKeys = contract.timeOptionsByIntent[p.intent] || contract.times; change.times = change.timeKeys.map(k => this.timeLabel(k, p.intent))
+      if (index !== this.data.objectIndex) Object.assign(change, { timeIndex: 0, categoryIndex: 0, stateIndex: 0, entity: '', location: '', date: '' })
+    }
     if (p.entity != null) change.entity = p.entity === 'ALL' ? '' : p.entity
     if (p.category != null) change.categoryIndex = [null, ...contract.categories].indexOf(p.category)
     if (p.location != null) change.location = p.location
     if (p.date != null) change.date = p.date
-    if (p.timeOption != null) change.timeIndex = contract.times.indexOf(p.timeOption)
+    if (p.timeOption != null) change.timeIndex = (change.timeKeys || this.data.timeKeys).indexOf(p.timeOption)
     if (p.status != null && index >= 0) change.stateIndex = contract.states[p.intent].indexOf(p.status)
     this.setData(change)
   },
@@ -159,7 +163,7 @@ Page({
     if (!this.data.question.trim()) return wx.showToast({ title: '先输入想问的问题吧', icon: 'none' })
     if (wx.hideKeyboard) wx.hideKeyboard()
     this.lastPreviewRequest = null
-    this.setData({ queuedQueries: [], queuedSummaries: [], draftSummaries: [], editingIndex: -1, followupQuestion: '', replyText: '', correcting: false, entity: '', location: '', date: '', categoryIndex: 0, stateIndex: 0, objectIndex: 0, timeIndex: 0, states: [contract.stateLabels.ANY] })
+    this.setData({ queuedQueries: [], queuedSummaries: [], draftSummaries: [], editingIndex: -1, followupQuestion: '', replyText: '', correcting: false, entity: '', location: '', date: '', categoryIndex: 0, stateIndex: 0, objectIndex: 0, timeKeys: contract.times, times: contract.timeLabels, timeIndex: 0, states: [contract.stateLabels.ANY] })
     return this.load('/assistant', { question: this.data.question.trim() })
   },
   open(e) { const index = Number(e.currentTarget.dataset.index || 0), intent = this.data.sections[index] && this.data.sections[index].intent || this.data.intent; if (intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS') wx.navigateTo({ url: '/pages/activity/index?id=' + e.currentTarget.dataset.id }) }
