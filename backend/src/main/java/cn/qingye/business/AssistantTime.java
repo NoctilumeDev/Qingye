@@ -20,6 +20,7 @@ record AssistantTime(LocalDateTime start,LocalDateTime end,LocalDateTime anchor,
             case "DAY_AFTER_TOMORROW" -> day(today.plusDays(2),now,"后天");
             case "DATE" -> day(LocalDate.parse(plan.date()),now,"指定日期");
             case "THIS_WEEK" -> new AssistantTime(now,today.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atStartOfDay(),now,"本周剩余时间");
+            case "NEXT_WEEK" -> { var monday=today.with(TemporalAdjusters.next(DayOfWeek.MONDAY)); yield new AssistantTime(monday.atStartOfDay(),monday.plusDays(7).atStartOfDay(),now,"下周"); }
             case "WEEKEND" -> {
                 var saturday=today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).plusDays(5);
                 var start=saturday.atStartOfDay();

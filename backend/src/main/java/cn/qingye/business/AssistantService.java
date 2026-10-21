@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.text.Normalizer;
 import java.util.concurrent.*;
-import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static cn.qingye.db.Rows.*;
 
 @Service
@@ -20,11 +20,7 @@ public class AssistantService {
     private final Clock clock;
     private final AssistantConfirmations confirmations;
     private static final DateTimeFormatter DISPLAY_TIME=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private static final Pattern RESTRICTED=Pattern.compile("密码|密碼|密钥|密鑰|口令|凭据|token|password|systemprompt|系统提示词|忽略.{0,12}(规则|指令|权限)|(?:无视|绕过|不顾).{0,12}(规则|权限|限制)|(?:我是|作为).{0,12}(最高权限|最高管理员|超级管理员|创始人|开发者)|(?:执行|运行).{0,8}SQL|(?:DROP|TRUNCATE|DELETE|ALTER|INSERT|UPDATE)(?:TABLE|DATABASE|FROM|INTO)|(?:清空|删除|重置).{0,12}(数据库|所有数据|全部数据|数据表)",Pattern.CASE_INSENSITIVE);
-    private static final Pattern WRITE=Pattern.compile("^(?:取消报名|取消预约|报名|加入|退出|领取|归还|创建|发布|修改|删除|清空|批准|审批)(?!人数|名额|截止|时间|条件|规则|流程|状态|情况|结果|记录|的|已|未|了|过|方式)|(?:帮我|替我|给我|请|我要|直接|立即|马上|现在就)(?:把|将)?(?:这个|这场|该|所有|全部)?(?:活动|社团|器材|预约|记录|数据库)?(?:报名|取消|加入|退出|领取|归还|创建|发布|修改|删除|清空|批准|审批)");
-    private static final Pattern PERSONAL=Pattern.compile("报名|候补|参加|参与|借用|借过|借了|借出|归还|记录|名单|个人信息");
-    private static final Pattern OTHER_PERSON=Pattern.compile("别人|他人|其他人|其他同学|其他用户|其他负责人|管理员的|他的|她的|谁|名单");
-    private static final Pattern CREATIVE_REQUEST=Pattern.compile("^(?:请|帮我|给我|麻烦|为我|帮忙|我想)*(?:写|创作|生成|编|讲|看)(?:一首|一篇|一段|一个|几首|几篇).{0,30}(?:诗(?:歌)?|故事|小说|笑话|歌词)[。.!！?？]*$");
+    private static final ObjectMapper JSON=new ObjectMapper();
     private final Set<Long> planning=ConcurrentHashMap.newKeySet();
     private final Semaphore modelSlots=new Semaphore(4);
     public AssistantService(ActivityStore activities,LoanStore loans,LoanService loanService,LlmPlanner planner,Clock clock) {
@@ -40,47 +36,92 @@ public class AssistantService {
     }
     public Map<String,Object> ask(Actor actor,String question,String session) {
         String requestId=confirmations.begin(actor.id(),session);
-        // Gate 1: local scope, before any network call.
-        question=Normalizer.normalize(question,Normalizer.Form.NFKC).replaceAll("\\p{Cf}","").strip();
-        String compact=question.replaceAll("\\s","");
-        if (RESTRICTED.matcher(compact).find()) return stopped("REJECT","IDENTITY_CLAIM","LOCAL");
-        if (WRITE.matcher(compact).find()) return stopped("REJECT","WRITE_OPERATION","LOCAL");
-        if (CREATIVE_REQUEST.matcher(compact).matches()) return stopped("REJECT","OUTSIDE_DOMAIN","LOCAL");
-        if(Set.of("曾经有过吗","以前有过吗","我需要等多久","我还要等多久","在哪里","什么时候有","查全部").contains(compact.replaceFirst("[。！？.!?]+$","")))
-            return stopped("CLARIFY","MISSING_INFO","LOCAL");
-        if (!Pattern.compile("活动|社团|报名|候补|器材|设备|相机|摄像机|摄像头|手机|三脚架|投影|篮球|音乐|摄影|编程|志愿|借用|归还|羽毛球|话筒|音箱").matcher(question).find()) return stopped("REJECT","OUTSIDE_DOMAIN","LOCAL");
-        // Obvious whole-input authority denials are not semantic query-type guesses.
-        if (PERSONAL.matcher(compact).find() && OTHER_PERSON.matcher(compact).find())
-            return stopped("REJECT","PRIVATE_DATA","LOCAL");
-        var remote=plan(actor.id(),question);
-        // Fallback owns a few complete standard messages, never open-language interpretation.
-        var shortcut=AssistantShortcuts.match(question);
-        var decision=remote.or(()->shortcut);
-        if (decision.isEmpty()) return stopped("CLARIFY","MODEL_UNAVAILABLE","LOCAL");
-        var plan=decision.get();
-        String mode=remote.isPresent()?"MODEL_PLAN":"LOCAL";
-        // Gate 2: capability qualification, not a second reading of the Chinese sentence.
-        if (!valid(plan)) return stopped("CLARIFY","PLAN_INVALID",mode);
-        if (!plan.action().equals("QUERY")) return stopped(plan.action(),plan.reason(),mode);
-        return preview(actor,session,requestId,plan,mode);
+        question=normalize(question);
+        if(question.isEmpty()||question.length()>300)return stopped("SYSTEM_ERROR","INVALID_REQUEST","LOCAL");
+        return interpret(actor,session,requestId,List.of(question),0);
+    }
+    private static String normalize(String text){return text==null?"":Normalizer.normalize(text,Normalizer.Form.NFKC).replaceAll("\\p{Cf}","").strip();}
+    public Map<String,Object> clarify(Actor actor,String token,String answer,String session) {
+        answer=normalize(answer);
+        if(answer.isEmpty()||answer.length()>300)return stopped("SYSTEM_ERROR","INVALID_REQUEST","LOCAL");
+        var dialogue=confirmations.reply(actor.id(),session,token,false);
+        if(dialogue.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
+        var d=dialogue.get();var turns=new ArrayList<>(d.turns());turns.add(answer);
+        return interpret(actor,session,d.requestId(),turns,d.replies()+1);
+    }
+    public Map<String,Object> retry(Actor actor,String token,String session) {
+        var dialogue=confirmations.reply(actor.id(),session,token,true);
+        if(dialogue.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
+        var d=dialogue.get();return interpret(actor,session,d.requestId(),d.turns(),d.replies());
+    }
+    private Map<String,Object> interpret(Actor actor,String session,String requestId,List<String> turns,int replies) {
+        String input=turns.get(0);
+        if(turns.size()>1)try {input=JSON.writeValueAsString(Map.of("originalRequest",turns.get(0),"clarificationAnswers",turns.subList(1,turns.size())));}
+        catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
+        var remote=plan(actor.id(),input);
+        if(remote.isEmpty()) {
+            var result=new LinkedHashMap<>(stopped("SYSTEM_ERROR","MODEL_UNAVAILABLE","LOCAL"));
+            confirmations.clarify(actor.id(),session,requestId,turns,replies,true).ifPresent(i->result.put("retryToken",i.token()));return result;
+        }
+        var proposal=remote.get();
+        if(!valid(proposal))return stopped("SYSTEM_ERROR","PLAN_INVALID","MODEL_PLAN");
+        if(proposal.action().equals("REJECT")) {
+            if("INVALID_PROTOCOL".equals(proposal.reason()))return stopped("SYSTEM_ERROR","INVALID_PROTOCOL","MODEL_PLAN");
+            if("UNSUPPORTED_CAPABILITY".equals(proposal.reason()))return stopped("UNSUPPORTED",proposal.reason(),"MODEL_PLAN");
+            return stopped("REJECT",proposal.reason(),"MODEL_PLAN");
+        }
+        if(proposal.action().equals("CLARIFY")) {
+            if("UNSUPPORTED_FILTER".equals(proposal.reason()))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","MODEL_PLAN");
+            if(replies>=AssistantContract.MAX_CLARIFICATIONS)return stopped("NOT_UNDERSTOOD","NOT_UNDERSTOOD","MODEL_PLAN");
+            var issued=confirmations.clarify(actor.id(),session,requestId,turns,replies,false);
+            if(issued.isEmpty())return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE","LOCAL");
+            var result=new LinkedHashMap<>(stopped("CLARIFY",proposal.reason(),"MODEL_PLAN"));
+            result.put("clarificationToken",issued.get().token());result.put("clarificationExpiresAt",issued.get().expiresAt().toString());
+            result.put("draft",proposal);result.put("clarificationRound",replies+1);result.put("question",followupQuestion(proposal));return result;
+        }
+        if(proposal.batch()) {
+            for(var q:proposal.queries())if(!timeSupported(q))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","MODEL_PLAN");
+            var sections=new ArrayList<Map<String,Object>>();
+            for(var q:proposal.queries())sections.add(preview(actor,session,requestId,q,"MODEL_PLAN"));
+            return amendable(actor,session,requestId,turns,replies,Map.of("status","CONFIRM_SCOPE","intent","BATCH","items",List.of(),"sections",sections,"answer","共 "+sections.size()+" 项独立查询，请逐项核对范围并确认。","plan",proposal,"contractVersion",AssistantContract.VERSION));
+        }
+        return amendable(actor,session,requestId,turns,replies,preview(actor,session,requestId,proposal,"MODEL_PLAN"));
+    }
+    private Map<String,Object> amendable(Actor actor,String session,String requestId,List<String> turns,int replies,Map<String,Object> preview) {
+        var result=new LinkedHashMap<>(preview);
+        if("CONFIRM_SCOPE".equals(preview.get("status"))&&replies<AssistantContract.MAX_CLARIFICATIONS)
+            confirmations.clarify(actor.id(),session,requestId,turns,replies,false).ifPresent(i->result.put("amendmentToken",i.token()));
+        return result;
+    }
+    private String followupQuestion(QueryPlan p) {
+        if(p.reason().equals("MISSING_TIME"))return "你想查看过去、即将举办的，还是全部时间？也可以补充具体日期。";
+        if(p.reason().equals("DATE_MEANING"))return "这里的日期指活动／计划借用时段，还是实际报名、领取或归还日期？后者目前不支持按日期筛选，可改选支持的条件。";
+        if(p.reason().equals("UNKNOWN_ENTITY"))return "你指哪场活动或哪种器材？可以补充原名、社团，或明确选择全部。";
+        if(p.reason().equals("MULTIPLE_REQUESTS"))return "这些请求之间需要什么关系？当前支持最多四项独立查询，不支持跨对象关联比较。";
+        if(p.intent()!=null)return "已保留前面的查询方向。请补充仍不明确的名称、时间或状态；明确要全部也可以直接说全部。";
+        return "你想查公开活动、器材库存、自己的报名还是自己的借用？请补充必要信息，也可以直接选择分区。";
     }
     /** Explicit local facets remain usable when the model is unavailable or uncertain. */
     public Map<String,Object> query(Actor actor,QueryPlan plan,String session) {
         String requestId=confirmations.begin(actor.id(),session);
         if (!valid(plan) || !"QUERY".equals(plan.action())) return stopped("CLARIFY","PLAN_INVALID","FACETS");
+        if(plan.batch()) {
+            for(var q:plan.queries())if(!timeSupported(q))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","FACETS");
+            return Map.of("status","CONFIRM_SCOPE","intent","BATCH","items",List.of(),"sections",plan.queries().stream().map(q->preview(actor,session,requestId,q,"FACETS")).toList(),"answer","请逐项核对并确认这些独立查询。","plan",plan,"contractVersion",AssistantContract.VERSION);
+        }
         return preview(actor,session,requestId,plan,"FACETS");
     }
     private Map<String,Object> preview(Actor actor,String session,String requestId,QueryPlan plan,String mode) {
         var period=AssistantTime.resolve(plan,clock);
-        if(plan.intent().equals("EQUIPMENT") && period.end()!=null && (!period.end().isAfter(period.anchor()) || period.end().isAfter(period.anchor().plusYears(1))))
-            return stopped("CLARIFY","UNSUPPORTED_FILTER",mode);
+        if(!timeSupported(plan))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER",mode);
         var issued=confirmations.issue(actor.id(),session,requestId,plan,period,mode,0);
         if (issued.isEmpty()) return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE",mode);
-        return Map.of("status","CONFIRM_SCOPE","intent",plan.intent(),"items",List.of(),"mode",mode,
-            "answer",scope(plan,period)+"\n每页10条，可继续加载。未查业务记录；请核对条件后确认，不对就修改。",
-            "interpretation","待确认的查询范围（不是对原意正确性的保证）","plan",plan,
-            "confirmationToken",issued.get().token(),"confirmationExpiresAt",issued.get().expiresAt().toString(),"corrections",corrections());
+        return Map.ofEntries(Map.entry("status","CONFIRM_SCOPE"),Map.entry("intent",plan.intent()),Map.entry("items",List.of()),Map.entry("mode",mode),
+            Map.entry("answer",scope(plan,period)+"\n每页10条，可继续加载。未查业务记录；请核对条件后确认，不对就修改。"),
+            Map.entry("interpretation","待确认的查询范围（不是对原意正确性的保证）"),Map.entry("plan",plan),
+            Map.entry("confirmationToken",issued.get().token()),Map.entry("confirmationExpiresAt",issued.get().expiresAt().toString()),Map.entry("corrections",corrections()),Map.entry("contractVersion",AssistantContract.VERSION));
     }
+    private boolean timeSupported(QueryPlan plan){var p=AssistantTime.resolve(plan,clock);return !plan.intent().equals("EQUIPMENT")||p.end()==null||p.end().isAfter(p.anchor())&&!p.end().isAfter(p.anchor().plusYears(1));}
     public Map<String,Object> confirm(Actor actor,String token,String session) {
         var offer=confirmations.consume(actor.id(),session,token,false);
         if (offer.isEmpty()) return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
@@ -110,10 +151,11 @@ public class AssistantService {
         // Gate 4: render DB facts locally, never let the model invent an answer.
         boolean hasMore=rows.size()>10;
         rows=rows.stream().limit(10).map(r->visible(r,plan.intent())).toList();
-        String answer=rows.isEmpty()?"当前已确认条件下没有匹配记录；不代表从未有过或将来不会有。":"本页展示第 "+(offset+1)+"–"+(offset+rows.size())+" 条。"+(hasMore?"还有记录，请继续加载。":"本次查询已到末页。");
+        String answer=rows.isEmpty()?"当前已确认条件下没有匹配记录；不代表从未有过或将来不会有。":"本页展示第 "+(offset+1)+"–"+(offset+rows.size())+" 条。"+(hasMore?"还有记录，请继续加载。":"按本次读取的当前状态已到末页。");
         boolean candidates=plan.entity()!=null && !"ALL".equals(plan.entity()) && (hasMore || rows.size()>1 || offset>0);
         if(candidates) answer+="匹配到多个候选，请按编号、名称、日期和地点区分；未自动选择第一条。";
         if(plan.intent().equals("EQUIPMENT") && period.start()!=null) answer+="时段可用量按当前预约计算，不保证届时可借。";
+        if(hasMore||offset>0)answer+="分页不固定业务快照，期间如有新增、取消或改期，结果可能变化；需要完整核对时请重新查询。";
         if(!rows.isEmpty()) answer+="\n"+String.join("\n",rows.stream().map(this::fact).toList());
         String next=hasMore?confirmations.issue(actor.id(),session,offer.requestId(),plan,period,mode,offset+10).map(AssistantConfirmations.Issued::token).orElse(""):"";
         if(hasMore && next.isEmpty()) answer+="下一页凭据已失效，请重新查询并确认范围。";
@@ -121,12 +163,14 @@ public class AssistantService {
         result.put("answer",answer);result.put("items",rows);result.put("status","QUERY");result.put("intent",plan.intent());result.put("mode",mode);
         result.put("interpretation",scope(plan,period));result.put("plan",plan);result.put("corrections",corrections());
         result.put("hasMore",hasMore);result.put("nextToken",next);result.put("offset",offset);result.put("selectionRequired",candidates);
+        result.put("contractVersion",AssistantContract.VERSION);
         return result;
     }
     private Optional<QueryPlan> plan(long user,String question) {
         if (!modelSlots.tryAcquire()) return Optional.empty();
         if (!planning.add(user)) { modelSlots.release(); return Optional.empty(); }
         try { return planner.plan(question); }
+        catch(RuntimeException unavailable){return Optional.empty();}
         finally { planning.remove(user);modelSlots.release(); }
     }
     private Map<String,Object> visible(Map<String,Object> row,String intent) {
@@ -144,7 +188,7 @@ public class AssistantService {
     }
     private String scope(QueryPlan p,AssistantTime period) {
         String object=switch(p.intent()) {
-            case "MY_REGISTRATIONS" -> "我的报名（仅当前登录用户）";
+            case "MY_REGISTRATIONS" -> "我的报名（仅当前登录用户，含现已停用社团的本人记录）";
             case "MY_LOANS" -> "我的借用记录（仅当前登录用户）";
             case "EQUIPMENT" -> "器材目录与库存（含停用器材，停用不代表可借）";
             default -> "公开活动（仅已发布、社团启用）";
@@ -170,14 +214,20 @@ public class AssistantService {
             case "UNSUPPORTED_CAPABILITY" -> "这项操作不属于助手的查询能力，请到对应业务页面查看。";
             case "INVALID_PROTOCOL" -> "模型计划超出了助手允许的能力或参数，已拒绝执行。请使用明确的查询入口。";
             case "UNKNOWN_ENTITY" -> "对象不确定，请在下方分区中选择查询对象并填写条件。不会改查全部。";
-            case "MULTIPLE_REQUESTS" -> "检测到多个请求，请一次查询一个对象。";
-            case "UNSUPPORTED_FILTER" -> "其他／待确认：条件尚不能完整落入已有分区，请选择或补充条件。不会忽略条件后查询。";
+            case "MULTIPLE_REQUESTS" -> "请说明这些查询是否相互独立；最多支持四项独立查询，不支持关联推断。";
+            case "UNSUPPORTED_FILTER" -> "当前能力不能完整表达这些条件或缺少相应事实字段，未查询，也不会忽略条件。可以修改条件，或明确选择支持的部分；这不等于原需求已完成。";
             case "CONFIRMATION_EXPIRED" -> "查询范围确认已过期、已使用或会话已变化，请重新提问并核对范围。";
             case "CONFIRMATION_UNAVAILABLE" -> "暂时无法建立范围确认，请重新提问，或使用明确的本人记录入口。";
+            case "MODEL_UNAVAILABLE" -> "查询解析服务暂不可用，不是你没说清楚。可稍后重试，或直接手选分区查询。";
+            case "PLAN_INVALID", "INVALID_REQUEST" -> "本次查询请求或解析结果无效，请重新发起或手选分区。";
+            case "NOT_UNDERSTOOD" -> "经过澄清，我仍未能确定你的意思。本轮停止自动解析，请换种说法或手选分区。";
+            case "MISSING_TIME" -> "请补充查询时间；前面的对象和条件会保留。";
+            case "DATE_MEANING" -> "日期含义尚不明确，请先说明按哪种业务时间查询。";
             default -> "本次无法确定唯一查询，请换个说法，或选择下方明确的查询入口。";
         };
+        String interpretation=switch(status){case "CLARIFY"->"需要补充或澄清";case "UNSUPPORTED"->"理解了需求，但当前能力不支持";case "NOT_UNDERSTOOD"->"本轮仍无法理解，已停止";case "SYSTEM_ERROR"->"系统暂时无法完成解析";default->"请求不允许执行";};
         return Map.of("answer",answer,"items",List.of(),"status",status,"intent","","reason",reason,"mode",mode,
-            "interpretation",status.equals("CLARIFY")?(reason.equals("UNSUPPORTED_FILTER")?"当前能力不支持所需筛选":"尚未确定查询计划"):"请求不允许执行","corrections",corrections());
+            "interpretation",interpretation,"corrections",corrections(),"contractVersion",AssistantContract.VERSION);
     }
     private List<String> corrections() { return List.of("查相机","我的借用记录","我的报名","这周末有什么活动？"); }
     private String categoryLabel(String category) { return switch(category) {

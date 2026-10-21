@@ -12,7 +12,7 @@ function page(name, request, wx = {}, confirmation = async () => true) {
   vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/keyboard.js'), 'utf8'), layout)
   vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
     Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = (values, callback) => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value }; if (callback) callback() } },
-    require(module) { return module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('keyboard') ? layout.module.exports : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
+    require(module) { return module.includes('assistant-contract') ? require(path.join(client,'utils/assistant-contract.js')) : module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('keyboard') ? layout.module.exports : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
     getApp: () => app, wx: native, setTimeout, clearTimeout, Date
   })
   return instance
@@ -475,7 +475,7 @@ test('model plan populates editable facets even while the request is busy', asyn
   const plan = { intent: 'MY_REGISTRATIONS', entity: '摄影社', category: 'ART', timeOption: 'DATE', date: '2026-10-22', status: 'CANCELLED', location: '东操场' }
   const assistant = page('assistant', async () => ({ status: 'CONFIRM_SCOPE', intent: plan.intent, plan, answer: '范围', items: [], confirmationToken: 't' }))
   assistant.setData({ question: '查报名' }); await assistant.ask(); assistant.correct()
-  assert.equal(assistant.data.stateIndex, 4); assert.equal(assistant.data.states[4], '已取消'); assert.equal(assistant.data.timeIndex, 9); assert.equal(assistant.data.location, '东操场'); assert.equal(assistant.data.entity, '摄影社')
+  assert.equal(assistant.data.stateIndex, 4); assert.equal(assistant.data.states[4], '已取消'); assert.equal(assistant.data.timeKeys[assistant.data.timeIndex], 'DATE'); assert.equal(assistant.data.location, '东操场'); assert.equal(assistant.data.entity, '摄影社')
 })
 
 test('scope modal cancellation and leaving during confirmation never execute a query', async () => {
@@ -510,6 +510,100 @@ test('a wrong model partition can be replaced by explicit facets and its old con
   assistant.setData({ entity: '相机', stateIndex: 5 }); await assistant.searchFacets(); await assistant.confirmScope()
   assert.equal(calls.length, 3); assert.equal(calls[1].body.status, 'CHECKED_OUT'); assert.equal(calls[1].body.timeOption, 'ANY')
   assert.deepEqual(JSON.parse(JSON.stringify(calls[2].body)), { token: 'corrected' }); assert.equal(assistant.data.status, 'QUERY')
+})
+
+test('clarification retains known conditions and sends the answer through its own token', async () => {
+  const calls = [], draft = { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, category: 'ART', status: 'ANY', location: '东操场', reason: 'MISSING_TIME' }
+  const assistant = page('assistant', async (url, method, body) => {
+    calls.push({ url, body }); return url === '/assistant' ? { status: 'CLARIFY', intent: '', answer: '请补充时间', draft, clarificationToken: 'followup', question: '过去还是未来？', items: [] } : { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan: { ...draft, action: 'QUERY', reason: null, timeOption: 'TOMORROW' }, confirmationToken: 'scope', answer: '明天摄影社', items: [] }
+  })
+  assistant.setData({ question: '摄影社东操场活动' }); await assistant.ask()
+  assert.equal(assistant.data.entity, '摄影社'); assert.equal(assistant.data.location, '东操场'); assert.match(assistant.data.draftSummaries[0], /摄影社.*东操场/)
+  assistant.replyInput({ detail: { value: '明天' } }); await assistant.reply()
+  assert.equal(calls.length, 2); assert.equal(calls[1].url, '/assistant/clarify'); assert.deepEqual(JSON.parse(JSON.stringify(calls[1].body)), { token: 'followup', answer: '明天' })
+  assert.equal(assistant.data.confirmationToken, 'scope'); assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.replyText, '')
+})
+
+test('system retry uses the server context token and never pretends to have an answer', async () => {
+  const calls = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return url === '/assistant' ? { status: 'SYSTEM_ERROR', reason: 'MODEL_UNAVAILABLE', retryToken: 'retry-context', answer: '解析服务不可用', items: [] } : { status: 'CLARIFY', clarificationToken: 'followup', question: '哪一天？', answer: '请补充', items: [] } })
+  assistant.setData({ question: '查蓝晒活动' }); await assistant.ask(); assert.equal(assistant.data.status, 'SYSTEM_ERROR'); assert.equal(assistant.data.items.length, 0)
+  await assistant.retry(); assert.equal(calls[1].url, '/assistant/retry'); assert.deepEqual(JSON.parse(JSON.stringify(calls[1].body)), { token: 'retry-context' }); assert.equal(assistant.data.clarificationToken, 'followup')
+})
+
+test('voluntary correction keeps the original server context and never submits old consent', async () => {
+  const pending = deferred(), calls = [], assistant = page('assistant', (url, method, body) => { calls.push({ url, body }); return pending.promise })
+  assistant.accept({ status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', answer: '明天摄影社', items: [], confirmationToken: 'old-consent', amendmentToken: 'context' })
+  assistant.replyInput({ detail: { value: '改成后天，其他不变' } }); const changing = assistant.reply()
+  await assistant.confirmScope(); assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/clarify'); assert.equal(calls[0].body.token, 'context'); assert.equal(assistant.data.confirmationToken, '')
+  pending.resolve({ status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', answer: '后天摄影社', items: [], confirmationToken: 'new-consent' }); await changing
+  assert.equal(assistant.data.confirmationToken, 'new-consent'); assert.equal(assistant.data.amendmentToken, '')
+})
+
+test('unsupported, not understood, refusal and empty query remain different results without automatic fallback', async () => {
+  for (const status of ['UNSUPPORTED', 'NOT_UNDERSTOOD', 'REJECT', 'QUERY']) {
+    let calls = 0; const assistant = page('assistant', async () => { calls++; return { status, intent: '', answer: status, items: [] } })
+    assistant.setData({ question: '我的活动关联器材比较' }); await assistant.ask()
+    assert.equal(assistant.data.status, status); assert.equal(calls, 1); assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.clarificationToken, '')
+  }
+})
+
+test('independent queries require separate previews and update only the confirmed section', async () => {
+  const calls = [], section = (intent, token) => ({ status: 'CONFIRM_SCOPE', intent, confirmationToken: token, items: [], answer: intent })
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return url === '/assistant' ? { status: 'CONFIRM_SCOPE', intent: 'BATCH', answer: '逐项确认', sections: [section('ACTIVITIES', 'activity-token'), section('EQUIPMENT', 'equipment-token')], items: [] } : { status: 'QUERY', intent: 'EQUIPMENT', items: [{ id: 8, name: '开发板套件' }], answer: '库存', hasMore: false } })
+  assistant.setData({ question: '明天活动，另外查器材' }); await assistant.ask(); assert.equal(calls.length, 1); assert.equal(assistant.data.sections.length, 2); assert.equal(assistant.data.confirmationToken, '')
+  await assistant.confirmScope({ currentTarget: { dataset: { index: 1 } } })
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[1].body)), { token: 'equipment-token' }); assert.equal(assistant.data.sections[1].items[0].id, 8)
+  assert.equal(assistant.data.sections[0].confirmationToken, 'activity-token'); assert.equal(assistant.data.sections[0].items.length, 0)
+})
+
+test('manual independent query queue is bounded, editable and uses a single batch preview', async () => {
+  const calls = [], hints = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', intent: 'BATCH', sections: [], answer: '逐项确认' } }, { showToast: h => hints.push(h) })
+  for (let i = 0; i < 5; i++) { assistant.setData({ entity: '活动' + i, timeIndex: i % 2 }); assistant.addFacet() }
+  assert.equal(assistant.data.queuedQueries.length, 4); assert.match(hints[0].title, /最多四项/)
+  assistant.editQueued({ currentTarget: { dataset: { index: 2 } } }); assistant.facetField({ currentTarget: { dataset: { field: 'location' } }, detail: { value: '东操场' } }); assistant.addFacet()
+  assert.equal(assistant.data.queuedQueries[0].location, null); assert.equal(assistant.data.queuedQueries[2].location, '东操场'); assert.match(assistant.data.queuedSummaries[2], /东操场/)
+  await assistant.previewQueued(); assert.equal(calls[0].url, '/assistant/queries'); assert.equal(calls[0].body.queries.length, 4); assert.equal(assistant.data.items.length, 0)
+})
+
+test('opening detail and returning preserves passive continuation rather than stranding the results', async () => {
+  let calls = 0, navigation
+  const plan = { action: 'QUERY', intent: 'ACTIVITIES', entity: null, category: null, location: null, timeOption: 'ANY', status: 'ANY', date: null }
+  const assistant = page('assistant', async () => { calls++; return { status: 'QUERY', intent: 'ACTIVITIES', plan, answer: '下一页', items: [{ id: 2 }], hasMore: false } }, { navigateTo: value => { navigation = value.url } })
+  assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', plan, answer: '还有记录', items: [{ id: 1 }], hasMore: true, nextToken: 'next' })
+  assistant.open({ currentTarget: { dataset: { id: 1, index: 0 } } }); assistant.onHide(); assert.match(navigation, /id=1/); assert.equal(assistant.data.sections[0].nextToken, 'next')
+  await assistant.more(); assert.equal(calls, 1); assert.deepEqual(Array.from(assistant.data.items, r => r.id), [1, 2])
+})
+
+test('a lost continuation response keeps known rows, reports incomplete data and re-previews instead of replaying the token', async () => {
+  const calls = [], plan = { action: 'QUERY', intent: 'ACTIVITIES', entity: '摄影', category: null, location: null, timeOption: 'ANY', status: 'ANY', date: null }
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); if (url === '/assistant/more') throw new Error('lost response'); return { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan, confirmationToken: 'fresh', answer: '请重新核对', items: [] } })
+  assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', plan, answer: '还有记录', items: [{ id: 1 }], hasMore: true, nextToken: 'possibly-consumed' })
+  await assistant.more(); assert.equal(assistant.data.items[0].id, 1); assert.equal(assistant.data.nextToken, ''); assert.match(assistant.data.recoveryMessage, /不能把这些当作全部/)
+  await assistant.restart(); assert.equal(calls[1].url, '/assistant/query'); assert.equal(calls[1].body.entity, '摄影'); assert.equal(assistant.data.confirmationToken, 'fresh'); assert.equal(assistant.data.items.length, 0)
+})
+
+test('manual preview network recovery does not require an unrelated natural language question', async () => {
+  let fail = true; const calls = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); if (fail) throw new Error('offline'); return { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', confirmationToken: 'fresh', answer: '条件', items: [] } })
+  assistant.setData({ entity: '蓝晒', location: '操场', timeIndex: 2 }); await assistant.searchFacets(); fail = false; await assistant.restart()
+  assert.equal(calls.length, 2); assert.equal(calls[1].url, '/assistant/query'); assert.equal(calls[1].body.location, '操场'); assert.equal(calls[1].body.timeOption, 'TOMORROW'); assert.equal(assistant.data.confirmationToken, 'fresh')
+})
+
+test('contract version mismatch cannot restore execution or continuation credentials', async () => {
+  const assistant = page('assistant', async () => ({ contractVersion: 'unknown-future-contract', status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', confirmationToken: 'must-not-use', nextToken: 'must-not-use', answer: '旧版本不了解的计划', items: [{ id: 4 }] }))
+  assistant.setData({ question: '查相机' }); await assistant.ask(); assert.equal(assistant.data.status, 'SYSTEM_ERROR'); assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.items.length, 0); assert.match(assistant.data.answer, /版本不一致/)
+})
+
+test('a partial combination shows known conditions without turning its drafts into executable queries', async () => {
+  const queries = [{ action: 'QUERY', intent: 'EQUIPMENT', entity: '相机', timeOption: 'CURRENT', status: 'ANY' }, { action: 'CLARIFY', intent: 'MY_REGISTRATIONS', entity: '摄影社', timeOption: null, status: 'CANCELLED' }]
+  const assistant = page('assistant', async () => ({ status: 'CLARIFY', answer: '补充时间', draft: { action: 'CLARIFY', queries }, clarificationToken: 'followup', question: '本人报名要查哪段时间？', items: [] }))
+  assistant.setData({ question: '查相机，和摄影社取消报名' }); await assistant.ask()
+  assert.equal(assistant.data.draftSummaries.length, 2); assert.match(assistant.data.draftSummaries[1], /摄影社.*已取消/); assert.equal(assistant.data.queuedQueries.length, 1); assert.equal(assistant.data.sections[0].confirmationToken, undefined)
+})
+
+test('a new user question clears old manual conditions rather than carrying hidden filters', async () => {
+  const assistant = page('assistant', async () => ({ status: 'CLARIFY', answer: '哪天？', draft: { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '蓝晒' }, clarificationToken: 'new', items: [] }))
+  assistant.setData({ question: '查蓝晒活动', location: '旧地点', categoryIndex: 3, stateIndex: 4, entity: '旧名称' }); await assistant.ask()
+  assert.equal(assistant.data.location, ''); assert.equal(assistant.data.categoryIndex, 0); assert.equal(assistant.data.stateIndex, 0); assert.equal(assistant.data.entity, '蓝晒')
 })
 
 test('new equipment images have consumers and an accessory never inherits a camera photograph', () => {

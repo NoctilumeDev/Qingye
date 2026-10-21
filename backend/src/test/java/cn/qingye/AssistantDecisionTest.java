@@ -48,10 +48,9 @@ class AssistantDecisionTest {
         verify(loans,never()).assistantEquipment(eq("ALL"),anyInt());
         run(QueryPlan.query("EQUIPMENT","ALL",null,"CURRENT"),"查全部器材");verify(loans).assistantEquipment("ALL",0);
     }
-    @Test void unavailableModelOnlyUsesWholeCanonicalMessagesAndExplicitClarifyIsNeverOverridden() {
+    @Test void unavailableModelNeverGuessesCanonicalMessagesAndExplicitClarifyIsNeverOverridden() {
         when(planner.plan(anyString())).thenReturn(Optional.empty());
-        assertThat(service.ask(student,"查相机？","s")).containsEntry("status","CONFIRM_SCOPE").containsEntry("mode","LOCAL");
-        for(String q:List.of("查那个相机","我的借用记录和器材库存","手机不用管，查相机","查相机，不对，查摄像机")) assertThat(service.ask(student,q,"s")).containsEntry("status","CLARIFY");
+        for(String q:List.of("查相机？","查那个相机","我的借用记录和器材库存","手机不用管，查相机","查相机，不对，查摄像机")) assertThat(service.ask(student,q,"s")).containsEntry("status","SYSTEM_ERROR").containsEntry("reason","MODEL_UNAVAILABLE").containsKey("retryToken");
         when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.clarify("MISSING_INFO")));
         assertThat(service.ask(student,"查相机","s")).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);
     }
@@ -88,12 +87,11 @@ class AssistantDecisionTest {
     }
     @Test void malformedAndUnsupportedFacetsNeverExecuteOrDropConditions() {
         for(var p:List.of(new QueryPlan("QUERY","ACTIVITIES",null,null,"DATE","2026-02-30","ANY",null,null),
-            new QueryPlan("QUERY","EQUIPMENT","相机",null,"DATE","2026-10-01","ANY",null,null),
-            new QueryPlan("QUERY","EQUIPMENT","相机",null,"DATE","2030-01-01","ANY",null,null),
             new QueryPlan("QUERY","EQUIPMENT","相机","ART","CURRENT",null,"ANY",null,null),
             new QueryPlan("QUERY","MY_LOANS",null,null,"ANY",null,"DROP TABLE","东操场",null),
             QueryPlan.query("ACTIVITIES","x".repeat(81),null,"ANY"),QueryPlan.query("EQUIPMENT",null,null,"CURRENT")))
             assertThat(service.query(student,p,"s")).containsEntry("status","CLARIFY");
+        for(String day:List.of("2026-10-01","2030-01-01"))assertThat(service.query(student,new QueryPlan("QUERY","EQUIPMENT","相机",null,"DATE",day,"ANY",null,null),"s")).containsEntry("status","UNSUPPORTED");
         verifyNoInteractions(planner,activities,loans,capacity);
     }
 }

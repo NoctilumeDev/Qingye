@@ -5,6 +5,7 @@ import cn.qingye.db.ActivityStore;
 import cn.qingye.db.LoanStore;
 import cn.qingye.business.LoanService;
 import cn.qingye.model.Actor;
+import cn.qingye.model.QueryPlan;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class IntegrationBoundaryTest {
             var service=new AssistantService(activities,loans,mock(LoanService.class),planner,clock);
             var student=new Actor(3,"student",false);
             var questions=List.of("有哪些校园活动？","查相机","我的报名活动有哪些？","我的借用器材有哪些？");
-            var responses=questions.stream().map(question->service.ask(student,question)).toList();
+            var responses=questions.stream().map(question->service.ask(student,question,"s")).toList();
             System.out.println("MODEL_STUB_RESPONSE_BYTES="+new String(body,StandardCharsets.UTF_8));
             System.out.println("MODEL_STUB_QUERY_RESULTS="+json.writeValueAsString(responses));
             assertThat(responses).allSatisfy(response->assertThat(response).containsEntry("status","CLARIFY").containsEntry("mode","MODEL_PLAN"));
@@ -82,7 +83,18 @@ class IntegrationBoundaryTest {
             assertThat(planner.plan("查相机器材")).hasValueSatisfying(plan->assertThat(plan.entity()).isEqualTo("相机"));
             assertThat(request.get().get("response_format")).isEqualTo(Map.of("type","json_object"));
             assertThat(request.get().get("thinking")).isEqualTo(Map.of("type","disabled"));
-            assertThat(request.get().get("max_tokens")).isEqualTo(300);
+            assertThat(request.get().get("max_tokens")).isEqualTo(1500);
+            var single=QueryPlan.query("EQUIPMENT","相机",null,"CURRENT");
+            payload.set(json.writeValueAsString(QueryPlan.batch(List.of(single,QueryPlan.query("ACTIVITIES","摄影",null,"NEXT_WEEK")))));
+            assertThat(planner.plan("查相机和下周摄影活动")).hasValueSatisfying(p->assertThat(p.batch()).isTrue());
+            var partial=new QueryPlan("CLARIFY","ACTIVITIES","摄影社",null,null,null,"ANY",null,"MISSING_TIME");
+            payload.set(json.writeValueAsString(partial));assertThat(planner.plan("摄影社活动")).contains(partial);
+            var nested=json.valueToTree(QueryPlan.batch(List.of(single,single)));
+            ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).put("userId",4);
+            payload.set(json.writeValueAsString(nested));assertThat(planner.plan("查全部")).hasValueSatisfying(p->assertThat(p.action()).isEqualTo("REJECT"));
+            ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).remove("userId");
+            ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).remove("status");
+            payload.set(json.writeValueAsString(nested));assertThat(planner.plan("查全部")).hasValueSatisfying(p->assertThat(p.action()).isEqualTo("REJECT"));
             for(String invalid:List.of(
                 "{\"intent\":\"EQUIPMENT\",\"sql\":\"SELECT * FROM app_user\"}",
                 "{\"intent\":\"MY_LOANS\",\"userId\":2}",

@@ -198,6 +198,16 @@ public class Api {
     @PostMapping("/assistant/query") Object queryAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantQuery input) {
         return data(assistant.query(actor,new cn.qingye.model.QueryPlan("QUERY",input.intent(),input.entity(),input.category(),input.timeOption(),input.date(),input.status(),input.location(),null),session));
     }
+    @GetMapping("/assistant/contract") Object assistantContract() { return data(cn.qingye.model.AssistantContract.describe()); }
+    @PostMapping("/assistant/clarify") Object clarifyAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantClarification input) {
+        return data(assistant.clarify(actor,input.token(),input.answer(),session));
+    }
+    @PostMapping("/assistant/retry") Object retryAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantConfirmation input) {
+        return data(assistant.retry(actor,input.token(),session));
+    }
+    @PostMapping("/assistant/queries") Object queryAssistants(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantQueries input) {
+        return data(assistant.query(actor,cn.qingye.model.QueryPlan.batch(input.queries().stream().map(q->new cn.qingye.model.QueryPlan("QUERY",q.intent(),q.entity(),q.category(),q.timeOption(),q.date(),q.status(),q.location(),null)).toList()),session));
+    }
     @PostMapping("/assistant/more") Object moreAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantConfirmation input) {
         return data(assistant.more(actor,input.token(),session));
     }

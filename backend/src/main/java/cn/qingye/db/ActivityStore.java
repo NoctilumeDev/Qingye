@@ -17,7 +17,9 @@ public class ActivityStore {
         boolean mine=plan.intent().equals("MY_REGISTRATIONS");
         String from=" FROM activity a JOIN club c ON c.id=a.club_id";
         String select="SELECT a.id,a.title,a.description,a.category,a.location,a.start_time,a.end_time,a.signup_deadline,a.status,c.name AS club_name";
-        String where=" WHERE c.enabled=TRUE";
+        // A personal registration remains readable after its club is disabled,
+        // consistent with ActivityService's owner detail access. Public discovery does not.
+        String where=mine?" WHERE 1=1":" WHERE c.enabled=TRUE";
         if (mine) {
             from+=" JOIN registration r ON r.activity_id=a.id"; select+=",r.status AS registration_status";
             where+=" AND r.user_id=?";args.add(actor.id());

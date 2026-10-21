@@ -154,6 +154,7 @@ def check(group):
         run([sys.executable, "-B", str(ROOT / "scripts/check-secrets.py")])
         run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests"])
     elif group == "client":
+        run([sys.executable, "-B", str(ROOT / "scripts/sync-assistant-contract.py"), "--check"])
         run([sys.executable, "-B", str(ROOT / "scripts/check-client.py")])
         run([executable("node"), "--test", str(ROOT / "scripts/test-client.cjs")])
     elif group == "dependencies":

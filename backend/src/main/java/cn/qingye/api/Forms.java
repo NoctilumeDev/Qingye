@@ -1,5 +1,6 @@
 package cn.qingye.api;
 import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 public final class Forms {
@@ -27,6 +28,8 @@ public final class Forms {
     }
     public record AssistantConfirmation(@NotBlank @Pattern(regexp="[a-fA-F0-9-]{36}") String token) {
     }
+    public record AssistantClarification(@NotBlank @Pattern(regexp="[a-fA-F0-9-]{36}") String token,@NotBlank @Size(max=300) String answer) {}
+    public record AssistantQueries(@NotEmpty @Size(min=2,max=4) List<@NotNull @Valid AssistantQuery> queries) {}
     public record AssistantQuery(@NotBlank String intent,@Size(max=80) String entity,String category,
                                  @NotBlank String timeOption,String date,@NotBlank String status,@Size(max=100) String location) {}
     public record Messages(@NotEmpty @Size(max=100) List<@NotNull @Positive Long> ids) {

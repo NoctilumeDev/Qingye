@@ -1,0 +1,31 @@
+{
+  "version": "qingye-query-v4",
+  "maxQueries": 4,
+  "maxClarifications": 2,
+  "intents": ["ACTIVITIES", "EQUIPMENT", "MY_REGISTRATIONS", "MY_LOANS"],
+  "intentLabels": ["公开活动", "器材库存", "我的报名", "我的借用"],
+  "times": ["ANY", "TODAY", "TOMORROW", "DAY_AFTER_TOMORROW", "PAST", "CURRENT", "FUTURE", "THIS_WEEK", "NEXT_WEEK", "WEEKEND", "DATE"],
+  "timeLabels": ["全部时间", "今天", "明天", "后天", "过去（已结束）", "现在（进行中）", "未来（未开始）", "本周剩余", "下周", "周末剩余", "指定日期"],
+  "categories": ["SPORT", "ART", "TECH", "VOLUNTEER", "OTHER"],
+  "categoryLabels": ["运动", "艺术", "科技", "志愿", "其他分类"],
+  "states": {
+    "ACTIVITIES": ["ANY"], "EQUIPMENT": ["ANY"],
+    "MY_REGISTRATIONS": ["ANY", "NON_CANCELLED", "REGISTERED", "WAITLISTED", "CANCELLED"],
+    "MY_LOANS": ["ANY", "NON_CANCELLED", "PENDING", "APPROVED", "REJECTED", "CHECKED_OUT", "RETURNED", "CANCELLED"]
+  },
+  "stateLabels": {"ANY":"全部状态", "NON_CANCELLED":"未取消", "REGISTERED":"已报名", "WAITLISTED":"候补", "CANCELLED":"已取消", "PENDING":"待审核", "APPROVED":"已批准", "REJECTED":"未通过", "CHECKED_OUT":"已领取未归还", "RETURNED":"已归还"},
+  "equipmentNameGroups": {"相机":["相机","单反相机"],"三脚架":["三脚架","轻便三脚架"],"投影仪":["投影仪","便携投影仪"]},
+  "timeOptionsByIntent": {"EQUIPMENT":["CURRENT","TODAY","TOMORROW","DAY_AFTER_TOMORROW","THIS_WEEK","NEXT_WEEK","WEEKEND","DATE"]},
+  "querySemantics": {
+    "ACTIVITIES":"启用社团的已发布活动；标题或社团名称包含词，地点精确匹配；时间按活动起止时段",
+    "MY_REGISTRATIONS":"当前会话用户现存的全部报名记录，含取消和停用社团；时间按活动时段，不是报名时间；报名不证明出席",
+    "MY_LOANS":"当前会话用户现存的借用记录；时间按计划借用时段；不是实际申请、领取或归还日期",
+    "EQUIPMENT":"启用和停用目录原名/已声明名称分组；当前库存或未结束具体时段的预约可用量；没有存放地点台账",
+    "BATCH":"最多四项相互独立的查询；不是关联、交集、排除、统计、极值、冲突比较或依赖执行",
+    "ALL":"仅放开用户明确指定的维度，其余条件保留；全部指当前保留且被授权的记录，不代表完整历史",
+    "PAGING":"每页10条、相同计划继续；当前状态分页而非跨页快照，期间业务变更可能影响完整性，需要时重新核对",
+    "DISPLAY":"可展示同一正确对象的完整授权详情；不能以宽候选冒充满足不支持的硬条件"
+  },
+  "clarifications": ["MISSING_INFO", "MISSING_TIME", "UNKNOWN_ENTITY", "DATE_MEANING", "MULTIPLE_REQUESTS", "UNSUPPORTED_FILTER", "NOT_UNDERSTOOD"],
+  "rejections": ["OUTSIDE_DOMAIN", "PRIVATE_DATA", "WRITE_OPERATION", "IDENTITY_CLAIM", "UNSUPPORTED_CAPABILITY", "INVALID_PROTOCOL"]
+}

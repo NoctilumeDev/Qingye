@@ -1,46 +1,51 @@
 package cn.qingye.model;
 
-import java.util.Set;
+import java.util.*;
 
 /** A proposal for one closed capability, never a user identity, SQL or answer. */
 public record QueryPlan(String action, String intent, String entity, String category,
-                        String timeOption, String date, String status, String location, String reason) {
-    public static final Set<String> FIELDS=Set.of("action","intent","entity","category","timeOption","date","status","location","reason");
-    private static final Set<String> INTENTS=Set.of("ACTIVITIES","EQUIPMENT","MY_REGISTRATIONS","MY_LOANS");
-    private static final Set<String> CATEGORIES=Set.of("SPORT","ART","TECH","VOLUNTEER","OTHER");
-    private static final Set<String> TIMES=Set.of("ANY","PAST","CURRENT","FUTURE","TODAY","TOMORROW","DAY_AFTER_TOMORROW","THIS_WEEK","WEEKEND","DATE");
-    private static final Set<String> CLARIFICATIONS=Set.of("MISSING_INFO","MULTIPLE_REQUESTS","UNKNOWN_ENTITY","UNSUPPORTED_FILTER");
-    private static final Set<String> REJECTIONS=Set.of("OUTSIDE_DOMAIN","PRIVATE_DATA","WRITE_OPERATION","IDENTITY_CLAIM","UNSUPPORTED_CAPABILITY","INVALID_PROTOCOL");
+                        String timeOption, String date, String status, String location, String reason,List<QueryPlan> queries) {
+    public static final Set<String> FIELDS=Set.of("action","intent","entity","category","timeOption","date","status","location","reason","queries");
+    public QueryPlan { queries=queries==null?null:List.copyOf(queries); }
+    public QueryPlan(String action,String intent,String entity,String category,String timeOption,String date,String status,String location,String reason) {
+        this(action,intent,entity,category,timeOption,date,status,location,reason,null);
+    }
 
     public static QueryPlan query(String intent,String entity,String category,String timeOption) {
         return new QueryPlan("QUERY",intent,entity,category,timeOption,null,"ANY",null,null);
     }
     public static QueryPlan clarify(String reason) { return new QueryPlan("CLARIFY",null,null,null,null,null,null,null,reason); }
     public static QueryPlan reject(String reason) { return new QueryPlan("REJECT",null,null,null,null,null,null,null,reason); }
+    public static QueryPlan batch(List<QueryPlan> queries) { return new QueryPlan("QUERY","BATCH",null,null,null,null,null,null,null,queries); }
+    public boolean batch() { return "QUERY".equals(action)&&"BATCH".equals(intent); }
 
     public boolean valid() {
-        if ("CLARIFY".equals(action) || "REJECT".equals(action)) {
-            return intent==null && entity==null && category==null && timeOption==null && date==null && status==null && location==null && reason!=null
-                && (action.equals("CLARIFY")?CLARIFICATIONS:REJECTIONS).contains(reason);
-        }
-        if (!"QUERY".equals(action) || intent==null || !INTENTS.contains(intent)
-                || reason!=null || timeOption==null || !TIMES.contains(timeOption)) return false;
+        if("REJECT".equals(action)) return emptyConditions()&&queries==null&&AssistantContract.REJECTIONS.contains(Objects.toString(reason,""));
+        if(batch()) return entity==null&&category==null&&timeOption==null&&date==null&&status==null&&location==null&&reason==null
+            &&queries!=null&&queries.size()>=2&&queries.size()<=AssistantContract.MAX_QUERIES
+            &&queries.stream().allMatch(q->q!=null&&q.queries()==null&&"QUERY".equals(q.action())&&q.valid());
+        boolean draft="CLARIFY".equals(action);
+        if(!draft&&!"QUERY".equals(action)) return false;
+        if(draft ? !AssistantContract.CLARIFICATIONS.contains(Objects.toString(reason,"")) : reason!=null) return false;
+        if(queries!=null) return draft&&emptyConditions()&&!queries.isEmpty()&&queries.size()<=AssistantContract.MAX_QUERIES
+            &&queries.stream().allMatch(q->q!=null&&q.queries()==null&&!"REJECT".equals(q.action())&&q.valid());
+        if(intent!=null&&!AssistantContract.INTENTS.contains(intent)||!draft&&intent==null) return false;
         if (entity!=null && (entity.isBlank() || entity.length()>80 || !entity.equals(entity.strip()) || entity.codePoints().anyMatch(Character::isISOControl))) return false;
+        if(timeOption!=null&&!AssistantContract.TIMES.contains(timeOption)||!draft&&timeOption==null)return false;
+        if(timeOption!=null&&intent!=null&&!AssistantContract.times(intent).contains(timeOption))return false;
         if ("DATE".equals(timeOption)) {
-            try { if (date==null || !date.matches("(?:19|20|21)[0-9]{2}-[0-9]{2}-[0-9]{2}") || !java.time.LocalDate.parse(date).toString().equals(date)) return false; }
+            if(date==null&&!draft)return false;
+            try { if (date!=null&&(!date.matches("(?:19|20|21)[0-9]{2}-[0-9]{2}-[0-9]{2}") || !java.time.LocalDate.parse(date).toString().equals(date))) return false; }
             catch (java.time.DateTimeException e) { return false; }
         } else if (date!=null) return false;
-        if (category!=null && !CATEGORIES.contains(category)) return false;
+        if (category!=null && !AssistantContract.CATEGORIES.contains(category)) return false;
         if (location!=null && (location.isBlank() || location.length()>100 || !location.equals(location.strip()) || location.codePoints().anyMatch(Character::isISOControl))) return false;
-        if (status==null) return false;
-        return switch(intent) {
-            case "MY_LOANS" -> category==null && location==null && !"ALL".equals(entity)
-                && Set.of("ANY","NON_CANCELLED","PENDING","APPROVED","REJECTED","CHECKED_OUT","RETURNED","CANCELLED").contains(status);
-            case "MY_REGISTRATIONS" -> !"ALL".equals(entity)
-                && Set.of("ANY","NON_CANCELLED","REGISTERED","WAITLISTED","CANCELLED").contains(status);
-            case "EQUIPMENT" -> entity!=null && entity.length()<=60 && category==null && location==null && status.equals("ANY")
-                && Set.of("CURRENT","TODAY","TOMORROW","DAY_AFTER_TOMORROW","THIS_WEEK","WEEKEND","DATE").contains(timeOption);
-            default -> status.equals("ANY") && !"ALL".equals(entity);
-        };
+        if (status==null&&!draft) return false;
+        if(intent==null)return status==null||AssistantContract.LOAN_STATES.contains(status)||AssistantContract.REGISTRATION_STATES.contains(status);
+        if(status!=null&&!AssistantContract.states(intent).contains(status))return false;
+        if("MY_LOANS".equals(intent))return category==null&&location==null&&!"ALL".equals(entity);
+        if("EQUIPMENT".equals(intent))return (draft||entity!=null)&&(entity==null||entity.length()<=60)&&category==null&&location==null;
+        return !"ALL".equals(entity);
     }
+    private boolean emptyConditions(){return intent==null&&entity==null&&category==null&&timeOption==null&&date==null&&status==null&&location==null;}
 }
