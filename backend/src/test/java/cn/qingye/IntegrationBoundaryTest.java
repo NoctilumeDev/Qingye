@@ -22,7 +22,7 @@ class IntegrationBoundaryTest {
     @Test void explicitModelClarificationIsNotReplacedByACanonicalFallback() throws Exception {
         var json=new ObjectMapper().findAndRegisterModules();
         byte[] body=json.writeValueAsBytes(Map.of("choices",List.of(Map.of("finish_reason","stop","message",
-                Map.of("content","{\"action\":\"CLARIFY\",\"intent\":null,\"entity\":null,\"category\":null,\"timeOption\":null,\"reason\":\"MISSING_INFO\"}")))));
+                Map.of("content","{\"action\":\"CLARIFY\",\"intent\":null,\"entity\":null,\"category\":null,\"timeOption\":null,\"date\":null,\"status\":null,\"location\":null,\"reason\":\"MISSING_INFO\"}")))));
         var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
         server.createContext("/plan",exchange->{
             exchange.getRequestBody().readAllBytes();
@@ -63,7 +63,7 @@ class IntegrationBoundaryTest {
     }
     @Test void modelHttpAdapterAcceptsOnlyQueryParametersAndDegradesOnProviderFailure() throws Exception {
         var json=new ObjectMapper().findAndRegisterModules();
-        var payload=new AtomicReference<>("{\"action\":\"QUERY\",\"intent\":\"EQUIPMENT\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"CURRENT\",\"reason\":null}");
+        var payload=new AtomicReference<>("{\"action\":\"QUERY\",\"intent\":\"EQUIPMENT\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"CURRENT\",\"date\":null,\"status\":\"ANY\",\"location\":null,\"reason\":null}");
         var request=new AtomicReference<Map<?,?>>();
         var status=new AtomicReference<>(200);
         var finish=new AtomicReference<>("stop");
@@ -96,7 +96,7 @@ class IntegrationBoundaryTest {
                 payload.set(invalid);
                 assertThat(planner.plan("查相机器材").map(plan->plan.action().equals("QUERY")).orElse(false)).as(invalid).isFalse();
             }
-            payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"TODAY\",\"reason\":null}");
+            payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"NEXT_YEAR\",\"date\":null,\"status\":\"ANY\",\"location\":null,\"reason\":null}");
             assertThat(planner.plan("我的相机借用")).hasValueSatisfying(plan->assertThat(plan.action()).isEqualTo("CLARIFY"));
             payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":null,\"category\":null,\"timeOption\":\"ANY\",\"reason\":null,\"userId\":99}");
             assertThat(planner.plan("我的借用")).hasValueSatisfying(plan->assertThat(plan.action()).isEqualTo("REJECT"));

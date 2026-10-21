@@ -195,6 +195,12 @@ public class Api {
     @PostMapping("/assistant/confirm") Object confirmAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantConfirmation input) {
         return data(assistant.confirm(actor,input.token(),session));
     }
+    @PostMapping("/assistant/query") Object queryAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantQuery input) {
+        return data(assistant.query(actor,new cn.qingye.model.QueryPlan("QUERY",input.intent(),input.entity(),input.category(),input.timeOption(),input.date(),input.status(),input.location(),null),session));
+    }
+    @PostMapping("/assistant/more") Object moreAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantConfirmation input) {
+        return data(assistant.more(actor,input.token(),session));
+    }
     @GetMapping("/workbench/status") Object status(@RequestAttribute Actor actor) {
         access.admin(actor);
         return data(Map.of("cache",cache.mode(),"mq",rabbit.mode(),"llmConfigured",planner.configured(),"tasks",messages.stats()));

@@ -102,3 +102,11 @@
   height:30rpx;
   flex-shrink:0;
 }
+.facet-toggle { margin-top: 20rpx; color: #187553; background: transparent; font-size: 26rpx; }
+.facets { margin-top: 24rpx; }
+.facet-choice { padding: 24rpx 12rpx; border-bottom: 1rpx solid #e3eae5; font-size: 28rpx; height: auto; }
+.muted { font-size: 24rpx; color: #65767d; line-height: 1.7; margin: 12rpx 0; }
+.result.detail-card { display: block; padding: 24rpx 0; font-size: 26rpx; line-height: 1.8; }
+.detail-head { display: flex; justify-content: space-between; font-size: 30rpx; font-weight: 600; }
+.detail-id { color: #65767d; font-size: 24rpx; margin-left: 16rpx; }
+.detail-description { display: block; white-space: pre-wrap; margin-top: 12rpx; }

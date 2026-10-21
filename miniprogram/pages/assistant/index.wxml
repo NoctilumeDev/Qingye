@@ -10,6 +10,19 @@
   </view>
   <view class="field"><textarea class="textarea" value="{{question}}" focus="{{correcting}}" maxlength="300" disabled="{{busy}}" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：这周末有什么摄影活动？" placeholder-style="color:#65767d" /></view>
   <button id="assistant-query" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="ask">{{busy ? '正在查找校园记录…' : '帮我查查'}}</button>
+  <button class="facet-toggle" bindtap="toggleFacets" disabled="{{busy}}">{{facetOpen ? '收起分区搜索' : '自己选分区 / 修改查询条件'}}</button>
+  <view wx:if="{{facetOpen}}" class="card facets">
+    <view class="section-title">按分区搜索</view><view class="muted">不确定的问法可在这里补全。留空名称表示全部对象，其他条件仍保留。</view>
+    <picker range="{{objects}}" value="{{objectIndex}}" data-field="objectIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">查询对象：{{objects[objectIndex]}}</view></picker>
+    <picker range="{{times}}" value="{{timeIndex}}" data-field="timeIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">时间分区：{{times[timeIndex]}}</view></picker>
+    <picker wx:if="{{timeIndex === 9}}" mode="date" value="{{date}}" data-field="date" bindchange="facetField" disabled="{{busy}}"><view class="facet-choice">具体日期：{{date || '请选择'}}</view></picker>
+    <view class="muted">{{objectIndex === 3 ? '日期按计划借用时段筛选，不是提交、领取或归还日期。' : objectIndex === 1 ? '当前库存或指定时段的预约可用量，不保证将来可借。' : '日期按活动时段筛选，跨日活动可匹配；不是报名日期。'}}</view>
+    <input class="facet-choice" value="{{entity}}" maxlength="80" data-field="entity" bindinput="facetField" disabled="{{busy}}" placeholder="{{objectIndex === 1 || objectIndex === 3 ? '器材原名，留空查全部' : '活动标题 / 社团关键词，留空查全部'}}" />
+    <picker wx:if="{{objectIndex === 0 || objectIndex === 2}}" range="{{categories}}" value="{{categoryIndex}}" data-field="categoryIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">分类：{{categories[categoryIndex]}}</view></picker>
+    <input wx:if="{{objectIndex === 0 || objectIndex === 2}}" class="facet-choice" value="{{location}}" maxlength="100" data-field="location" bindinput="facetField" disabled="{{busy}}" placeholder="地点原名（精确匹配），留空不限" />
+    <picker wx:if="{{objectIndex === 2 || objectIndex === 3}}" range="{{states}}" value="{{stateIndex}}" data-field="stateIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">状态：{{states[stateIndex]}}</view></picker>
+    <button class="primary" bindtap="searchFacets" disabled="{{busy}}">核对这些条件</button>
+  </view>
   <view wx:if="{{answer}}" class="card answer">
     <view wx:if="{{interpretation}}" class="understanding">
       <text class="understanding-title">{{interpretation}}</text>
@@ -18,7 +31,20 @@
     </view>
     <text selectable="true">{{answer}}</text>
     <button wx:if="{{status === 'CONFIRM_SCOPE' && confirmationToken}}" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="confirmScope">按这个范围继续查询</button>
-    <view wx:for="{{items}}" wx:key="id" class="result {{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS' ? 'navigable' : ''}}" data-id="{{item.id}}" bindtap="open"><text>{{item.displayName}}</text><image wx:if="{{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS'}}" src="/assets/icons/arrow-right-s-line-muted.png" /></view>
+    <view wx:for="{{items}}" wx:key="id" class="result detail-card {{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS' ? 'navigable' : ''}}" data-id="{{item.id}}" bindtap="open">
+      <view class="detail-head"><text>{{item.displayName}}</text><text class="detail-id">#{{item.id}}</text></view>
+      <view wx:if="{{item.startLabel}}">时间：{{item.startLabel}} — {{item.endLabel}}</view>
+      <view wx:if="{{item.location}}">地点：{{item.location}}</view>
+      <view wx:if="{{item.clubName}}">社团：{{item.clubName}}</view>
+      <view wx:if="{{item.activityTitle}}">关联活动：{{item.activityTitle}}</view>
+      <view wx:if="{{item.stateLabel}}">状态：{{item.stateLabel}}</view>
+      <view wx:if="{{intent === 'MY_LOANS'}}">数量：{{item.quantity}}</view>
+      <view wx:if="{{intent === 'EQUIPMENT'}}">库存：共 {{item.totalQuantity}}，已借出 {{item.borrowedQuantity}}；{{item.enabled ? '启用' : '已停用'}}</view>
+      <view wx:if="{{item.availability}}">所选时段可用：{{item.availability.availableQuantity}}（按当前预约）</view>
+      <view wx:if="{{intent === 'EQUIPMENT'}}" class="muted">系统未维护专门的器材存放地点，请联系管理人员。</view>
+      <text wx:if="{{item.description}}" class="detail-description" selectable="true">{{item.description}}</text>
+    </view>
+    <button wx:if="{{hasMore && nextToken}}" bindtap="more" loading="{{busy}}" disabled="{{busy}}">继续加载相同条件的记录</button>
     <view class="corrections"><view wx:for="{{corrections}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion">{{item}}</view></view>
   </view>
   <view class="footnote">查询不会替你报名、审批或借用器材。这些操作请在对应页面确认。</view>

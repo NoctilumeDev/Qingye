@@ -8,7 +8,7 @@ import java.util.*;
 
 /** Short-lived, session-bound consent to exactly one immutable plan. No database or model access. */
 final class AssistantConfirmations {
-    record Offer(long user,String sessionHash,QueryPlan plan,String mode,Instant expiresAt) {}
+    record Offer(long user,String sessionHash,String requestId,QueryPlan plan,AssistantTime period,String mode,int offset,Instant expiresAt) {}
     record Issued(String token,Instant expiresAt) {}
     private record Owner(long user,String sessionHash) {}
     private record Request(String id,Instant expiresAt) {}
@@ -31,7 +31,7 @@ final class AssistantConfirmations {
         requests.put(owner,request);
         return request.id();
     }
-    synchronized Optional<Issued> issue(long user,String session,String requestId,QueryPlan plan,String mode) {
+    synchronized Optional<Issued> issue(long user,String session,String requestId,QueryPlan plan,AssistantTime period,String mode,int offset) {
         purgeExpired();
         if (session==null || requestId==null) return Optional.empty();
         var owner=new Owner(user,hash(session));
@@ -40,12 +40,12 @@ final class AssistantConfirmations {
         if (offers.size()>=512) return Optional.empty();
         String token=UUID.randomUUID().toString();
         Instant expires=clock.instant().plusSeconds(300);
-        offers.put(token,new Offer(user,owner.sessionHash(),plan,mode,expires));
+        offers.put(token,new Offer(user,owner.sessionHash(),requestId,plan,period,mode,offset,expires));
         return Optional.of(new Issued(token,expires));
     }
-    synchronized Optional<Offer> consume(long user,String session,String token) {
+    synchronized Optional<Offer> consume(long user,String session,String token,boolean more) {
         var offer=offers.get(token);
-        if (offer==null || session==null || offer.user()!=user || !offer.sessionHash().equals(hash(session))) return Optional.empty();
+        if (offer==null || session==null || offer.user()!=user || !offer.sessionHash().equals(hash(session)) || (offer.offset()>0)!=more) return Optional.empty();
         offers.remove(token);
         return clock.instant().isBefore(offer.expiresAt())?Optional.of(offer):Optional.empty();
     }

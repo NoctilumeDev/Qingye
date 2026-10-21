@@ -8,10 +8,11 @@ final class AssistantShortcuts {
     private static final Map<String,QueryPlan> REQUESTS;
     static {
         var requests=new HashMap<String,QueryPlan>();
-        add(requests,QueryPlan.query("ACTIVITIES",null,null,"ANY"),"有哪些校园活动","校园有啥活动","有什么活动");
+        add(requests,QueryPlan.query("ACTIVITIES",null,null,"ANY"),"有哪些校园活动","校园有啥活动","有什么活动","查全部活动","查询全部活动");
         add(requests,QueryPlan.query("ACTIVITIES",null,null,"WEEKEND"),"这周末有什么活动","本周末有什么活动");
         add(requests,QueryPlan.query("ACTIVITIES",null,null,"TODAY"),"今天有什么活动");
         add(requests,QueryPlan.query("ACTIVITIES",null,null,"TOMORROW"),"明天有什么活动");
+        add(requests,QueryPlan.query("ACTIVITIES",null,null,"DAY_AFTER_TOMORROW"),"后天有什么活动");
         add(requests,QueryPlan.query("ACTIVITIES",null,"ART","ANY"),"有什么摄影活动");
         add(requests,QueryPlan.query("ACTIVITIES",null,"ART","TODAY"),"今天有什么摄影活动");
         add(requests,QueryPlan.query("MY_REGISTRATIONS",null,null,"ANY"),"我的报名","我的报名记录","我的报名活动","我的报名活动有哪些");

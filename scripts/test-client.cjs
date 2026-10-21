@@ -453,6 +453,75 @@ test('loan defaults follow the selected activity and retain subsequent manual ad
   editor.onUnload()
 })
 
+test('assistant facet combinations preserve tomorrow, name, location and cancelled state with no model request', async () => {
+  const calls = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', intent: 'MY_REGISTRATIONS', answer: '明天已取消', items: [], confirmationToken: 'scope' } })
+  assistant.facetPick({ currentTarget: { dataset: { field: 'objectIndex' } }, detail: { value: '2' } })
+  assistant.setData({ timeIndex: 2, stateIndex: 4, categoryIndex: 2, entity: '摄影社', location: '东操场' })
+  await assistant.searchFacets()
+  assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/query')
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[0].body)), { intent: 'MY_REGISTRATIONS', entity: '摄影社', category: 'ART', timeOption: 'TOMORROW', date: null, status: 'CANCELLED', location: '东操场' })
+  assert.equal(assistant.data.items.length, 0)
+})
+
+test('all objects keeps the other facets and uncertain input opens manual selection without querying everything', async () => {
+  const calls = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CLARIFY', intent: '', answer: '待确认', items: [] } })
+  assistant.setData({ question: '查那个活动' }); await assistant.ask()
+  assert.equal(calls.length, 1); assert.equal(assistant.data.facetOpen, true)
+  assistant.setData({ entity: '', timeIndex: 3, location: '东操场' }); await assistant.searchFacets()
+  assert.equal(calls[1].body.entity, null); assert.equal(calls[1].body.timeOption, 'DAY_AFTER_TOMORROW'); assert.equal(calls[1].body.location, '东操场')
+})
+
+test('model plan populates editable facets even while the request is busy', async () => {
+  const plan = { intent: 'MY_REGISTRATIONS', entity: '摄影社', category: 'ART', timeOption: 'DATE', date: '2026-10-22', status: 'CANCELLED', location: '东操场' }
+  const assistant = page('assistant', async () => ({ status: 'CONFIRM_SCOPE', intent: plan.intent, plan, answer: '范围', items: [], confirmationToken: 't' }))
+  assistant.setData({ question: '查报名' }); await assistant.ask(); assistant.correct()
+  assert.equal(assistant.data.stateIndex, 4); assert.equal(assistant.data.states[4], '已取消'); assert.equal(assistant.data.timeIndex, 9); assert.equal(assistant.data.location, '东操场'); assert.equal(assistant.data.entity, '摄影社')
+})
+
+test('scope modal cancellation and leaving during confirmation never execute a query', async () => {
+  let calls = 0, prompts = 0; const consent = deferred()
+  const assistant = page('assistant', async () => { calls++; return {} }, {}, async () => { prompts++; return consent.promise })
+  assistant.setData({ confirmationToken: 'original', answer: '明天相机' })
+  const pending = assistant.confirmScope(); await assistant.confirmScope()
+  assert.equal(prompts, 1); assert.equal(calls, 0)
+  assistant.onHide(); consent.resolve(true); await pending; assert.equal(calls, 0)
+  const cancelled = page('assistant', async () => { calls++ }, {}, async () => false)
+  cancelled.setData({ confirmationToken: 't' }); await cancelled.confirmScope(); assert.equal(calls, 0); assert.equal(cancelled.data.busy, false)
+})
+
+test('continuation uses only the server token and appends fixed detail cards', async () => {
+  let body, url
+  const assistant = page('assistant', async (u, m, b) => { url = u; body = b; return { status: 'QUERY', intent: 'ACTIVITIES', items: [{ id: 2, title: '同名活动', location: '西馆', startTime: '2026-10-22T10:00:00', endTime: '2026-10-22T11:00:00' }], answer: '末页', hasMore: false } })
+  assistant.setData({ items: [{ id: 1, displayName: '同名活动', location: '东操场' }], nextToken: 'page-2' }); await assistant.more()
+  assert.equal(url, '/assistant/more'); assert.deepEqual(JSON.parse(JSON.stringify(body)), { token: 'page-2' }); assert.equal(assistant.data.items.length, 2); assert.equal(assistant.data.items[1].location, '西馆'); assert.equal(assistant.data.items[1].startLabel, '2026-10-22 10:00:00'); assert.equal(assistant.data.nextToken, '')
+})
+
+test('a wrong model partition can be replaced by explicit facets and its old confirmation is never sent', async () => {
+  const calls = []
+  const assistant = page('assistant', async (url, method, body) => {
+    calls.push({ url, body })
+    if (url === '/assistant') return { status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', answer: '全部器材', items: [], confirmationToken: 'wrong', plan: { intent: 'EQUIPMENT', entity: 'ALL', category: null, timeOption: 'CURRENT', date: null, status: 'ANY', location: null } }
+    if (url === '/assistant/query') return { status: 'CONFIRM_SCOPE', intent: 'MY_LOANS', answer: '我的相机已领取未归还', items: [], confirmationToken: 'corrected' }
+    return { status: 'QUERY', intent: 'MY_LOANS', answer: '我的记录', items: [] }
+  })
+  assistant.setData({ question: '我的相机尚未归还记录' }); await assistant.ask(); assistant.correct()
+  assert.equal(assistant.data.confirmationToken, '')
+  assistant.facetPick({ currentTarget: { dataset: { field: 'objectIndex' } }, detail: { value: '3' } })
+  assistant.setData({ entity: '相机', stateIndex: 5 }); await assistant.searchFacets(); await assistant.confirmScope()
+  assert.equal(calls.length, 3); assert.equal(calls[1].body.status, 'CHECKED_OUT'); assert.equal(calls[1].body.timeOption, 'ANY')
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[2].body)), { token: 'corrected' }); assert.equal(assistant.data.status, 'QUERY')
+})
+
+test('new equipment images have consumers and an accessory never inherits a camera photograph', () => {
+  const view = require('../miniprogram/utils/view')
+  for (const name of ['羽毛球拍', '无线话筒', '便携音箱']) {
+    const picture = view.equipment({ name }).defaultImage
+    assert.match(picture, /-v2\.jpg$/); assert.ok(fs.existsSync(path.join(client, picture)))
+  }
+  assert.match(view.equipment({ name: '相机充电器' }).defaultImage, /box-3-line/)
+  assert.match(view.equipment({ name: '单反相机' }).defaultImage, /camera-v1/)
+})
+
 test('an empty search can return to the activity list while keeping the chosen category', async () => {
   const urls = [], home = page('home', async url => { urls.push(url); return url.includes('keyword=%E7%B4%A0123456') ? [] : [row(2)] })
   home.data.category = 'SPORT'; home.data.keyword = '素123456'; await home.load(true)

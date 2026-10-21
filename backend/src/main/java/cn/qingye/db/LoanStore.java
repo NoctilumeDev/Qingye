@@ -1,6 +1,7 @@
 package cn.qingye.db;
 import cn.qingye.model.Actor;
 import cn.qingye.model.Reservation;
+import cn.qingye.model.QueryPlan;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -11,6 +12,22 @@ public class LoanStore {
     private final Sql sql;
     public LoanStore(Sql sql) {
         this.sql=sql;
+    }
+    public List<Map<String,Object>> assistantMine(long user,QueryPlan plan,LocalDateTime start,LocalDateTime end,LocalDateTime anchor,int offset) {
+        var args=new ArrayList<Object>();args.add(user);
+        String where=" WHERE l.applicant_id=?";
+        if(plan.entity()!=null) where+=AssistantSql.equipmentName(plan.entity(),args);
+        if(plan.status().equals("NON_CANCELLED")) where+=" AND l.status<>'CANCELLED'";
+        else if(!plan.status().equals("ANY")) { where+=" AND l.status=?";args.add(plan.status()); }
+        where+=AssistantSql.time(plan.timeOption(),"l.planned_start","l.planned_end",start,end,anchor,args);
+        args.add(11);args.add(offset);
+        return sql.list("SELECT l.id,l.quantity,l.status,l.planned_start,l.planned_end,e.name AS equipment_name,a.title AS activity_title FROM loan l JOIN equipment e ON e.id=l.equipment_id JOIN activity a ON a.id=l.activity_id"+where+" ORDER BY l.created_at DESC,l.id DESC LIMIT ? OFFSET ?",args.toArray());
+    }
+    public List<Map<String,Object>> assistantEquipment(String name,int offset) {
+        var args=new ArrayList<Object>();String where=" WHERE 1=1";
+        if(!name.equals("ALL")) where+=AssistantSql.equipmentName(name,args);
+        args.add(offset);
+        return sql.list("SELECT e.id,e.name,e.category,e.description,e.total_quantity,e.enabled,(SELECT COALESCE(SUM(l.quantity),0) FROM loan l WHERE l.equipment_id=e.id AND l.status='CHECKED_OUT') AS borrowed_quantity FROM equipment e"+where+" ORDER BY e.id LIMIT 11 OFFSET ?",args.toArray());
     }
     public List<Map<String,Object>> equipment() {
         return sql.list("SELECT e.*,(SELECT COALESCE(SUM(l.quantity),0) FROM loan l WHERE l.equipment_id=e.id AND l.status='CHECKED_OUT') AS borrowed_quantity FROM equipment e ORDER BY e.id LIMIT 100");
