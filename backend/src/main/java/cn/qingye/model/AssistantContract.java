@@ -32,6 +32,9 @@ public final class AssistantContract {
         return times(intent).stream().map(key->overrides.getOrDefault(key,labels.get(TIMES.indexOf(key)))).toList();
     }
     public static String intentLabel(String intent){return list("intentLabels").get(INTENTS.indexOf(intent));}
+    public static List<String> intentLabels(){return list("intentLabels");}
+    @SuppressWarnings("unchecked") public static List<String> requiredFields(String intent){return ((Map<String,List<String>>)SPEC.get("requiredFields")).getOrDefault(intent,List.of());}
+    @SuppressWarnings("unchecked") public static List<String> stateLabels(String intent){var labels=(Map<String,String>)SPEC.get("stateLabels");return states(intent).stream().map(labels::get).toList();}
     @SuppressWarnings("unchecked") public static Map<String,List<String>> equipmentNameGroups(){return (Map<String,List<String>>)SPEC.get("equipmentNameGroups");}
     public static Map<String,Object> describe(){return SPEC;}
 }

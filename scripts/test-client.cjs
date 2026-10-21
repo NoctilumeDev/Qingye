@@ -605,13 +605,13 @@ test('a partial combination shows known conditions without turning its drafts in
   const queries = [{ action: 'QUERY', intent: 'EQUIPMENT', entity: '相机', timeOption: 'CURRENT', status: 'ANY' }, { action: 'CLARIFY', intent: 'MY_REGISTRATIONS', entity: '摄影社', timeOption: null, status: 'CANCELLED' }]
   const assistant = page('assistant', async () => ({ status: 'CLARIFY', answer: '补充时间', draft: { action: 'CLARIFY', queries }, clarificationToken: 'followup', question: '本人报名要查哪段时间？', items: [] }))
   assistant.setData({ question: '查相机，和摄影社取消报名' }); await assistant.ask()
-  assert.equal(assistant.data.draftSummaries.length, 2); assert.match(assistant.data.draftSummaries[1], /摄影社.*已取消/); assert.equal(assistant.data.queuedQueries.length, 1); assert.equal(assistant.data.sections[0].confirmationToken, undefined)
+  assert.equal(assistant.data.draftSummaries.length, 2); assert.match(assistant.data.draftSummaries[1], /摄影社.*已取消/); assert.equal(assistant.data.queuedQueries.length, 2); assert.equal(assistant.data.queuedQueries[1]._needsReview, true); assert.equal(assistant.data.sections[0].confirmationToken, undefined)
 })
 
 test('a new user question clears old manual conditions rather than carrying hidden filters', async () => {
   const assistant = page('assistant', async () => ({ status: 'CLARIFY', answer: '哪天？', draft: { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '蓝晒' }, clarificationToken: 'new', items: [] }))
   assistant.setData({ question: '查蓝晒活动', location: '旧地点', categoryIndex: 3, stateIndex: 4, entity: '旧名称' }); await assistant.ask()
-  assert.equal(assistant.data.location, ''); assert.equal(assistant.data.categoryIndex, 0); assert.equal(assistant.data.stateIndex, 0); assert.equal(assistant.data.entity, '蓝晒')
+  assert.equal(assistant.data.location, ''); assert.equal(assistant.data.categoryIndex, 0); assert.equal(assistant.data.stateIndex, -1); assert.ok(assistant.data.facetPending.includes('status')); assert.equal(assistant.data.entity, '蓝晒')
 })
 
 test('new equipment images have consumers and an accessory never inherits a camera photograph', () => {
@@ -640,6 +640,92 @@ test('changing a loan interval invalidates an old response before the debounce f
   editor.field({ currentTarget: { dataset: { field: 'endTime' } }, detail: { value: '12:00' } })
   pending.resolve({ availableQuantity: 5 }); await checking; editor.onUnload()
   assert.equal(editor.data.availability, null)
+})
+
+test('incomplete queries open an editable popup and a reply only remaps, never executes', async () => {
+  const calls = [], prompts = []
+  const draft = { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY', reason: 'MISSING_TIME' }
+  const assistant = page('assistant', async (url, method, body) => {
+    calls.push({ url, body })
+    return url === '/assistant' ? { status: 'CLARIFY', draft, items: [], clarificationToken: 'partial', question: '哪段时间？', missingConditions: [{ queryIndex: 1, field: 'timeOption', label: '时间范围' }] }
+      : { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan: { ...draft, action: 'QUERY', timeOption: 'TOMORROW', reason: null }, confirmationToken: 'complete', items: [], answer: '明天摄影社' }
+  }, {}, async (...args) => { prompts.push(args); return '明天' })
+  assistant.setData({ question: '摄影社活动在哪里？' }); await assistant.ask()
+  assert.equal(prompts.length, 1); assert.equal(prompts[0][1], true); assert.equal(prompts[0][2].title, '请补充查询条件'); assert.match(prompts[0][0], /尚未查询/)
+  assert.deepEqual(calls.map(c => c.url), ['/assistant', '/assistant/clarify']); assert.equal(calls[1].body.answer, '明天'); assert.equal(calls[1].body.token, 'partial')
+  assert.equal(assistant.data.status, 'CONFIRM_SCOPE'); assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.confirmationToken, 'complete')
+})
+
+test('cancelling or submitting an empty popup does not query, and missing facets cannot default to all', async () => {
+  for (const answer of [false, true, '   ']) {
+    const calls = [], hints = []
+    const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CLARIFY', items: [], clarificationToken: 'partial', draft: { action: 'CLARIFY', intent: 'EQUIPMENT', entity: null, timeOption: null, status: 'ANY', reason: 'MISSING_INFO' }, question: '哪种器材、什么时间？' } }, { showToast: h => hints.push(h) }, async () => answer)
+    assistant.setData({ question: '帮我查那个器材' }); await assistant.ask(); await assistant.searchFacets()
+    assert.equal(calls.length, 1); assert.equal(assistant.data.timeIndex, -1); assert.equal(assistant.data.entityPending, true); assert.equal(assistant.data.confirmationToken, '')
+    assistant.facetField({ currentTarget: { dataset: { field: 'entity' } }, detail: { value: '相机' } }); await assistant.searchFacets(); assert.equal(calls.length, 1)
+    assert.match(hints.at(-1).title, /不会默认查全部/)
+  }
+})
+
+test('a delayed popup answer cannot revive a changed or hidden query', async () => {
+  for (const change of ['input', 'onHide']) {
+    const answer = deferred(), calls = []
+    const assistant = page('assistant', async (url) => { calls.push(url); return { status: 'CLARIFY', items: [], clarificationToken: 'old', question: '哪天？', draft: { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY' } } }, {}, () => answer.promise)
+    assistant.setData({ question: '摄影社活动' }); const pending = assistant.ask(); await new Promise(resolve => setImmediate(resolve))
+    if (change === 'input') assistant.input({ detail: { value: '换成器材库存' } }); else assistant.onHide()
+    answer.resolve('明天'); await pending; assert.deepEqual(calls, ['/assistant']); assert.equal(assistant.data.confirmationToken, '')
+  }
+})
+
+test('a partial batch retains every branch and cannot send just its complete branch', async () => {
+  const calls = [], hints = []
+  const queries = [{ action: 'QUERY', intent: 'EQUIPMENT', entity: '相机', timeOption: 'CURRENT', status: 'ANY' }, { action: 'CLARIFY', intent: 'MY_REGISTRATIONS', entity: '摄影社', timeOption: null, status: 'CANCELLED', reason: 'MISSING_TIME' }]
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return calls.length === 1 ? { status: 'CLARIFY', items: [], clarificationToken: 'partial', draft: { action: 'CLARIFY', intent: 'BATCH', queries }, question: '报名查哪段时间？' } : { status: 'CONFIRM_SCOPE', intent: 'BATCH', sections: [], items: [] } }, { showToast: h => hints.push(h) }, async () => false)
+  assistant.setData({ question: '查相机，另外摄影社已取消报名' }); await assistant.ask(); await assistant.searchFacets()
+  assert.equal(calls.length, 1); assert.equal(assistant.data.queuedQueries.length, 2); assert.equal(assistant.data.editingIndex, 1); assert.equal(assistant.data.timeIndex, -1)
+  assistant.facetPick({ currentTarget: { dataset: { field: 'timeIndex' } }, detail: { value: '0' } }); assistant.addFacet(); await assistant.previewQueued()
+  assert.equal(calls.length, 2); assert.equal(calls[1].url, '/assistant/queries'); assert.equal(calls[1].body.queries.length, 2)
+  assert.equal(calls[1].body.queries[0].entity, '相机'); assert.equal(calls[1].body.queries[1].status, 'CANCELLED'); assert.equal(calls[1].body.queries[1].timeOption, 'ANY')
+  assert.equal('_needsReview' in calls[1].body.queries[1], false); assert.equal('reason' in calls[1].body.queries[1], false)
+})
+
+test('the popup reopen button accepts a native tap event without changing the request identity', async () => {
+  const calls = []
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CLARIFY', items: [] } }, {}, async () => '明天')
+  assistant.queryGeneration = 4; assistant.setData({ clarificationToken: 'partial', followupQuestion: '哪天？' })
+  await assistant.promptClarification({ currentTarget: { dataset: {} } }); assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/clarify'); assert.equal(calls[0].body.token, 'partial')
+})
+
+test('choosing an object during completion recomputes its requirements without losing a known name', async () => {
+  for (const entity of [null, '相机']) {
+    const calls = [], hints = []
+    const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', items: [] } }, { showToast: h => hints.push(h) })
+    assistant.applyDraft({ action: 'CLARIFY', intent: null, entity, timeOption: null, status: null, reason: 'MISSING_INFO' }, true)
+    const pick = (field, value) => assistant.facetPick({ currentTarget: { dataset: { field } }, detail: { value: String(value) } })
+    pick('objectIndex', 1); pick('timeIndex', 0); pick('stateIndex', 0)
+    assert.equal(assistant.data.entity, entity || '')
+    await assistant.searchFacets()
+    assert.equal(calls.length, entity ? 1 : 0)
+    if (!entity) { assert.ok(assistant.data.facetPending.includes('entity')); assistant.chooseAllEntities(); await assistant.searchFacets(); assert.equal(calls.length, 1); assert.equal(calls[0].body.entity, 'ALL') }
+    else assert.equal(calls[0].body.entity, '相机')
+  }
+})
+
+test('erasing a required draft name cannot silently turn it into all equipment', async () => {
+  let calls = 0
+  const assistant = page('assistant', async () => { calls++; return {} }, { showToast() {} })
+  assistant.applyDraft({ intent: 'EQUIPMENT', entity: '相机', timeOption: 'CURRENT', status: 'ANY' }, true)
+  assistant.facetField({ currentTarget: { dataset: { field: 'entity' } }, detail: { value: '' } }); await assistant.searchFacets()
+  assert.equal(calls, 0); assert.equal(assistant.data.entityPending, true)
+})
+
+test('the real modal adapter receives editable completion labels and does not authorize a read', async () => {
+  const prompts = [], calls = [], context = { module: { exports: {} }, require: () => ({ baseUrl: '' }), wx: { showModal(options) { prompts.push(options); assert.ok(Array.from(options.confirmText).length <= 4); assert.ok(Array.from(options.cancelText).length <= 4); options.success({ confirm: true, content: '明天' }) } } }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/request.js'), 'utf8'), context)
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return calls.length === 1 ? { status: 'CLARIFY', clarificationToken: 'partial', question: '哪天？', draft: { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY' }, items: [] } : { status: 'CONFIRM_SCOPE', confirmationToken: 'ready', items: [] } }, {}, context.module.exports.confirm)
+  assistant.setData({ question: '摄影社活动' }); await assistant.ask()
+  assert.equal(prompts.length, 1); assert.equal(prompts[0].editable, true); assert.equal(prompts[0].title, '请补充查询条件'); assert.equal(prompts[0].placeholderText, '填写缺少的条件，已明确内容会保留')
+  assert.deepEqual(calls.map(c => c.url), ['/assistant', '/assistant/clarify']); assert.equal(assistant.data.items.length, 0)
 })
 
 test('workbench guards confirmation as well as writes for operations and members', async () => {

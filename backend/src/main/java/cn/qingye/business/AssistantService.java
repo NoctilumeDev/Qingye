@@ -63,7 +63,7 @@ public class AssistantService {
             var result=new LinkedHashMap<>(stopped("SYSTEM_ERROR","MODEL_UNAVAILABLE","LOCAL"));
             confirmations.clarify(actor.id(),session,requestId,turns,replies,true).ifPresent(i->result.put("retryToken",i.token()));return result;
         }
-        var proposal=remote.get();
+        var proposal=AssistantQualification.incompleteDraft(remote.get()).orElse(remote.get());
         if(!valid(proposal))return stopped("SYSTEM_ERROR","PLAN_INVALID","MODEL_PLAN");
         if(proposal.action().equals("REJECT")) {
             if("INVALID_PROTOCOL".equals(proposal.reason()))return stopped("SYSTEM_ERROR","INVALID_PROTOCOL","MODEL_PLAN");
@@ -77,7 +77,8 @@ public class AssistantService {
             if(issued.isEmpty())return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE","LOCAL");
             var result=new LinkedHashMap<>(stopped("CLARIFY",proposal.reason(),"MODEL_PLAN"));
             result.put("clarificationToken",issued.get().token());result.put("clarificationExpiresAt",issued.get().expiresAt().toString());
-            result.put("draft",proposal);result.put("clarificationRound",replies+1);result.put("question",followupQuestion(proposal));return result;
+            result.put("draft",proposal);result.put("missingConditions",AssistantQualification.missing(proposal));
+            result.put("decisionStage","COMPLETE_CONDITIONS");result.put("clarificationRound",replies+1);result.put("question",followupQuestion(proposal));return result;
         }
         if(proposal.batch()) {
             for(var q:proposal.queries())if(!timeSupported(q))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","MODEL_PLAN");
@@ -98,21 +99,30 @@ public class AssistantService {
         if(p.reason().equals("DATE_MEANING"))return "这里的日期指活动／计划借用时段，还是实际报名、领取或归还日期？后者目前不支持按日期筛选，可改选支持的条件。";
         if(p.reason().equals("UNKNOWN_ENTITY"))return "你指哪场活动或哪种器材？可以补充原名、社团，或明确选择全部。";
         if(p.reason().equals("MULTIPLE_REQUESTS"))return "这些请求之间需要什么关系？当前支持最多四项独立查询，不支持跨对象关联比较。";
+        var missing=AssistantQualification.missing(p);
+        if(!missing.isEmpty())return "查询条件尚未齐全，尚未读取业务记录。请补充："+String.join("；",missing.stream().map(m->(p.queries()==null?"":"第 "+m.queryIndex()+" 项：")+m.label()+"（"+String.join("、",m.choices())+"）").toList())+"。前面已明确的条件保留。";
         if(p.intent()!=null)return "已保留前面的查询方向。请补充仍不明确的名称、时间或状态；明确要全部也可以直接说全部。";
         return "你想查公开活动、器材库存、自己的报名还是自己的借用？请补充必要信息，也可以直接选择分区。";
     }
     private String timeQuestion(QueryPlan p) {
         if(p.queries()!=null) {
             var questions=new ArrayList<String>();
-            for(int i=0;i<p.queries().size();i++)if(p.queries().get(i).timeOption()==null)questions.add("第 "+(i+1)+" 项："+timeQuestion(p.queries().get(i)));
+            for(int i=0;i<p.queries().size();i++)if(p.queries().get(i).timeOption()==null||"DATE".equals(p.queries().get(i).timeOption())&&p.queries().get(i).date()==null)questions.add("第 "+(i+1)+" 项："+timeQuestion(p.queries().get(i)));
             if(!questions.isEmpty())return String.join("\n",questions);
         }
         if(!AssistantContract.INTENTS.contains(Objects.toString(p.intent(),"")))return "请先说明查询公开活动、器材库存、自己的报名还是自己的借用，再补充相应时间。";
+        if("DATE".equals(p.timeOption())&&p.date()==null)return "已保留指定日期这一条件。请补充具体年月日（YYYY-MM-DD），不会替你改成全部时间。";
         return "查询"+AssistantContract.intentLabel(p.intent())+"的时间可选："+String.join("、",AssistantContract.timeLabels(p.intent()))+"。请补充所需时间，已有名称和状态保留。";
     }
     /** Explicit local facets remain usable when the model is unavailable or uncertain. */
     public Map<String,Object> query(Actor actor,QueryPlan plan,String session) {
         String requestId=confirmations.begin(actor.id(),session);
+        var incomplete=AssistantQualification.incompleteDraft(plan);
+        if(incomplete.isPresent()) {
+            var draft=incomplete.get();var response=new LinkedHashMap<>(stopped("CLARIFY",draft.reason(),"FACETS"));
+            response.put("draft",draft);response.put("missingConditions",AssistantQualification.missing(draft));response.put("question",followupQuestion(draft));
+            response.put("decisionStage","COMPLETE_CONDITIONS");return response;
+        }
         if (!valid(plan) || !"QUERY".equals(plan.action())) return stopped("CLARIFY","PLAN_INVALID","FACETS");
         if(plan.batch()) {
             for(var q:plan.queries())if(!timeSupported(q))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","FACETS");

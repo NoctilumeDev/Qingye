@@ -60,10 +60,12 @@ class AssistantBoundaryTest {
         assertThat(result.get("answer").toString()).contains("总量 5","当前实物可用 4").doesNotContain("not for clients");
     }
     @Test void malformedCapabilitiesAndUnknownEntitiesDoNotAuthorizeFactQueries() {
-        for (var invalid:List.of(QueryPlan.query("DELETE_ALL",null,null,"ANY"),QueryPlan.query("MY_LOANS",null,"BAD","TODAY"),QueryPlan.query("EQUIPMENT",null,null,"CURRENT"))) {
+        for (var invalid:List.of(QueryPlan.query("DELETE_ALL",null,null,"ANY"),QueryPlan.query("MY_LOANS",null,"BAD","TODAY"))) {
             when(planner.plan(anyString())).thenReturn(Optional.of(invalid));
             assertThat(service.ask(student,"查相机")).containsEntry("status","SYSTEM_ERROR");
         }
+        when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("EQUIPMENT",null,null,"CURRENT")));
+        assertThat(service.ask(student,"查那个器材","s")).containsEntry("status","CLARIFY").containsEntry("reason","UNKNOWN_ENTITY").doesNotContainKey("confirmationToken");
         verifyNoInteractions(loans,activities,capacity);
         when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("EQUIPMENT","独角兽相机",null,"CURRENT")));
         assertThat(confirmed("查独角兽相机器材")).containsEntry("status","QUERY").containsEntry("items",List.of());

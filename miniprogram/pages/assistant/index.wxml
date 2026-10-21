@@ -12,6 +12,8 @@
   <view wx:if="{{clarificationToken || amendmentToken}}" class="card">
     <view class="section-title">{{clarificationToken ? '补充一下就好' : '补充或改口（可选）'}}</view><text>{{followupQuestion || '可以修改刚才的条件，原查询范围将失效并重新核对。'}}</text>
     <view wx:for="{{draftSummaries}}" wx:key="index" class="muted">已理解的条件（尚未查询）：{{item}}</view>
+    <view wx:for="{{missingConditions}}" wx:key="index" class="muted">第 {{item.queryIndex}} 项待补充：{{item.label}}</view>
+    <button wx:if="{{clarificationToken}}" bindtap="promptClarification" disabled="{{busy}}">打开补充条件弹窗</button>
     <textarea class="textarea" value="{{replyText}}" maxlength="300" bindinput="replyInput" disabled="{{busy}}" placeholder="回答这次追问，前面的请求会保留" />
     <button class="primary" bindtap="reply" loading="{{busy}}" disabled="{{busy}}">补充后继续判断</button>
   </view>
@@ -19,15 +21,16 @@
   <button class="facet-toggle" bindtap="toggleFacets" disabled="{{busy}}">{{facetOpen ? '收起分区搜索' : '自己选分区 / 修改查询条件'}}</button>
   <view wx:if="{{facetOpen}}" class="card facets">
     <view class="section-title">按分区搜索</view><view class="muted">留空名称表示全部对象，其他条件保留。可添加最多四项独立查询。</view>
-    <picker range="{{objects}}" value="{{objectIndex}}" data-field="objectIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">查询对象：{{objects[objectIndex]}}</view></picker>
-    <picker range="{{times}}" value="{{timeIndex}}" data-field="timeIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">时间分区：{{times[timeIndex]}}</view></picker>
+    <picker range="{{objects}}" value="{{objectIndex < 0 ? 0 : objectIndex}}" data-field="objectIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">查询对象：{{objectIndex < 0 ? '请明确选择' : objects[objectIndex]}}</view></picker>
+    <picker range="{{times}}" value="{{timeIndex < 0 ? 0 : timeIndex}}" data-field="timeIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">时间分区：{{timeIndex < 0 ? '请明确选择，不默认全部' : times[timeIndex]}}</view></picker>
     <picker wx:if="{{timeKeys[timeIndex] === 'DATE'}}" mode="date" value="{{date}}" data-field="date" bindchange="facetField" disabled="{{busy}}"><view class="facet-choice">具体日期：{{date || '请选择'}}</view></picker>
     <view class="muted">{{objectIndex === 3 ? '日期按计划借用时段，不是提交、领取或归还日期。' : objectIndex === 1 ? '当前库存或具体时段预约可用量，不保证将来可借。' : '日期按活动时段，不是报名日期。'}}</view>
     <input class="facet-choice" value="{{entity}}" maxlength="80" data-field="entity" bindinput="facetField" disabled="{{busy}}" placeholder="{{objectIndex === 1 || objectIndex === 3 ? '器材原名，留空查全部' : '活动标题 / 社团关键词，留空查全部'}}" />
+    <button wx:if="{{entityPending}}" bindtap="chooseAllEntities" disabled="{{busy}}">明确选择全部对象（其他条件保留）</button>
     <picker wx:if="{{objectIndex === 0 || objectIndex === 2}}" range="{{categories}}" value="{{categoryIndex}}" data-field="categoryIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">分类：{{categories[categoryIndex]}}</view></picker>
     <input wx:if="{{objectIndex === 0 || objectIndex === 2}}" class="facet-choice" value="{{location}}" maxlength="100" data-field="location" bindinput="facetField" disabled="{{busy}}" placeholder="地点原名（精确匹配），留空不限" />
-    <picker wx:if="{{objectIndex === 2 || objectIndex === 3}}" range="{{states}}" value="{{stateIndex}}" data-field="stateIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">状态：{{states[stateIndex]}}</view></picker>
-    <button class="primary" bindtap="searchFacets" disabled="{{busy}}">{{editingIndex >= 0 ? '更新本项并核对组合' : '只核对当前条件'}}</button>
+    <picker wx:if="{{objectIndex === 2 || objectIndex === 3 || stateIndex < 0}}" range="{{states}}" value="{{stateIndex < 0 ? 0 : stateIndex}}" data-field="stateIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">状态：{{stateIndex < 0 ? '请明确选择' : states[stateIndex]}}</view></picker>
+    <button class="primary" bindtap="searchFacets" disabled="{{busy}}">{{editingIndex >= 0 ? '更新本项并核对组合' : hasPendingQueries ? '先补全组合条件' : '只核对当前条件'}}</button>
     <button bindtap="addFacet" disabled="{{busy}}">{{editingIndex >= 0 ? '保存本项修改' : '加入独立查询组合'}}</button>
     <view wx:for="{{queuedQueries}}" wx:key="index" class="card"><text>第 {{index + 1}} 项：{{queuedSummaries[index]}}</text><button data-index="{{index}}" bindtap="editQueued" disabled="{{busy}}">修改这一项</button><button data-index="{{index}}" bindtap="removeQueued" disabled="{{busy}}">移除此项</button></view>
     <button wx:if="{{queuedQueries.length}}" class="primary" bindtap="previewQueued" disabled="{{busy}}">核对已添加的 {{queuedQueries.length}} 项</button>

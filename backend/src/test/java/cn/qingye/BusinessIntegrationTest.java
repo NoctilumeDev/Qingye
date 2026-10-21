@@ -408,7 +408,6 @@ class BusinessIntegrationTest {
             QueryPlan.query("DELETE_ALL",null,null,"ANY"),
             QueryPlan.query("EQUIPMENT","相机","ADMIN","CURRENT"),
             QueryPlan.query("EQUIPMENT","相".repeat(81),null,"CURRENT"),
-            QueryPlan.query("EQUIPMENT",null,null,"CURRENT"),
             QueryPlan.query("MY_LOANS",null,"ART","ANY"),
             QueryPlan.query("MY_REGISTRATIONS",null,"BAD","TODAY"),
             QueryPlan.query("EQUIPMENT","相机",null,"PAST"),
@@ -418,6 +417,8 @@ class BusinessIntegrationTest {
             assertThat(answer).containsEntry("status","SYSTEM_ERROR");
             assertThat(answer.get("items")).isEqualTo(List.of());
         }
+        when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("EQUIPMENT",null,null,"CURRENT")));
+        assertThat(confirmed(service,student,"查那个器材")).containsEntry("status","CLARIFY").containsEntry("reason","UNKNOWN_ENTITY").containsEntry("items",List.of()).doesNotContainKey("confirmationToken");
         when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("MY_LOANS",null,null,"ANY")));
         assertThat(confirmed(service,other,"查询管理员的器材借用记录").get("items")).isEqualTo(List.of());
         // Even a semantically wrong but valid model plan cannot change the subject.

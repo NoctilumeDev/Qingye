@@ -1,6 +1,7 @@
 package cn.qingye.integration;
 import cn.qingye.model.QueryPlan;
 import cn.qingye.model.AssistantContract;
+import cn.qingye.model.AssistantQualification;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -48,6 +49,8 @@ public class LlmPlanner {
             for(String field:QueryPlan.FIELDS)if(!field.equals("queries")&&!tree.has(field))return Optional.empty();
             var plan=json.treeToValue(tree,QueryPlan.class);
             if (plan.valid()) return Optional.of(plan);
+            var incomplete=AssistantQualification.incompleteDraft(plan);
+            if(incomplete.isPresent())return incomplete;
             // Unsupported declared filters are not silently discarded or converted into a shortcut.
             if ("QUERY".equals(plan.action()) && Set.of("ACTIVITIES","EQUIPMENT","MY_REGISTRATIONS","MY_LOANS","BATCH").contains(Objects.toString(plan.intent(),"")))
                 return Optional.of(QueryPlan.clarify("UNSUPPORTED_FILTER"));

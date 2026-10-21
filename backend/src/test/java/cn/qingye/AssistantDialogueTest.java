@@ -155,5 +155,26 @@ class AssistantDialogueTest {
         var result=service.ask(me,"先查相机，另外看看蓝晒活动","s");
         assertThat(result).containsEntry("status","CLARIFY").containsEntry("draft",partial).doesNotContainKey("confirmationToken");
         assertThat(result.get("question").toString()).contains("第 2 项","公开活动");noFacts();
+        var date=new QueryPlan("CLARIFY","ACTIVITIES","摄影社",null,"DATE",null,"ANY",null,"MISSING_TIME");
+        var dateBatch=new QueryPlan("CLARIFY","BATCH",null,null,null,null,null,null,"MISSING_TIME",List.of(complete,date));
+        when(planner.plan(anyString())).thenReturn(Optional.of(dateBatch));var missingDate=service.ask(me,"相机，另外指定日的摄影活动","s");
+        assertThat(missingDate.get("question").toString()).contains("第 2 项","具体年月日").doesNotContain("请先说明查询");noFacts();
+    }
+    @Test void anIncompleteQueryIsReturnedForCompletionAndOnlyTheCompletedPlanGetsConsent() {
+        var incomplete=new QueryPlan("QUERY","MY_LOANS","相机",null,"DATE",null,"CHECKED_OUT",null,null);
+        var completed=new QueryPlan("QUERY","MY_LOANS","相机",null,"DATE","2026-10-22","CHECKED_OUT",null,null);
+        when(planner.plan(anyString())).thenReturn(Optional.of(incomplete),Optional.of(completed));
+        var first=service.ask(me,"指定一天查相机未归还记录","s");
+        assertThat(first).containsEntry("status","CLARIFY").containsEntry("decisionStage","COMPLETE_CONDITIONS").doesNotContainKeys("confirmationToken","sections");
+        assertThat(first.get("question").toString()).contains("具体年月日");assertThat(first.get("missingConditions").toString()).contains("date");noFacts();
+        var second=service.clarify(me,token(first),"2026-10-22","s");assertThat(second).containsEntry("status","CONFIRM_SCOPE").containsEntry("plan",completed);noFacts();
+        service.confirm(me,second.get("confirmationToken").toString(),"s");verify(loans).assistantMine(eq(me.id()),eq(completed),any(),any(),any(),eq(0));
+    }
+    @Test void incompleteManualBatchCannotPreviewOrExecuteOnlyTheReadyPart() {
+        var ready=QueryPlan.query("EQUIPMENT","相机",null,"CURRENT");
+        var partial=new QueryPlan("QUERY","ACTIVITIES","摄影社",null,null,null,"ANY",null,null);
+        var result=service.query(me,QueryPlan.batch(List.of(ready,partial)),"s");
+        assertThat(result).containsEntry("status","CLARIFY").doesNotContainKeys("confirmationToken","sections","clarificationToken");
+        assertThat(((QueryPlan)result.get("draft")).queries()).hasSize(2);noFacts();verifyNoInteractions(planner);
     }
 }
