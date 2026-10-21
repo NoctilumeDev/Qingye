@@ -13,13 +13,14 @@ public final class AssistantQualification {
         if("BATCH".equals(candidate.intent())) {
             if(candidate.entity()!=null||candidate.category()!=null||candidate.timeOption()!=null||candidate.date()!=null||candidate.status()!=null||candidate.location()!=null
                 ||candidate.queries()==null||candidate.queries().size()<2||candidate.queries().size()>AssistantContract.MAX_QUERIES)return Optional.empty();
-            var children=new ArrayList<QueryPlan>();boolean incomplete=false;
+            var children=new ArrayList<QueryPlan>();boolean incomplete=false,unsupported=false;
             for(var child:candidate.queries()) {
-                if(child==null||child.queries()!=null||!"QUERY".equals(child.action()))return Optional.empty();
-                if(child.valid())children.add(child);
+                if(child==null||child.queries()!=null||!Set.of("QUERY","CLARIFY").contains(Objects.toString(child.action(),"")))return Optional.empty();
+                if("CLARIFY".equals(child.action())) {if(!child.valid())return Optional.empty();children.add(child);incomplete=true;unsupported|="UNSUPPORTED_FILTER".equals(child.reason());}
+                else if(child.valid())children.add(child);
                 else {var draft=incompleteDraft(child);if(draft.isEmpty())return Optional.empty();children.add(draft.get());incomplete=true;}
             }
-            return incomplete?Optional.of(new QueryPlan("CLARIFY","BATCH",null,null,null,null,null,null,"MISSING_INFO",children)):Optional.empty();
+            return incomplete?Optional.of(new QueryPlan("CLARIFY","BATCH",null,null,null,null,null,null,unsupported?"UNSUPPORTED_FILTER":"MISSING_INFO",children)):Optional.empty();
         }
         if(candidate.queries()!=null)return Optional.empty();
         var draft=new QueryPlan("CLARIFY",candidate.intent(),candidate.entity(),candidate.category(),candidate.timeOption(),candidate.date(),candidate.status(),candidate.location(),"MISSING_INFO");

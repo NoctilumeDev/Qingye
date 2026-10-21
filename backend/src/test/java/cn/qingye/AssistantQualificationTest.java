@@ -47,4 +47,14 @@ class AssistantQualificationTest {
         assertThat(AssistantQualification.missing(draft)).extracting(AssistantQualification.MissingCondition::queryIndex).containsExactly(2);
         assertThat(AssistantQualification.incompleteDraft(QueryPlan.batch(List.of(ready,QueryPlan.batch(List.of(ready,missing)))))).isEmpty();
     }
+    @Test void aQueryContainerWithAValidClarificationChildCanOnlyBecomeADraft() {
+        var ready=QueryPlan.query("EQUIPMENT","相机",null,"CURRENT");
+        var partial=new QueryPlan("CLARIFY","ACTIVITIES","摄影社",null,null,null,"ANY",null,"MISSING_TIME");
+        var mixed=QueryPlan.batch(List.of(ready,partial));assertThat(mixed.valid()).isFalse();
+        var draft=AssistantQualification.incompleteDraft(mixed).orElseThrow();
+        assertThat(draft.action()).isEqualTo("CLARIFY");assertThat(draft.queries()).containsExactly(ready,partial);assertThat(draft.valid()).isTrue();
+        var unsupported=new QueryPlan("CLARIFY","ACTIVITIES",null,null,null,null,null,null,"UNSUPPORTED_FILTER");
+        assertThat(AssistantQualification.incompleteDraft(QueryPlan.batch(List.of(ready,unsupported))).orElseThrow().reason()).isEqualTo("UNSUPPORTED_FILTER");
+        assertThat(AssistantQualification.incompleteDraft(QueryPlan.batch(List.of(ready,QueryPlan.reject("PRIVATE_DATA"))))).isEmpty();
+    }
 }

@@ -177,4 +177,13 @@ class AssistantDialogueTest {
         assertThat(result).containsEntry("status","CLARIFY").doesNotContainKeys("confirmationToken","sections","clarificationToken");
         assertThat(((QueryPlan)result.get("draft")).queries()).hasSize(2);noFacts();verifyNoInteractions(planner);
     }
+    @Test void aMixedModelContainerKeepsItsClarificationAndAllReadyBranches() {
+        var ready=QueryPlan.query("EQUIPMENT","相机",null,"CURRENT");
+        var partial=new QueryPlan("CLARIFY","ACTIVITIES","摄影社",null,"DATE",null,"ANY",null,"MISSING_TIME");
+        when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.batch(List.of(ready,partial))));
+        var result=service.ask(me,"相机库存，另外指定日期的摄影社活动","s");
+        assertThat(result).containsEntry("status","CLARIFY").containsKey("clarificationToken").doesNotContainKeys("confirmationToken","sections");
+        assertThat(((QueryPlan)result.get("draft")).queries()).containsExactly(ready,partial);
+        assertThat(result.get("question").toString()).contains("第 2 项","具体年月日");noFacts();
+    }
 }

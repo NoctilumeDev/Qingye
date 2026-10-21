@@ -94,6 +94,8 @@ class IntegrationBoundaryTest {
             var incompleteQuery=new QueryPlan("QUERY","ACTIVITIES","摄影社",null,null,null,"ANY",null,null);
             payload.set(json.writeValueAsString(incompleteQuery));
             assertThat(planner.plan("摄影社活动")).hasValueSatisfying(p->{assertThat(p.action()).isEqualTo("CLARIFY");assertThat(p.reason()).isEqualTo("MISSING_TIME");assertThat(p.entity()).isEqualTo("摄影社");assertThat(p.timeOption()).isNull();});
+            payload.set(json.writeValueAsString(QueryPlan.batch(List.of(single,partial))));
+            assertThat(planner.plan("相机与摄影社活动")).hasValueSatisfying(p->{assertThat(p.action()).isEqualTo("CLARIFY");assertThat(p.queries()).containsExactly(single,partial);});
             var nested=json.valueToTree(QueryPlan.batch(List.of(single,single)));
             ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).put("userId",4);
             payload.set(json.writeValueAsString(nested));assertThat(planner.plan("查全部")).hasValueSatisfying(p->assertThat(p.action()).isEqualTo("REJECT"));
@@ -135,7 +137,7 @@ class IntegrationBoundaryTest {
         var executor=Executors.newSingleThreadExecutor();
         server.setExecutor(executor);
         server.createContext("/slow",exchange-> {
-            try { Thread.sleep(6000); }
+            try { Thread.sleep(10000); }
             catch(InterruptedException e) { Thread.currentThread().interrupt(); }
             finally { exchange.close(); }
         });
@@ -145,7 +147,7 @@ class IntegrationBoundaryTest {
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/slow","test-fixture","test-model");
             long started=System.nanoTime();
             assertThat(planner.plan("查相机器材")).isEmpty();
-            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(4),Duration.ofMillis(6500));
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(7),Duration.ofMillis(9500));
         }
         finally { server.stop(0);executor.shutdownNow(); }
     }
@@ -155,7 +157,7 @@ class IntegrationBoundaryTest {
         server.createContext("/stalled-body",exchange->{
             try {
                 exchange.getRequestBody().readAllBytes();exchange.sendResponseHeaders(200,0);
-                exchange.getResponseBody().write(' ');exchange.getResponseBody().flush();Thread.sleep(7000);
+                exchange.getResponseBody().write(' ');exchange.getResponseBody().flush();Thread.sleep(10000);
             } catch(Exception ignored) { }
             finally { exchange.close(); }
         });server.start();
@@ -163,7 +165,7 @@ class IntegrationBoundaryTest {
             var json=new ObjectMapper().findAndRegisterModules();
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/stalled-body","test-fixture","test-model");
             long started=System.nanoTime();assertThat(planner.plan("查相机")).isEmpty();
-            assertThat(Duration.ofNanos(System.nanoTime()-started)).isLessThan(Duration.ofMillis(6500));
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(7),Duration.ofMillis(9500));
         } finally { server.stop(0);executor.shutdownNow(); }
     }
 }

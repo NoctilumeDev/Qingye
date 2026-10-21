@@ -95,6 +95,11 @@ public class AssistantService {
         return result;
     }
     private String followupQuestion(QueryPlan p) {
+        if(p.queries()!=null) {
+            var questions=new ArrayList<String>();
+            for(int i=0;i<p.queries().size();i++)if("CLARIFY".equals(p.queries().get(i).action()))questions.add("第 "+(i+1)+" 项："+followupQuestion(p.queries().get(i)));
+            if(!questions.isEmpty())return String.join("\n",questions);
+        }
         if(p.reason().equals("MISSING_TIME"))return timeQuestion(p);
         if(p.reason().equals("DATE_MEANING"))return "这里的日期指活动／计划借用时段，还是实际报名、领取或归还日期？后者目前不支持按日期筛选，可改选支持的条件。";
         if(p.reason().equals("UNKNOWN_ENTITY"))return "你指哪场活动或哪种器材？可以补充原名、社团，或明确选择全部。";
