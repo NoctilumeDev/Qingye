@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>青野 · 自然语言业务查询的四道门</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --green: #187553;
+      --green-soft: #e8f3ef;
+      --blue: #276f83;
+      --blue-soft: #e7f5f9;
+      --orange: #985229;
+      --orange-soft: #fff1e8;
+      --teal: #217b74;
+      --teal-soft: #e7f4f1;
+      --red: #b53a46;
+      --red-soft: #fff0f2;
+      --amber: #906000;
+      --amber-soft: #fff8e7;
+      --ink: #243b37;
+      --muted: #65767d;
+      --paper: #f7fafb;
+      --line: #dfe8ec;
+      --wire: #759f90;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(rgba(247,250,251,.72), rgba(247,250,251,.86)),
+        url("assets/diagram-campus-background.png");
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    main { width: min(1040px, calc(100% - 40px)); margin: auto; padding: 4px 0; }
+
+    .page-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 8px; }
+    .page-title { padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,.88); }
+    h1 { margin: 0; font-size: clamp(22px, 3vw, 34px); line-height: 1.2; letter-spacing: -.4px; }
+    .page-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    button { border: 1px solid #cbded6; border-radius: 9px; padding: 9px 13px; background: white; color: var(--green); font: inherit; font-size: 12px; cursor: pointer; }
+    button:hover { background: var(--green-soft); }
+    button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+    .entry { width: min(560px, 84%); margin: 0 auto; padding: 8px 22px; border-radius: 14px; background: var(--green); color: white; text-align: center; box-shadow: 0 10px 24px rgba(24,117,83,.15); }
+    .entry strong { display: block; font-size: 24px; letter-spacing: 2px; }
+    .entry span { display: block; margin-top: 5px; font-size: 12px; opacity: .92; }
+
+    .principles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 8px 0; }
+    .principle { padding: 6px 14px; border: 1px solid #bad5cb; border-radius: 10px; background: rgba(255,255,255,.88); color: var(--green); font-size: 12px; font-weight: 700; text-align: center; }
+
+    .flow { display: grid; gap: 8px; }
+    .gate { --accent: var(--green); --tint: var(--green-soft); --branch: #a7c3b7; display: grid; grid-template-columns: 190px 1fr; position: relative; overflow: visible; border: 1px solid var(--branch); border-radius: 13px; background: rgba(255,255,255,.94); box-shadow: 0 8px 24px rgba(54,95,82,.07); }
+    .gate:nth-child(2) { --accent: var(--blue); --tint: var(--blue-soft); --branch: #a9c6d0; }
+    .gate:nth-child(3) { --accent: var(--orange); --tint: var(--orange-soft); --branch: #d7b89c; }
+    .gate:nth-child(4) { --accent: var(--teal); --tint: var(--teal-soft); --branch: #a9c9c4; }
+    .gate-label { padding: 10px 14px; border-radius: 12px 0 0 12px; border-right: 1px solid var(--branch); background: var(--tint); }
+    .gate-number { display: inline-grid; place-items: center; width: 26px; height: 26px; margin-bottom: 4px; border-radius: 50%; background: var(--accent); color: white; font-size: 16px; font-weight: 800; }
+    .gate-label h2 { margin: 0; color: var(--accent); font-size: 19px; line-height: 1.28; }
+    .gate-label h2 span { display: block; }
+    .gate-label p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    /* Each content group owns its height; the label never stretches its cards. */
+    .gate-body { display: grid; align-content: start; align-items: start; gap: 8px; padding: 10px 14px; min-width: 0; }
+    .gate-body--execution { align-content: center; }
+    .split-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .split-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card { min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: white; }
+    .card h3 { margin: 0 0 5px; color: var(--accent); font-size: 14px; line-height: 1.4; }
+    .card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .card.good { border-color: #a8dbc6; background: #f3fbf7; }
+    .card.warn { border-color: #e3ca83; background: var(--amber-soft); }
+    .card.stop { border-color: #e8b5bc; background: var(--red-soft); }
+    .card.unknown { border-color: #cbd4df; background: #f3f6f9; }
+    .status { display: inline-block; margin-bottom: 4px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,.78); color: var(--muted); font-size: 10px; font-weight: 750; }
+
+    .contract { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); align-items: start; gap: 8px; }
+    .json { padding: 10px 12px; border: 1px solid #b8d7df; border-radius: 9px; background: var(--blue-soft); }
+    .json strong { display: block; color: var(--blue); font-size: 14px; }
+    .json p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .json code { color: var(--blue); font-size: 11px; }
+    .checks { display: grid; align-self: stretch; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .check { display: grid; place-items: center; padding: 7px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); font-size: 12px; font-weight: 700; }
+    .results { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 7px; }
+    .result { padding: 7px 10px; border-radius: 8px; font-size: 11px; line-height: 1.55; }
+    .result.good { background: var(--green-soft); color: #126345; }
+    .result.stop { background: var(--red-soft); color: #9f2d3a; }
+    .result.unknown { background: #edf2f6; color: #4d5d70; }
+
+    .large-set { padding: 10px 12px; border: 1px solid #dfc77d; border-radius: 9px; background: var(--amber-soft); }
+    .large-set strong { display: block; color: var(--amber); font-size: 14px; }
+    .formula { margin: 6px 0; color: var(--orange); font-size: 12px; font-weight: 750; }
+    .large-set p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .foot { display: grid; grid-template-columns: 190px 1fr 250px; gap: 16px; margin-top: 8px; padding: 8px 13px; border: 1px solid #bad5cb; border-radius: 9px; background: rgba(255,255,255,.92); }
+    .foot strong { color: var(--green); font-size: 13px; }
+    .foot p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+
+    @media (max-width: 760px) {
+      body { background-attachment: scroll; }
+      main { width: min(100% - 20px, 680px); padding-top: 12px; }
+      .page-head { display: grid; grid-template-columns: 1fr; align-items: start; }
+      .page-head button { justify-self: start; }
+      .page-title { padding-left: 0; background: transparent; }
+      .entry { width: 100%; }
+      .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .gate { grid-template-columns: 1fr; }
+      .gate-label { border-right: 0; border-bottom: 1px solid var(--branch); border-radius: 12px 12px 0 0; }
+      .gate-label h2 span { display: inline; }
+      .split-2, .split-3, .contract, .results, .foot { grid-template-columns: 1fr; }
+    }
+
+    @page { size: A4 portrait; margin: 8mm; }
+    @media print {
+      body { background-attachment: scroll; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      main { width: 100%; padding: 0; }
+      button { display: none; }
+      .page-head { margin-bottom: 8px; }
+      .entry { padding: 9px 16px; margin-bottom: 8px; }
+      .entry strong { font-size: 20px; }
+      .principles { margin: 8px 0; }
+      .flow { gap: 7px; }
+      .gate { grid-template-columns: 170px 1fr; break-inside: avoid; box-shadow: none; }
+      .gate-label, .gate-body { padding: 10px 12px; }
+      .gate-number { width: 28px; height: 28px; margin-bottom: 5px; font-size: 15px; }
+      .gate-label h2 { font-size: 15px; }
+      .gate-label p, .card p, .json p, .large-set p { font-size: 10px; }
+      .card, .json, .large-set { padding: 8px 10px; }
+      .foot { margin-top: 8px; padding: 7px 9px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="page-head">
+      <div class="page-title">
+        <h1 id="diagram-title">青野 · 自然语言业务查询的四道门</h1>
+        <p>用户输入 → 业务边界 → 确定或澄清 → 只读计划 → 固定查询</p>
+      </div>
+      <button type="button" onclick="window.print()">打印 / 保存 PDF</button>
+    </header>
+
+    <figure aria-labelledby="diagram-title" aria-describedby="diagram-note" style="margin:0">
+      <div class="entry">
+        <strong>问问青野</strong>
+        <span>让自然语言进入已有业务格子，而不是让模型直接操作数据库</span>
+      </div>
+
+      <section class="principles" aria-label="架构目标">
+        <div class="principle">只读查询</div>
+        <div class="principle">可控澄清</div>
+        <div class="principle">危险拦截</div>
+        <div class="principle">同目标大集合查询</div>
+      </section>
+
+      <section class="flow" aria-label="四道门">
+        <article class="gate">
+          <header class="gate-label"><span class="gate-number">1</span><h2>业务边界初筛</h2><p>先判断请求是否属于允许处理的业务查询范围。</p></header>
+          <div class="gate-body split-2">
+            <section class="card stop"><span class="status">非 A</span><h3>拒绝或声明不支持</h3><p>域外、无关、越权或非查询请求，不进入后续业务链。</p></section>
+            <section class="card good"><span class="status">A</span><h3>进入查询判定</h3><p>只有允许处理的业务查询，才进入第二道门。</p></section>
+          </div>
+        </article>
+
+        <article class="gate">
+          <header class="gate-label"><span class="gate-number">2</span><h2><span>查询意图判定</span><span>与补全</span></h2><p>本地确定优先；模型只辅助解释，不替系统拥有业务事实。</p></header>
+          <div class="gate-body split-3">
+            <section class="card good"><span class="status">确定 A</span><h3>结构化入口已确定</h3><p>固定菜单、链接、表单和预设参数可直接形成查询计划。</p></section>
+            <section class="card warn"><span class="status">不确定 A → 补全 → 确定 A / 仍不确定</span><h3>补全，而不是猜测</h3><p>先用固定选项或表单；配置模型时可辅助理解，必要时向用户追问。</p></section>
+            <section class="card unknown"><span class="status">补全后仍不确定</span><h3>保留“不知道”</h3><p>无法理解或结构不完整时，不伪造确定性，返回结构化选择。</p></section>
+          </div>
+        </article>
+
+        <article class="gate">
+          <header class="gate-label"><span class="gate-number">3</span><h2><span>统一只读计划</span><span>与授权校验</span></h2><p>本地入口、模型澄清和用户选择，最终都进入同一合同。</p></header>
+          <div class="gate-body">
+            <div class="contract">
+              <section class="json"><strong>统一生成只读 JSON</strong><p>来源可以不同，执行合同必须一致。</p><p><code>intent · target · scope · filters · allowExpand</code></p></section>
+              <section class="checks" aria-label="授权校验内容"><div class="check">身份</div><div class="check">权限</div><div class="check">业务规则</div><div class="check">字段白名单</div></section>
+            </div>
+            <div class="results">
+              <div class="result good"><strong>合法且确定</strong><br>进入固定查询。</div>
+              <div class="result stop"><strong>危险、敏感或越权</strong><br>初筛通过仍须校验，不合规不执行。</div>
+              <div class="result unknown"><strong>结构不完整</strong><br>返回结构化选择，补全后重试。</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="gate">
+          <header class="gate-label"><span class="gate-number">4</span><h2><span>固定查询执行</span><span>与结果放行</span></h2><p>不重新解释语义，不偷偷改题，只执行已经通过校验的计划。</p></header>
+          <div class="gate-body gate-body--execution split-2">
+            <section class="card good"><span class="status">固定执行</span><h3>按业务格子执行只读查询</h3><p>能够执行则展示实际结果；能力不足则返回明确边界或重新澄清。</p></section>
+            <section class="large-set"><strong>大集合查询原则</strong><div class="formula">允许扩大范围 = 目标不变 ∧ 权限不变 ∧ 硬条件不变</div><p>可以放宽查找范围，不能替换查找目标、绕过权限或丢失硬条件。</p></section>
+          </div>
+        </article>
+      </section>
+
+      <figcaption class="foot" id="diagram-note">
+        <strong>无模型时仍然成立</strong>
+        <p>确定入口直接使用；不确定入口通过固定选项或表单补全。只有模糊自然语言且配置模型时，模型才辅助提出候选计划。</p>
+        <p>模型不代替业务；模型只让模糊语言更容易进入已有业务格子。</p>
+      </figcaption>
+    </figure>
+  </main>
+</body>
+</html>
