@@ -4,6 +4,7 @@ runtime/
 project.private.config.json
 
 .tools/
+backend/target/
 **/__pycache__/
 *.pyc
 coverage/

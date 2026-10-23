@@ -1,0 +1,79 @@
+name: Qingye checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  client:
+    name: Qingye · client and hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.14.0'
+          package-manager-cache: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
+      - run: python -B scripts/check.py hygiene
+      - run: python -B scripts/check.py client
+
+  h2:
+    name: Qingye · H2
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
+      - run: python -B scripts/check.py h2
+
+  mysql:
+    name: Qingye · MySQL
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0.44
+        env:
+          MYSQL_ROOT_PASSWORD: qingye-ci-root-only
+          MYSQL_DATABASE: qingye_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pqingye-ci-root-only"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
+      - name: Provision schema-scoped test identity
+        env:
+          MYSQL_PWD: qingye-ci-root-only
+        run: |
+          mysql --protocol=TCP -h 127.0.0.1 -u root <<'SQL'
+          CREATE USER 'qingye_ci_app'@'%' IDENTIFIED BY 'qingye-ci-app-only';
+          GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,ALTER,INDEX,REFERENCES ON qingye_test.* TO 'qingye_ci_app'@'%';
+          SQL
+      - name: Real MySQL tests
+        env:
+          QINGYE_TEST_URL: jdbc:mysql://127.0.0.1:3306/qingye_test?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+          QINGYE_TEST_USER: qingye_ci_app
+          QINGYE_TEST_PASSWORD: qingye-ci-app-only
+        run: python -B scripts/check.py mysql

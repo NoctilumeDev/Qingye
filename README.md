@@ -61,7 +61,7 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 ## 工程维护与复验
 
-青野继续位于dome，原提交历史保留。自己的测试和门禁限定在`qingye/`；[独立CI](../.github/workflows/qingye-ci.yml)按该目录变更触发，不以浏览器演示构建代替后端验收。
+青野现由本仓库独立维护。源码从 `dome/qingye` 的精确坐标提炼，来源、历史关系与权威切换见 [ORIGIN.md](ORIGIN.md)。[独立 CI](.github/workflows/ci.yml)在当前仓库运行，不以浏览器演示构建代替后端验收。
 
 Java17、Maven3.9、Python3.10+、Node24.14.0。从本目录运行：
 
@@ -80,7 +80,7 @@ python -B scripts/check.py all    # 再执行真实MySQL测试
 
 ### 遗留物收口门禁
 
-阶段退出：实现 → 测试 → 文档/公开读回 → 遗留物收口 → 结束。`hygiene`只读检查本模块Git跟踪的已知构建/运行态/私有配置及当前文档本地链接，另有负控制；不扫描或清理其他dome项目，不自动删除图片或数据库，不单独证明LOCAL_DORMANT。
+阶段退出：实现 → 测试 → 文档/公开读回 → 遗留物收口 → 结束。`hygiene`只读检查本仓库Git跟踪的已知构建/运行态/私有配置及当前文档本地链接，另有负控制；不自动删除图片或数据库，不单独证明LOCAL_DORMANT。
 
 负责人还须逐项核对owner、当前consumer和proof obligation：页面/README/展示/Release依赖素材及正式证据绑定资产保留；纯历史废案在确认无当前职责后删除；首败、关键反例、最终见证和回执保留。不能因为没搜到引用就断言图片无用，也不能因为历史说明引用就永远保留废案。构建实例可重建才清；原Release/evidence包不拿新包冒充。唯一数据未知则REVIEW_REQUIRED。
 
