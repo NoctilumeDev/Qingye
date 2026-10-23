@@ -13,12 +13,12 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 ## 校园助手的四道门
 
 <p align="center">
-  <a href="docs/assets/assistant-four-gates.png">
+  <a href="docs/助手四道门.html">
     <img src="docs/assets/assistant-four-gates.png" alt="四道门：自然语言业务查询的受控执行架构" width="760">
   </a>
 </p>
 
-校园助手不会把模型直接接到数据库。自然语言先经过业务边界初筛、查询意图判定与补全、统一只读 JSON 和授权校验，最后才进入固定查询执行；无法确定时保留“不知道”，危险、敏感或越权请求不进入业务。完整边界见[能力合同 v2](docs/assistant-contract.md)。
+校园助手不会把模型直接接到数据库。自然语言先经过业务边界初筛、查询意图判定与补全、统一只读 JSON 和授权校验，最后才进入固定查询执行；无法确定时保留“不知道”，危险、敏感或越权请求不进入业务。点击图片可查看、缩放或打印 [HTML 架构图](docs/助手四道门.html)，完整边界见[能力合同 v2](docs/assistant-contract.md)。
 
 ## 运行
 
