@@ -19,6 +19,17 @@ risk_gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(risk_gate)
 require = risk_gate.require
 VERSION = "2.7.0"
+RETIREMENT_CONTRACTS = {
+    "qingye-rabbitmq-client/v1": {
+        "package": "com.rabbitmq:amqp-client",
+        "manifest": "backend/pom.xml",
+        "evidence": {
+            "docs/governance/rabbitmq-maintenance-20261023.md",
+            "backend/src/test/java/cn/qingye/RabbitClientBoundaryTest.java",
+            "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java",
+        },
+    },
+}
 BINARIES = {
     ("Windows", "AMD64"): ("osv-scanner_windows_amd64.exe", "9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438"),
     ("Linux", "x86_64"): ("osv-scanner_linux_amd64", "160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b"),
@@ -93,6 +104,36 @@ def scan_findings(report, components, exit_code):
     return dict(sorted(findings.items()))
 
 
+def verify_retirement_history(root, identity, retirement, policy, contract):
+    def git(*args):
+        return subprocess.check_output(["git", *args], cwd=root, text=True, encoding="utf-8",
+                                       stderr=subprocess.PIPE, timeout=30)
+
+    historical, changed = retirement["historical_revision"], retirement["change_revision"]
+    # A syntactically valid SHA is not proof that a commit exists or belongs to this history.
+    for revision in (historical, changed):
+        try:
+            git("cat-file", "-e", revision + "^{commit}")
+        except subprocess.CalledProcessError:
+            # Squash/rebase may not retain the source commit as a main ancestor.
+            # Retrieve only its exact object; unavailable history fails closed.
+            git("fetch", "--no-tags", "origin", revision)
+            git("cat-file", "-e", revision + "^{commit}")
+    git("merge-base", "--is-ancestor", historical, changed)
+    git("merge-base", "--is-ancestor", historical, "HEAD")
+    previous = json.loads(git("show", historical + ":docs/governance/dependency-policy.json"),
+                          object_pairs_hook=risk_gate.unique_object)
+    require(identity in previous.get("components", {}), "retired coordinate absent from historical policy")
+    archived = {k: v for k, v in previous.get("advisories", {}).items() if k.startswith(identity + "/")}
+    require(archived == retirement["advisories"], "historical advisory fingerprints do not match")
+    manifest = contract["manifest"]
+    original_manifest = git("show", historical + ":" + manifest)
+    changed_manifest = git("show", changed + ":" + manifest)
+    require(original_manifest != changed_manifest, "retirement change did not modify the manifest")
+    require(hashlib.sha256(changed_manifest.encode()).hexdigest() == policy["applicability_inputs"].get(manifest),
+            "change revision is not bound to the reviewed current manifest")
+
+
 def validate_policy(current, findings, policy, register, root=ROOT):
     require(policy.get("schema") == "qingye-dependency-policy/v1" and risk_gate.sha(policy.get("source_revision")), "invalid dependency policy")
     require(current == policy.get("components"), "dependency versions, scopes or declared licenses changed; review the inventory")
@@ -108,6 +149,9 @@ def validate_policy(current, findings, policy, register, root=ROOT):
     for identity, retirement in retired.items():
         require(isinstance(retirement, dict) and identity not in current,
                 "retired component is still present")
+        contract = RETIREMENT_CONTRACTS.get(retirement.get("contract"))
+        require(contract and identity.rsplit("@", 1)[0] == contract["package"],
+                "retirement requires an applicable evidence contract")
         replacement = retirement.get("replacement")
         require(isinstance(replacement, str) and replacement in current
                 and identity.rsplit("@", 1)[0] == replacement.rsplit("@", 1)[0],
@@ -125,12 +169,15 @@ def validate_policy(current, findings, policy, register, root=ROOT):
                 "retirement must retain every historical advisory fingerprint")
         require(not history.intersection(findings), "retired finding recurred")
         proof = retirement.get("evidence")
-        require(isinstance(proof, list) and proof and all(isinstance(p, str) and p for p in proof),
-                "retirement requires reconciliation evidence")
-        for name in proof:
+        require(isinstance(proof, dict) and proof.keys() == contract["evidence"],
+                "retirement requires the contracted reconciliation and regression evidence")
+        for name, expected in proof.items():
             path = (root / name).resolve()
             require(path.is_relative_to(root.resolve()) and path.is_file(),
                     "retirement evidence missing or outside repository")
+            actual = hashlib.sha256(path.read_text(encoding="utf-8").encode()).hexdigest()
+            require(actual == expected, "retirement evidence content changed: " + name)
+        verify_retirement_history(root, identity, retirement, policy, contract)
         retired_keys.update(history)
     require(set(findings) == {k for k, v in retained.items()
                              if v["status"] != "REMEDIATED" and k not in retired_keys},

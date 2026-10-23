@@ -809,11 +809,12 @@
         "com.rabbitmq:amqp-client@5.14.3/GHSA-mm8h-8587-p46h": "e525f8dc2b43570129abc30e37f737e8b3e3743e4d089be9f280e25b9cef1ab2",
         "com.rabbitmq:amqp-client@5.14.3/GHSA-qx7j-jv8m-fppr": "8294526aa9f47b4c59f37b297c4e100988f6003a62fbd271c5bf95608aeb321a"
       },
-      "evidence": [
-        "docs/governance/rabbitmq-maintenance-20261023.md",
-        "backend/src/test/java/cn/qingye/RabbitClientBoundaryTest.java",
-        "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java"
-      ]
+      "evidence": {
+        "docs/governance/rabbitmq-maintenance-20261023.md": "31c0f32fe41b843185674f1448310911790696398c2163c3d6bccce23f6af03d",
+        "backend/src/test/java/cn/qingye/RabbitClientBoundaryTest.java": "b3d9f80c33cf6a10b76226c059e31c9a5a07234e5aacfec11fa7a04c42b038af",
+        "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java": "2b95082be8b083fb4925d8c9969d5dc4d4fbdc3308368fb5527ac2fd21cdaee9"
+      },
+      "contract": "qingye-rabbitmq-client/v1"
     }
   }
 }
