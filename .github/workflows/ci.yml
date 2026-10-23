@@ -42,8 +42,21 @@ jobs:
     name: Qingye · H2
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      rabbitmq:
+        image: rabbitmq:4.3.2
+        env:
+          RABBITMQ_DEFAULT_USER: qingye_ci_mq
+          RABBITMQ_DEFAULT_PASS: qingye-ci-mq-fixture-only
+          RABBITMQ_DEFAULT_VHOST: qingye-test-ci
+        ports: ['5672:5672']
+        options: >-
+          --health-cmd="rabbitmq-diagnostics -q ping"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0 # Verify the reviewed historical policy and manifest by exact commit.
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
@@ -52,7 +65,13 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.10'
-      - run: python -B scripts/check.py h2
+      - name: H2 and isolated real RabbitMQ regression
+        env:
+          QINGYE_MQ_TEST: '1'
+          QINGYE_MQ_TEST_VHOST: qingye-test-ci
+          QINGYE_MQ_TEST_USER: qingye_ci_mq
+          QINGYE_MQ_TEST_PASSWORD: qingye-ci-mq-fixture-only
+        run: python -B scripts/check.py h2
       - name: Fresh production bytecode analysis and retained-risk change gate
         run: python -B scripts/check.py static
       - name: Fresh full resolved project dependencies and advisory change gate

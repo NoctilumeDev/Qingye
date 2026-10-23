@@ -6,6 +6,8 @@
 
 ## 完整解析依赖检查
 
+本页保留第一轮基线。第二轮 RabbitMQ 候选的清单变化、版本退役审查和真实协议回归见[独立记录](rabbitmq-maintenance-20261023.md)，不覆盖本页历史数字与盲区。
+
 ```powershell
 python -B scripts/check.py dependencies
 ```

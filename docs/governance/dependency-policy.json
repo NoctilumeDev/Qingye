@@ -1,6 +1,6 @@
 {
   "schema": "qingye-dependency-policy/v1",
-  "source_revision": "21d2fddc1d6937f86dd98bd388a806d08847d497",
+  "source_revision": "92f17e8b38ea27db6a1b11616cece8212b3c1765",
   "owner": "NoctilumeDev/Qingye repository-maintainer",
   "scope": "Resolved project compile/runtime/test/provided/system dependencies; not Maven plugin dependencies or distribution approval. Declared license labels are not compatibility decisions.",
   "components": {
@@ -103,7 +103,7 @@
         "The GNU General Public License, v2 with Universal FOSS Exception, v1.0"
       ]
     },
-    "com.rabbitmq:amqp-client@5.14.3": {
+    "com.rabbitmq:amqp-client@5.37.0": {
       "scopes": [
         "compile"
       ],
@@ -768,17 +768,6 @@
     "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-vvgp-rfg2-7rr6": "eaaf34a7750755b1de09d2e35cabcefcdb68940606361a61082b35d48644c7d6",
     "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-wjgm-6hv5-3cvf": "9f419fbaeddd9f4ae7e709603d33956446c8abf6675fbefe738a4fc05fc8d84e",
     "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-wv8q-qhhj-9h54": "5f2a9b541f4526d2849fd46c539d083a9d705c41609160bdc45923769fd02302",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-5m9f-rphj-c435": "517c121e03abbf951603a3eda1d0843f58c2f0c899221037bb0a966d6ab544c1",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-5xwg-cfvj-gff5": "d0119ad0d97e84d3e345098515a6a253447d6f62fb1b6319e2fd05961e1f71de",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-68mj-5wr7-6fgg": "cbec6b8bf2e8e05adbc13be26f46b5aacd75447bb7db885c6085ac95188fe5d5",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-6g32-pxv4-2wfj": "344509e68510188caef333b0d33573032b8f12bff95d5271972d2fff2a95f58f",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-7822-rcf6-97fx": "ee329939683e91a176864e35a12a79c3277202c1b65e411413e9f510412a2e80",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-93j5-89vc-pph4": "42a2804a6ab5c6576cc61267b9a2113d23c2beee2095781446efa87276d5bf0e",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-cqgh-8p3p-mx4m": "957915b6df5c1f73458c2680f8dc932c974108732aaf5e3f6484311b27f1d6ff",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-h6w7-qmcm-q6xr": "580296b88fff64488775bccfd940081bfa301cb33cfd6e17a654443763539d86",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-jh4v-gfqj-7rhx": "c69bb3b041ee171ca5cf38b223cd4dd5464b938d489956595e04fd5b0730e7da",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-mm8h-8587-p46h": "e525f8dc2b43570129abc30e37f737e8b3e3743e4d089be9f280e25b9cef1ab2",
-    "com.rabbitmq:amqp-client@5.14.3/GHSA-qx7j-jv8m-fppr": "8294526aa9f47b4c59f37b297c4e100988f6003a62fbd271c5bf95608aeb321a",
     "io.netty:netty-codec@4.1.135.Final/GHSA-558v-64gr-wgg4": "eb34042ec4b6078ae55a7fa43ed7142e2b2b3077c4b0914f6f1f443836eada2f",
     "io.netty:netty-handler@4.1.135.Final/GHSA-c4c3-7fpv-j4q5": "e36a80fae4b5de4ab4431bfb9faf81f631f058a31d28c623ec1e37f3498630ee",
     "io.netty:netty-handler@4.1.135.Final/GHSA-fccg-mwvh-qqg4": "891994d44e37b46f274fdd064a61b5de788a8c5c43a1a092c7cd334fcb500156",
@@ -790,7 +779,7 @@
     "org.springframework:spring-webmvc@6.2.19/GHSA-pc63-qcmh-9cmg": "74e393a5de3ae0f56dfeec35b1a897c885a35699af84ba654459de4df2e34197"
   },
   "applicability_inputs": {
-    "backend/pom.xml": "8a0ccbec58613a1ab651177bee44fdc23da5299cada70613a3496e7e0db5f191",
+    "backend/pom.xml": "6755d2309414c211bbacc726ec62e4f2ae9ed0be474df6d43011da8990c9fd21",
     "backend/src/main/java/cn/qingye/QingyeApplication.java": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
     "backend/src/main/java/cn/qingye/api/Api.java": "f816e7b6190ce89a010a7be1fe48796ebda4de42d29b7ae0019b30bb520fdd21",
     "backend/src/main/java/cn/qingye/api/AuthFilter.java": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
@@ -801,5 +790,31 @@
     "backend/src/main/java/cn/qingye/integration/QueryCache.java": "1ad48b0901a2470229e65d8b7b72dc9752f2a700b437bae87f4c631e532d0808",
     "backend/src/main/java/cn/qingye/integration/RabbitBridge.java": "3b66989beb9af1b203c6796654d78a261250ec5ec06d90cbfda23090ef9c7df3",
     "backend/src/main/resources/application.yml": "7e9534a7003f39b53aa14b54ef65784139682654fe666dd38ee9ef3aead0b4d0"
+  },
+  "retired_components": {
+    "com.rabbitmq:amqp-client@5.14.3": {
+      "replacement": "com.rabbitmq:amqp-client@5.37.0",
+      "historical_revision": "3ca99c8e604625b0f8cd508a9603b65611045444",
+      "change_revision": "92f17e8b38ea27db6a1b11616cece8212b3c1765",
+      "advisories": {
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-5m9f-rphj-c435": "517c121e03abbf951603a3eda1d0843f58c2f0c899221037bb0a966d6ab544c1",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-5xwg-cfvj-gff5": "d0119ad0d97e84d3e345098515a6a253447d6f62fb1b6319e2fd05961e1f71de",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-68mj-5wr7-6fgg": "cbec6b8bf2e8e05adbc13be26f46b5aacd75447bb7db885c6085ac95188fe5d5",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-6g32-pxv4-2wfj": "344509e68510188caef333b0d33573032b8f12bff95d5271972d2fff2a95f58f",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-7822-rcf6-97fx": "ee329939683e91a176864e35a12a79c3277202c1b65e411413e9f510412a2e80",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-93j5-89vc-pph4": "42a2804a6ab5c6576cc61267b9a2113d23c2beee2095781446efa87276d5bf0e",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-cqgh-8p3p-mx4m": "957915b6df5c1f73458c2680f8dc932c974108732aaf5e3f6484311b27f1d6ff",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-h6w7-qmcm-q6xr": "580296b88fff64488775bccfd940081bfa301cb33cfd6e17a654443763539d86",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-jh4v-gfqj-7rhx": "c69bb3b041ee171ca5cf38b223cd4dd5464b938d489956595e04fd5b0730e7da",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-mm8h-8587-p46h": "e525f8dc2b43570129abc30e37f737e8b3e3743e4d089be9f280e25b9cef1ab2",
+        "com.rabbitmq:amqp-client@5.14.3/GHSA-qx7j-jv8m-fppr": "8294526aa9f47b4c59f37b297c4e100988f6003a62fbd271c5bf95608aeb321a"
+      },
+      "evidence": {
+        "docs/governance/rabbitmq-maintenance-20261023.md": "31c0f32fe41b843185674f1448310911790696398c2163c3d6bccce23f6af03d",
+        "backend/src/test/java/cn/qingye/RabbitClientBoundaryTest.java": "b3d9f80c33cf6a10b76226c059e31c9a5a07234e5aacfec11fa7a04c42b038af",
+        "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java": "2b95082be8b083fb4925d8c9969d5dc4d4fbdc3308368fb5527ac2fd21cdaee9"
+      },
+      "contract": "qingye-rabbitmq-client/v1"
+    }
   }
 }

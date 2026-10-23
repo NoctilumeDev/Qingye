@@ -19,6 +19,17 @@ risk_gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(risk_gate)
 require = risk_gate.require
 VERSION = "2.7.0"
+RETIREMENT_CONTRACTS = {
+    "qingye-rabbitmq-client/v1": {
+        "package": "com.rabbitmq:amqp-client",
+        "manifest": "backend/pom.xml",
+        "evidence": {
+            "docs/governance/rabbitmq-maintenance-20261023.md",
+            "backend/src/test/java/cn/qingye/RabbitClientBoundaryTest.java",
+            "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java",
+        },
+    },
+}
 BINARIES = {
     ("Windows", "AMD64"): ("osv-scanner_windows_amd64.exe", "9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438"),
     ("Linux", "x86_64"): ("osv-scanner_linux_amd64", "160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b"),
@@ -93,6 +104,36 @@ def scan_findings(report, components, exit_code):
     return dict(sorted(findings.items()))
 
 
+def verify_retirement_history(root, identity, retirement, policy, contract):
+    def git(*args):
+        return subprocess.check_output(["git", *args], cwd=root, text=True, encoding="utf-8",
+                                       stderr=subprocess.PIPE, timeout=30)
+
+    historical, changed = retirement["historical_revision"], retirement["change_revision"]
+    # A syntactically valid SHA is not proof that a commit exists or belongs to this history.
+    for revision in (historical, changed):
+        try:
+            git("cat-file", "-e", revision + "^{commit}")
+        except subprocess.CalledProcessError:
+            # Squash/rebase may not retain the source commit as a main ancestor.
+            # Retrieve only its exact object; unavailable history fails closed.
+            git("fetch", "--no-tags", "origin", revision)
+            git("cat-file", "-e", revision + "^{commit}")
+    git("merge-base", "--is-ancestor", historical, changed)
+    git("merge-base", "--is-ancestor", historical, "HEAD")
+    previous = json.loads(git("show", historical + ":docs/governance/dependency-policy.json"),
+                          object_pairs_hook=risk_gate.unique_object)
+    require(identity in previous.get("components", {}), "retired coordinate absent from historical policy")
+    archived = {k: v for k, v in previous.get("advisories", {}).items() if k.startswith(identity + "/")}
+    require(archived == retirement["advisories"], "historical advisory fingerprints do not match")
+    manifest = contract["manifest"]
+    original_manifest = git("show", historical + ":" + manifest)
+    changed_manifest = git("show", changed + ":" + manifest)
+    require(original_manifest != changed_manifest, "retirement change did not modify the manifest")
+    require(hashlib.sha256(changed_manifest.encode()).hexdigest() == policy["applicability_inputs"].get(manifest),
+            "change revision is not bound to the reviewed current manifest")
+
+
 def validate_policy(current, findings, policy, register, root=ROOT):
     require(policy.get("schema") == "qingye-dependency-policy/v1" and risk_gate.sha(policy.get("source_revision")), "invalid dependency policy")
     require(current == policy.get("components"), "dependency versions, scopes or declared licenses changed; review the inventory")
@@ -100,7 +141,47 @@ def validate_policy(current, findings, policy, register, root=ROOT):
     changed = sorted(k for k in set(findings) | set(previous) if findings.get(k) != previous.get(k))
     require(not changed, "new/changed/disappeared advisories require reconciliation: " + ", ".join(changed))
     retained = {item["version"] + "/" + item["id"]: item for item in register["dependency_findings"]}
-    require(set(findings) == {k for k, v in retained.items() if v["status"] != "REMEDIATED"}, "dependency risk register and current findings disagree")
+    # A reviewed upgrade retires a component coordinate, not its historical
+    # findings. Never relabel NOT_APPLICABLE/UNRESOLVED as a fabricated fix.
+    retired = policy.get("retired_components", {})
+    require(isinstance(retired, dict), "invalid retired component records")
+    retired_keys = set()
+    for identity, retirement in retired.items():
+        require(isinstance(retirement, dict) and identity not in current,
+                "retired component is still present")
+        contract = RETIREMENT_CONTRACTS.get(retirement.get("contract"))
+        require(contract and identity.rsplit("@", 1)[0] == contract["package"],
+                "retirement requires an applicable evidence contract")
+        replacement = retirement.get("replacement")
+        require(isinstance(replacement, str) and replacement in current
+                and identity.rsplit("@", 1)[0] == replacement.rsplit("@", 1)[0],
+                "retirement must identify the current version of the same package")
+        require(risk_gate.sha(retirement.get("change_revision"))
+                and risk_gate.sha(retirement.get("historical_revision")),
+                "retirement requires exact historical and change revisions")
+        history = {k for k, item in retained.items() if item["version"] == identity}
+        require(all(retained[k]["status"] != "CONFIRMED" for k in history),
+                "confirmed defect requires explicit remediation evidence, not coordinate retirement")
+        reviewed = retirement.get("advisories")
+        require(history and isinstance(reviewed, dict) and history == reviewed.keys()
+                and all(isinstance(v, str) and len(v) == 64
+                        and all(c in "0123456789abcdef" for c in v) for v in reviewed.values()),
+                "retirement must retain every historical advisory fingerprint")
+        require(not history.intersection(findings), "retired finding recurred")
+        proof = retirement.get("evidence")
+        require(isinstance(proof, dict) and proof.keys() == contract["evidence"],
+                "retirement requires the contracted reconciliation and regression evidence")
+        for name, expected in proof.items():
+            path = (root / name).resolve()
+            require(path.is_relative_to(root.resolve()) and path.is_file(),
+                    "retirement evidence missing or outside repository")
+            actual = hashlib.sha256(path.read_text(encoding="utf-8").encode()).hexdigest()
+            require(actual == expected, "retirement evidence content changed: " + name)
+        verify_retirement_history(root, identity, retirement, policy, contract)
+        retired_keys.update(history)
+    require(set(findings) == {k for k, v in retained.items()
+                             if v["status"] != "REMEDIATED" and k not in retired_keys},
+            "dependency risk register and current findings disagree")
     require(all(retained[k]["status"] in {"NOT_APPLICABLE", "UNRESOLVED"} for k in findings), "confirmed or recurring remediated dependency defect blocks this gate")
     # Revisit conditional dispositions if their cited runtime inputs change. This is not an automatic re-triage.
     inputs = policy.get("applicability_inputs")
@@ -163,10 +244,12 @@ def execute_scan():
     findings = scan_findings(read_json(output / "osv.json"), components, result.returncode)
     policy = read_json(ROOT / "docs/governance/dependency-policy.json")
     states = validate_policy(components, findings, policy, risk_gate.load_register(risk_gate.REGISTER))
-    record.update(state="CHANGE_GATE_PASS", packages=len(components), advisories=len(findings), retained_states=dict(states))
+    record.update(state="CHANGE_GATE_PASS", packages=len(components), advisories=len(findings), retained_states=dict(states),
+                  retired_components=sorted(policy.get("retired_components", {})))
     (output / "run.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     print(f"Dependency change gate: PASS ({len(components)} resolved packages, {len(findings)} retained advisories)")
-    print(f"Retained dispositions: {dict(states)}; no risk acceptance or license-compatibility certification.")
+    print(f"Historical dispositions (including retired versions): {dict(states)}")
+    print(f"Reviewed retired coordinates: {sorted(policy.get('retired_components', {}))}; no risk acceptance or license-compatibility certification.")
 
 
 def main():

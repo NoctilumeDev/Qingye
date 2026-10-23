@@ -94,6 +94,109 @@ class DependencyGateTest(unittest.TestCase):
             with self.subTest(status=status), self.assertRaises(ValueError):
                 self.validate()
 
+    def retire_fixture(self):
+        previous = copy.deepcopy(self.policy)
+        history_path = self.root / "docs/governance/dependency-policy.json"
+        history_path.parent.mkdir(parents=True)
+        history_path.write_text(json.dumps(previous), encoding="utf-8")
+        self.git("init", "-q")
+        self.git("add", ".")
+        self.git("commit", "-qm", "historical fixture")
+        historical = self.git("rev-parse", "HEAD").strip()
+        (self.root / "backend/pom.xml").write_text("fixture v2\n", encoding="utf-8")
+        proof = self.root / "docs/reconciliation.md"
+        proof.write_text("fixture evidence\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", "replacement fixture")
+        changed = self.git("rev-parse", "HEAD").strip()
+        contract = {"package": "fixture:lib", "manifest": "backend/pom.xml", "evidence": {"docs/reconciliation.md"}}
+        self.addCleanup(patch.stopall)
+        patch.dict(m.RETIREMENT_CONTRACTS, {"fixture/v1": contract}).start()
+        original = self.inventory["fixture:lib@1"]
+        self.inventory = {"fixture:lib@2": original}
+        self.findings = {}
+        self.policy["components"] = self.inventory
+        self.policy["advisories"] = {}
+        self.policy["applicability_inputs"]["backend/pom.xml"] = hashlib.sha256(b"fixture v2\n").hexdigest()
+        self.policy["retired_components"] = {"fixture:lib@1": {
+            "contract": "fixture/v1", "replacement": "fixture:lib@2", "historical_revision": historical,
+            "change_revision": changed, "advisories": previous["advisories"],
+            "evidence": {"docs/reconciliation.md": hashlib.sha256(b"fixture evidence\n").hexdigest()}}}
+
+    def git(self, *args):
+        return subprocess.check_output(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                                        "-c", "commit.gpgSign=false", "-c", "core.autocrlf=false", *args],
+                                       cwd=self.root, text=True, encoding="utf-8", stderr=subprocess.PIPE)
+
+    def test_reviewed_upgrade_preserves_historical_unknown_and_not_applicable(self):
+        self.retire_fixture()
+        for status in ("UNRESOLVED", "NOT_APPLICABLE"):
+            self.register["dependency_findings"][0]["status"] = status
+            self.assertEqual(self.validate(), {status: 1})
+        self.assertFalse(self.register["dependency_findings"][0]["risk_accepted"])
+
+    def test_unexplained_or_unbound_retirement_is_rejected(self):
+        self.retire_fixture()
+        original = copy.deepcopy(self.policy["retired_components"])
+        for field, value in (("replacement", "other:lib@2"), ("change_revision", ""),
+                             ("historical_revision", ""), ("advisories", {}),
+                             ("evidence", []), ("evidence", ["missing.md"]),
+                             ("evidence", ["../outside.md"])):
+            self.policy["retired_components"] = copy.deepcopy(original)
+            self.policy["retired_components"]["fixture:lib@1"][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                self.validate()
+        self.policy["retired_components"] = {}
+        with self.assertRaises(ValueError):
+            self.validate()
+
+    def test_retirement_cannot_hide_old_version_or_new_version_findings(self):
+        self.retire_fixture()
+        old = "fixture:lib@1"
+        both = {**self.inventory, old: self.inventory["fixture:lib@2"]}
+        self.policy["components"] = both
+        with self.assertRaises(ValueError):
+            self.validate(current=both)
+        self.policy["components"] = self.inventory
+        for key in ("fixture:lib@1/GHSA-fixture", "fixture:lib@2/GHSA-fixture", "fixture:lib@2/GHSA-new"):
+            findings = {key: "d" * 64}
+            self.policy["advisories"] = findings
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.validate(findings=findings)
+
+    def test_retirement_cannot_close_a_confirmed_defect(self):
+        self.retire_fixture()
+        self.register["dependency_findings"][0]["status"] = "CONFIRMED"
+        with self.assertRaisesRegex(ValueError, "remediation evidence"):
+            self.validate()
+
+    def test_valid_shaped_but_forged_history_or_evidence_is_rejected(self):
+        self.retire_fixture()
+        original = copy.deepcopy(self.policy["retired_components"])
+        for field, value in (("historical_revision", "0" * 40), ("change_revision", "f" * 40),
+                             ("change_revision", original["fixture:lib@1"]["historical_revision"]),
+                             ("advisories", {"fixture:lib@1/GHSA-fixture": "0" * 64}),
+                             ("evidence", {"backend/pom.xml": hashlib.sha256(b"fixture v2\n").hexdigest()}),
+                             ("evidence", {"docs/reconciliation.md": "0" * 64})):
+            self.policy["retired_components"] = copy.deepcopy(original)
+            self.policy["retired_components"]["fixture:lib@1"][field] = value
+            with self.subTest(field=field), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                self.validate()
+        self.policy["retired_components"] = original
+        (self.root / "docs/reconciliation.md").write_text("changed evidence", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "evidence content changed"):
+            self.validate()
+
+    def test_squashed_manifest_can_bind_the_retained_source_commit(self):
+        self.retire_fixture()
+        history = self.policy["retired_components"]["fixture:lib@1"]["historical_revision"]
+        self.git("checkout", "-qb", "squashed", history)
+        (self.root / "backend/pom.xml").write_text("fixture v2\n", encoding="utf-8")
+        (self.root / "docs/reconciliation.md").write_text("fixture evidence\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", "squashed delivery")
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
+
     def test_changed_missing_or_removed_applicability_evidence_blocks(self):
         path = self.root / "backend/pom.xml"
         path.write_bytes(b"fixture\r\n")
