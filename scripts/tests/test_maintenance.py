@@ -41,7 +41,8 @@ class MaintenanceBoundaryTest(unittest.TestCase):
     def test_h2_does_not_inherit_mysql_test_target(self):
         if "h2" not in m.GROUPS:
             self.skipTest("Qixu requires real MySQL")
-        with patch.dict(os.environ, {"QINGYE_TEST_URL": "jdbc:mysql://localhost/live"}), patch.object(m, "run") as run, patch.object(m, "executable", return_value="mvn"):
+        with patch.dict(os.environ, {"QINGYE_TEST_URL": "jdbc:mysql://localhost/live"}), patch.object(m, "run") as run, patch.object(m, "coverage_report") as coverage, patch.object(m, "executable", return_value="mvn"):
             m.check("h2")
             self.assertNotIn("QINGYE_TEST_URL", run.call_args.args[2])
             self.assertIn("QINGYE_TEST_URL", os.environ)
+            coverage.assert_called_once()

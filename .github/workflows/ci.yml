@@ -16,6 +16,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Review dependency changes against GitHub advisories
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, development, unknown
+          warn-only: false
+          comment-summary-in-pr: never
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '24.14.0'
@@ -41,7 +49,7 @@ jobs:
         with:
           python-version: '3.10'
       - run: python -B scripts/check.py h2
-      - name: Retain H2 test reports, including failures
+      - name: Retain H2 test and coverage reports, including failures
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -49,6 +57,8 @@ jobs:
           path: |
             backend/target/surefire-reports/TEST-*.xml
             backend/target/surefire-reports/*.txt
+            backend/target/jacoco.exec
+            backend/target/site/jacoco/
           if-no-files-found: warn
           retention-days: 90
 
@@ -90,7 +100,7 @@ jobs:
           QINGYE_TEST_USER: qingye_ci_app
           QINGYE_TEST_PASSWORD: qingye-ci-app-only
         run: python -B scripts/check.py mysql
-      - name: Retain MySQL test reports, including failures
+      - name: Retain MySQL test and coverage reports, including failures
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -98,5 +108,7 @@ jobs:
           path: |
             backend/target/surefire-reports/TEST-*.xml
             backend/target/surefire-reports/*.txt
+            backend/target/jacoco.exec
+            backend/target/site/jacoco/
           if-no-files-found: warn
           retention-days: 90

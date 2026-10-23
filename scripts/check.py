@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -90,6 +91,36 @@ def mysql_environment(prefix, allowed):
     return os.environ.copy()
 
 
+def coverage_report(report, classes_dir):
+    """Validate measurement completeness, not a coverage percentage threshold."""
+    try:
+        root = ET.parse(report).getroot()
+        if root.tag != "report" or root.find("sessioninfo") is None:
+            raise ValueError("missing report or execution session")
+        expected = {path.relative_to(classes_dir).with_suffix("").as_posix()
+                    for path in classes_dir.rglob("*.class")
+                    if path.name not in {"package-info.class", "module-info.class"}}
+        reported = [item.get("name") for item in root.findall("./package/class")]
+        if not expected or len(reported) != len(set(reported)) or set(reported) != expected:
+            raise ValueError("reported classes do not match compiled production classes")
+        measurements = {}
+        for kind in ("LINE", "BRANCH"):
+            counters = root.findall(f"./counter[@type='{kind}']")
+            if len(counters) != 1:
+                raise ValueError(f"missing or duplicate {kind} counter")
+            missed = int(counters[0].get("missed", ""))
+            covered = int(counters[0].get("covered", ""))
+            if min(missed, covered) < 0 or missed + covered == 0:
+                raise ValueError(f"invalid {kind} denominator")
+            measurements[kind] = (covered, missed + covered)
+        for kind, (covered, total) in measurements.items():
+            print(f"Coverage measurement {kind}: {covered}/{total} ({covered / total:.2%})")
+        print("Coverage report: valid; no percentage threshold or semantic qualification claimed.")
+        return measurements
+    except (OSError, ET.ParseError, ValueError) as error:
+        raise RuntimeError(f"Coverage report rejected: {error}") from error
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("group", choices=GROUPS)
@@ -104,7 +135,7 @@ def main():
 
 
 PROTECTED = set()
-CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "docs/项目简介.md",
+CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "CONTRIBUTING.md", "docs/项目简介.md",
                 "docs/assistant-contract.md", "docs/repository-governance.md",
                 "miniprogram/assets/README.md"]
 DB_SUFFIXES = ["_URL", "_USER", "_PASSWORD"]
@@ -125,9 +156,11 @@ def check(group):
         # destructive test on a database. Clear only the child process variables.
         env = {k: v for k, v in os.environ.items() if not k.startswith("QINGYE_TEST_")}
         run([executable("mvn"), "-B", "-ntp", "clean", "test"], ROOT / "backend", env)
+        coverage_report(ROOT / "backend/target/site/jacoco/jacoco.xml", ROOT / "backend/target/classes")
     elif group == "mysql":
         env = mysql_environment("QINGYE_TEST", {"qingye_test"})
         run([executable("mvn"), "-B", "-ntp", "clean", "test"], ROOT / "backend", env)
+        coverage_report(ROOT / "backend/target/site/jacoco/jacoco.xml", ROOT / "backend/target/classes")
 
 
 if __name__ == "__main__":
