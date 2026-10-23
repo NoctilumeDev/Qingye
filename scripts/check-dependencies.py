@@ -100,7 +100,41 @@ def validate_policy(current, findings, policy, register, root=ROOT):
     changed = sorted(k for k in set(findings) | set(previous) if findings.get(k) != previous.get(k))
     require(not changed, "new/changed/disappeared advisories require reconciliation: " + ", ".join(changed))
     retained = {item["version"] + "/" + item["id"]: item for item in register["dependency_findings"]}
-    require(set(findings) == {k for k, v in retained.items() if v["status"] != "REMEDIATED"}, "dependency risk register and current findings disagree")
+    # A reviewed upgrade retires a component coordinate, not its historical
+    # findings. Never relabel NOT_APPLICABLE/UNRESOLVED as a fabricated fix.
+    retired = policy.get("retired_components", {})
+    require(isinstance(retired, dict), "invalid retired component records")
+    retired_keys = set()
+    for identity, retirement in retired.items():
+        require(isinstance(retirement, dict) and identity not in current,
+                "retired component is still present")
+        replacement = retirement.get("replacement")
+        require(isinstance(replacement, str) and replacement in current
+                and identity.rsplit("@", 1)[0] == replacement.rsplit("@", 1)[0],
+                "retirement must identify the current version of the same package")
+        require(risk_gate.sha(retirement.get("change_revision"))
+                and risk_gate.sha(retirement.get("historical_revision")),
+                "retirement requires exact historical and change revisions")
+        history = {k for k, item in retained.items() if item["version"] == identity}
+        require(all(retained[k]["status"] != "CONFIRMED" for k in history),
+                "confirmed defect requires explicit remediation evidence, not coordinate retirement")
+        reviewed = retirement.get("advisories")
+        require(history and isinstance(reviewed, dict) and history == reviewed.keys()
+                and all(isinstance(v, str) and len(v) == 64
+                        and all(c in "0123456789abcdef" for c in v) for v in reviewed.values()),
+                "retirement must retain every historical advisory fingerprint")
+        require(not history.intersection(findings), "retired finding recurred")
+        proof = retirement.get("evidence")
+        require(isinstance(proof, list) and proof and all(isinstance(p, str) and p for p in proof),
+                "retirement requires reconciliation evidence")
+        for name in proof:
+            path = (root / name).resolve()
+            require(path.is_relative_to(root.resolve()) and path.is_file(),
+                    "retirement evidence missing or outside repository")
+        retired_keys.update(history)
+    require(set(findings) == {k for k, v in retained.items()
+                             if v["status"] != "REMEDIATED" and k not in retired_keys},
+            "dependency risk register and current findings disagree")
     require(all(retained[k]["status"] in {"NOT_APPLICABLE", "UNRESOLVED"} for k in findings), "confirmed or recurring remediated dependency defect blocks this gate")
     # Revisit conditional dispositions if their cited runtime inputs change. This is not an automatic re-triage.
     inputs = policy.get("applicability_inputs")
@@ -163,10 +197,12 @@ def execute_scan():
     findings = scan_findings(read_json(output / "osv.json"), components, result.returncode)
     policy = read_json(ROOT / "docs/governance/dependency-policy.json")
     states = validate_policy(components, findings, policy, risk_gate.load_register(risk_gate.REGISTER))
-    record.update(state="CHANGE_GATE_PASS", packages=len(components), advisories=len(findings), retained_states=dict(states))
+    record.update(state="CHANGE_GATE_PASS", packages=len(components), advisories=len(findings), retained_states=dict(states),
+                  retired_components=sorted(policy.get("retired_components", {})))
     (output / "run.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     print(f"Dependency change gate: PASS ({len(components)} resolved packages, {len(findings)} retained advisories)")
-    print(f"Retained dispositions: {dict(states)}; no risk acceptance or license-compatibility certification.")
+    print(f"Historical dispositions (including retired versions): {dict(states)}")
+    print(f"Reviewed retired coordinates: {sorted(policy.get('retired_components', {}))}; no risk acceptance or license-compatibility certification.")
 
 
 def main():

@@ -94,6 +94,60 @@ class DependencyGateTest(unittest.TestCase):
             with self.subTest(status=status), self.assertRaises(ValueError):
                 self.validate()
 
+    def retire_fixture(self):
+        original = self.inventory["fixture:lib@1"]
+        self.inventory = {"fixture:lib@2": original}
+        self.findings = {}
+        self.policy["components"] = self.inventory
+        self.policy["advisories"] = {}
+        self.policy["retired_components"] = {"fixture:lib@1": {
+            "replacement": "fixture:lib@2", "historical_revision": "a" * 40,
+            "change_revision": "b" * 40,
+            "advisories": {"fixture:lib@1/GHSA-fixture": "c" * 64},
+            "evidence": ["backend/pom.xml"]}}
+
+    def test_reviewed_upgrade_preserves_historical_unknown_and_not_applicable(self):
+        self.retire_fixture()
+        for status in ("UNRESOLVED", "NOT_APPLICABLE"):
+            self.register["dependency_findings"][0]["status"] = status
+            self.assertEqual(self.validate(), {status: 1})
+        self.assertFalse(self.register["dependency_findings"][0]["risk_accepted"])
+
+    def test_unexplained_or_unbound_retirement_is_rejected(self):
+        self.retire_fixture()
+        original = copy.deepcopy(self.policy["retired_components"])
+        for field, value in (("replacement", "other:lib@2"), ("change_revision", ""),
+                             ("historical_revision", ""), ("advisories", {}),
+                             ("evidence", []), ("evidence", ["missing.md"]),
+                             ("evidence", ["../outside.md"])):
+            self.policy["retired_components"] = copy.deepcopy(original)
+            self.policy["retired_components"]["fixture:lib@1"][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                self.validate()
+        self.policy["retired_components"] = {}
+        with self.assertRaises(ValueError):
+            self.validate()
+
+    def test_retirement_cannot_hide_old_version_or_new_version_findings(self):
+        self.retire_fixture()
+        old = "fixture:lib@1"
+        both = {**self.inventory, old: self.inventory["fixture:lib@2"]}
+        self.policy["components"] = both
+        with self.assertRaises(ValueError):
+            self.validate(current=both)
+        self.policy["components"] = self.inventory
+        for key in ("fixture:lib@1/GHSA-fixture", "fixture:lib@2/GHSA-fixture", "fixture:lib@2/GHSA-new"):
+            findings = {key: "d" * 64}
+            self.policy["advisories"] = findings
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                self.validate(findings=findings)
+
+    def test_retirement_cannot_close_a_confirmed_defect(self):
+        self.retire_fixture()
+        self.register["dependency_findings"][0]["status"] = "CONFIRMED"
+        with self.assertRaisesRegex(ValueError, "remediation evidence"):
+            self.validate()
+
     def test_changed_missing_or_removed_applicability_evidence_blocks(self):
         path = self.root / "backend/pom.xml"
         path.write_bytes(b"fixture\r\n")

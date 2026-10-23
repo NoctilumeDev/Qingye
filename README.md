@@ -73,6 +73,8 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 ## 工程维护与复验
 
+RabbitMQ 客户端的有界升级、旧新版对照及公告迁移边界见[第二轮维护记录](docs/governance/rabbitmq-maintenance-20261023.md)；历史不适用和未知记录不包装成升级成果。
+
 青野现由本仓库独立维护。源码从 `dome/qingye` 的精确坐标提炼，来源、历史关系与权威切换见 [ORIGIN.md](ORIGIN.md)。[独立 CI](.github/workflows/ci.yml)在当前仓库运行，不以浏览器演示构建代替后端验收。
 
 [仓库治理与资格边界](docs/repository-governance.md)记录主线保护、检查职责与首败。本轮只对齐工程护栏，不打包发布，不改变已确认的展示页面或业务范围。

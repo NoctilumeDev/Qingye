@@ -141,8 +141,76 @@ class RabbitClientBoundaryTest {
         rejectAfterTune(16384, 16384, true); // above the protocol minimum, plus frame overhead
     }
 
-    @Test void unlimitedNegotiatedFrameMaxDoesNotDisableTheBodyCap() throws Exception {
+    @Test void unlimitedNegotiatedFrameMaxDoesNotDisableTheDefaultFrameCap() throws Exception {
         rejectAfterTune(0, BODY_LIMIT + 1, false);
+    }
+
+    @Test void actualConsumerChecksWholeMessageHeaderAndAcceptsFragmentedBody() throws Exception {
+        for (boolean oversized : new boolean[]{false, true}) {
+            var executor = Executors.newSingleThreadExecutor();
+            var ready = new CountDownLatch(1);
+            var observed = new CountDownLatch(1);
+            var reason = new AtomicReference<Throwable>();
+            var received = new AtomicReference<byte[]>();
+            Connection connection = null;
+            try (var server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+                var peer = executor.submit(() -> {
+                    try (var socket = server.accept()) {
+                        socket.setSoTimeout(3000);
+                        var in = new DataInputStream(socket.getInputStream());
+                        var out = new DataOutputStream(socket.getOutputStream());
+                        assertThat(in.readNBytes(8)).hasSize(8);
+                        new AMQImpl.Connection.Start(0, 9, Map.of(),
+                                LongStringHelper.asLongString("PLAIN"), LongStringHelper.asLongString("en_US"))
+                                .toFrame(0).writeTo(out); out.flush();
+                        readPeerFrame(in);
+                        new AMQImpl.Connection.Tune(0, 16384, 0).toFrame(0).writeTo(out); out.flush();
+                        readPeerFrame(in); readPeerFrame(in);
+                        new AMQImpl.Connection.OpenOk("").toFrame(0).writeTo(out); out.flush();
+                        readPeerFrame(in); // channel.open
+                        new AMQImpl.Channel.OpenOk(LongStringHelper.asLongString(""))
+                                .toFrame(1).writeTo(out); out.flush();
+                        readPeerFrame(in); // basic.consume
+                        new AMQImpl.Basic.ConsumeOk("consumer").toFrame(1).writeTo(out); out.flush();
+                        assertThat(ready.await(3, TimeUnit.SECONDS)).isTrue();
+                        new AMQImpl.Basic.Deliver("consumer", 1L, false, "", "synthetic")
+                                .toFrame(1).writeTo(out);
+                        new AMQP.BasicProperties.Builder().build()
+                                .toFrame(1, oversized ? BODY_LIMIT + 1L : 3L).writeTo(out);
+                        if (!oversized) {
+                            var first = new Frame(AMQP.FRAME_BODY, 1);
+                            first.getOutputStream().writeByte('1'); first.writeTo(out);
+                            var second = new Frame(AMQP.FRAME_BODY, 1);
+                            second.getOutputStream().write(new byte[]{'2', '3'}); second.writeTo(out);
+                        }
+                        out.flush(); // all actual frames are small; only the body header declares a large total
+                        assertThat(observed.await(3, TimeUnit.SECONDS)).isTrue();
+                    }
+                    return null;
+                });
+                var bridge = new RabbitBridge(mock(TaskService.class), true, "127.0.0.1",
+                        server.getLocalPort(), "synthetic-user", "synthetic-password");
+                var factory = (ConnectionFactory) ReflectionTestUtils.getField(bridge, "factory");
+                connection = factory.newConnection("bounded-consumer-test");
+                connection.addShutdownListener(signal -> { reason.set(signal); observed.countDown(); });
+                connection.createChannel().basicConsume("synthetic", true,
+                        (tag, delivery) -> { received.set(delivery.getBody()); observed.countDown(); }, tag -> { });
+                ready.countDown();
+                assertThat(observed.await(3, TimeUnit.SECONDS)).isTrue();
+                peer.get(3, TimeUnit.SECONDS);
+                if (oversized) {
+                    assertThat(received.get()).isNull();
+                    assertThat(messages(reason.get())).contains("Message body is too large");
+                } else {
+                    assertThat(received.get()).as("shutdown: %s", messages(reason.get()))
+                            .containsExactly((byte)'1', (byte)'2', (byte)'3');
+                }
+            } finally {
+                if (connection != null) connection.abort(1000);
+                ready.countDown(); observed.countDown(); executor.shutdownNow();
+                assertThat(executor.awaitTermination(4, TimeUnit.SECONDS)).isTrue();
+            }
+        }
     }
 
     private static void readPeerFrame(DataInputStream in) throws IOException {
