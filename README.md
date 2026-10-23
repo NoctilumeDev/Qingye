@@ -75,13 +75,13 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 青野现由本仓库独立维护。源码从 `dome/qingye` 的精确坐标提炼，来源、历史关系与权威切换见 [ORIGIN.md](ORIGIN.md)。[独立 CI](.github/workflows/ci.yml)在当前仓库运行，不以浏览器演示构建代替后端验收。
 
-[仓库治理与资格边界](docs/repository-governance.md)记录主线保护、检查职责、首败与发布缺口；历史证据和当前交付资格分别核对。治理工作不改变已确认的展示页面或业务范围。
-维护入口与提交要求见 [贡献说明](CONTRIBUTING.md)。有限架构约束、覆盖率报告与 PR 依赖审查的范围及盲区见上述治理文档，不代表模型语义或发布资格。
+[仓库治理与资格边界](docs/repository-governance.md)记录主线保护、检查职责与首败。本轮只对齐工程护栏，不打包发布，不改变已确认的展示页面或业务范围。
+维护入口见 [贡献说明](CONTRIBUTING.md)，已知候选与未知条件见 [风险账册](docs/governance/risk-register.md)。架构约束、覆盖率、静态变更门禁及依赖增量审查各有范围，不代表模型语义正确或全部风险已关闭。
 
 Java17、Maven3.9、Python3.10+、Node24.14.0。从本目录运行：
 
 ```powershell
-python -B scripts/check.py quick  # 门禁 + 客户端 + H2，不连接MySQL
+python -B scripts/check.py quick  # 门禁 + 客户端 + H2 + 静态分析，不连接MySQL
 # 显式准备独立 qingye_test 与仅有该库权限的测试账号后：
 $env:QINGYE_TEST_URL = 'jdbc:mysql://127.0.0.1:3306/qingye_test?characterEncoding=utf8&serverTimezone=Asia/Shanghai'
 $env:QINGYE_TEST_USER = '<测试账号>'
@@ -89,7 +89,7 @@ $env:QINGYE_TEST_PASSWORD = '<测试密码>'
 python -B scripts/check.py all    # 再执行真实MySQL测试
 ```
 
-单项为`hygiene`、`client`、`h2`、`mysql`。缺工具/测试凭据或非qingye_test URL直接拒绝；MySQL测试会清空测试业务表，必须专库专用。H2命令只在子进程移除MySQL测试环境，保留调用者配置。`client`检查JSON/JS/WXML结构和实际页面脚本测试；微信原生编译另运行`python -B scripts/check-client.py --compiler-dir <现有wcc-exec目录>`，结构检查不冒充编译或真机证明。旧`test-mysql.ps1`只作为本机便利入口，CI与维护统一使用上述显式变量。
+单项为`hygiene`、`client`、`h2`、`mysql`、`static`。缺工具/测试凭据或非qingye_test URL直接拒绝；MySQL测试会清空测试业务表，必须专库专用。H2命令只在子进程移除MySQL测试环境，保留调用者配置。`client`检查JSON/JS/WXML结构和实际页面脚本测试；微信原生编译另运行`python -B scripts/check-client.py --compiler-dir <现有wcc-exec目录>`，结构检查不冒充编译或真机证明。旧`test-mysql.ps1`只作为本机便利入口，CI与维护统一使用上述显式变量。
 
 数据库DATETIME按上海本地业务时间保存，读取使用LocalDateTime，避免经JVM默认时区转换。新增CI首次在UTC宿主击穿了原日期映射，原[失败运行](https://github.com/NoctilumeDev/dome/actions/runs/37214544021)保留；修正按同样UTC条件复验。
 
