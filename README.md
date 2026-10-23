@@ -73,6 +73,8 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 青野现由本仓库独立维护。源码从 `dome/qingye` 的精确坐标提炼，来源、历史关系与权威切换见 [ORIGIN.md](ORIGIN.md)。[独立 CI](.github/workflows/ci.yml)在当前仓库运行，不以浏览器演示构建代替后端验收。
 
+[仓库治理与资格边界](docs/repository-governance.md)记录主线保护、检查职责、首败与发布缺口；历史证据和当前交付资格分别核对。治理工作不改变已确认的展示页面或业务范围。
+
 Java17、Maven3.9、Python3.10+、Node24.14.0。从本目录运行：
 
 ```powershell
