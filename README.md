@@ -10,6 +10,16 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 四列分别展示学生、社团负责人、管理员与共用功能。需要修改或打印时，下载 [HTML 模块图](docs/功能模块图.html) 离线打开；校园背景已内嵌，无需联网。
 
+## 校园助手的四道门
+
+<p align="center">
+  <a href="docs/assets/assistant-four-gates.png">
+    <img src="docs/assets/assistant-four-gates.png" alt="四道门：自然语言业务查询的受控执行架构" width="760">
+  </a>
+</p>
+
+校园助手不会把模型直接接到数据库。自然语言先经过业务边界初筛、查询意图判定与补全、统一只读 JSON 和授权校验，最后才进入固定查询执行；无法确定时保留“不知道”，危险、敏感或越权请求不进入业务。完整边界见[能力合同 v2](docs/assistant-contract.md)。
+
 ## 运行
 
 1. 在 MySQL 客户端或 Navicat 完整执行 [sql/qingye.sql](sql/qingye.sql)。单个文件包含建库、九张表和五个演示身份及业务数据。重复导入会替换 `qingye` 中的同名表；已有正常数据时无需再次导入。快照保留当时的活动日期，日期过期后可在工作台取消旧活动并创建新的演示活动。
