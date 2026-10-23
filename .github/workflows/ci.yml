@@ -5,6 +5,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * 1' # Weekly retained-dependency recheck, including advisory changes.
 
 permissions:
   contents: read
@@ -32,6 +34,8 @@ jobs:
         with:
           python-version: '3.10'
       - run: python -B scripts/check.py hygiene
+      - name: Guard negatives also work under Python optimization
+        run: python -O -B -m unittest discover -s scripts/tests
       - run: python -B scripts/check.py client
 
   h2:
@@ -51,6 +55,8 @@ jobs:
       - run: python -B scripts/check.py h2
       - name: Fresh production bytecode analysis and retained-risk change gate
         run: python -B scripts/check.py static
+      - name: Fresh full resolved project dependencies and advisory change gate
+        run: python -B scripts/check.py dependencies
       - name: Retain H2 test and coverage reports, including failures
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -62,6 +68,7 @@ jobs:
             backend/target/jacoco.exec
             backend/target/site/jacoco/
             backend/target/static-analysis/spotbugsXml.xml
+            backend/target/dependency-audit/**
           if-no-files-found: warn
           retention-days: 90
 

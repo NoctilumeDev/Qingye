@@ -138,9 +138,10 @@ PROTECTED = set()
 CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "CONTRIBUTING.md", "SECURITY.md", "docs/项目简介.md",
                 "docs/assistant-contract.md", "docs/repository-governance.md",
                 "docs/governance/risk-register.md",
+                "docs/governance/continuous-checks.md",
                 "miniprogram/assets/README.md"]
 DB_SUFFIXES = ["_URL", "_USER", "_PASSWORD"]
-GROUPS = ["hygiene", "client", "h2", "mysql", "static", "quick", "all"]
+GROUPS = ["hygiene", "client", "h2", "mysql", "static", "dependencies", "quick", "all"]
 EXPAND = {"quick": ["hygiene", "client", "h2", "static"], "all": ["hygiene", "client", "h2", "mysql", "static"]}
 
 
@@ -149,10 +150,13 @@ def check(group):
         if hygiene():
             raise RuntimeError("Repository hygiene rejected")
         run([sys.executable, "-B", str(ROOT / "scripts/check-static.py")])
+        run([sys.executable, "-B", str(ROOT / "scripts/check-secrets.py")])
         run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests"])
     elif group == "client":
         run([sys.executable, "-B", str(ROOT / "scripts/check-client.py")])
         run([executable("node"), "--test", str(ROOT / "scripts/test-client.cjs")])
+    elif group == "dependencies":
+        run([sys.executable, "-B", str(ROOT / "scripts/check-dependencies.py")])
     elif group == "h2":
         # A shell left configured for MySQL must not turn this fast group into a
         # destructive test on a database. Clear only the child process variables.

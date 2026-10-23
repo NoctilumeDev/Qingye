@@ -1,0 +1,805 @@
+{
+  "schema": "qingye-dependency-policy/v1",
+  "source_revision": "21d2fddc1d6937f86dd98bd388a806d08847d497",
+  "owner": "NoctilumeDev/Qingye repository-maintainer",
+  "scope": "Resolved project compile/runtime/test/provided/system dependencies; not Maven plugin dependencies or distribution approval. Declared license labels are not compatibility decisions.",
+  "components": {
+    "ch.qos.logback:logback-classic@1.5.34": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "EPL-2.0",
+        "LGPL-2.1-only"
+      ]
+    },
+    "ch.qos.logback:logback-core@1.5.34": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "EPL-2.0",
+        "LGPL-2.1-only"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-annotations@2.21": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-core@2.21.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8@2.21.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310@2.21.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.fasterxml.jackson.module:jackson-module-parameter-names@2.21.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.fasterxml:classmate@1.7.3": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.h2database:h2@2.3.232": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL 1.0",
+        "MPL-2.0"
+      ]
+    },
+    "com.jayway.jsonpath:json-path@2.9.0": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.mysql:mysql-connector-j@8.4.0": {
+      "scopes": [
+        "runtime"
+      ],
+      "licenses": [
+        "The GNU General Public License, v2 with Universal FOSS Exception, v1.0"
+      ]
+    },
+    "com.rabbitmq:amqp-client@5.14.3": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "AL 2.0",
+        "GPL v2",
+        "MPL-2.0"
+      ]
+    },
+    "com.tngtech.archunit:archunit@1.5.1": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0",
+        "BSD-4-Clause"
+      ]
+    },
+    "com.vaadin.external.google:android-json@0.0.20131108.vaadin1": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "com.zaxxer:HikariCP@6.3.3": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.lettuce:lettuce-core@6.6.0.RELEASE": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "MIT"
+      ]
+    },
+    "io.micrometer:micrometer-commons@1.15.12": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.micrometer:micrometer-observation@1.15.12": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-buffer@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-codec@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-common@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-handler@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-resolver@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-transport-native-unix-common@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.netty:netty-transport@4.1.135.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "io.projectreactor:reactor-core@3.7.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "jakarta.activation:jakarta.activation-api@2.1.4": {
+      "scopes": [
+        "runtime"
+      ],
+      "licenses": [
+        "BSD-3-Clause"
+      ]
+    },
+    "jakarta.annotation:jakarta.annotation-api@2.1.1": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "EPL-2.0",
+        "GPL-2.0-with-classpath-exception"
+      ]
+    },
+    "jakarta.validation:jakarta.validation-api@3.0.2": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "jakarta.xml.bind:jakarta.xml.bind-api@4.0.5": {
+      "scopes": [
+        "runtime"
+      ],
+      "licenses": [
+        "BSD-3-Clause"
+      ]
+    },
+    "net.bytebuddy:byte-buddy-agent@1.17.8": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "net.bytebuddy:byte-buddy@1.17.8": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "net.minidev:accessors-smart@2.5.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "net.minidev:json-smart@2.5.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.apache.logging.log4j:log4j-api@2.24.3": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.apache.logging.log4j:log4j-to-slf4j@2.24.3": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.apache.tomcat.embed:tomcat-embed-el@10.1.55": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.apache.tomcat.embed:tomcat-embed-websocket@10.1.55": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.apiguardian:apiguardian-api@1.1.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.assertj:assertj-core@3.27.7": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.awaitility:awaitility@4.2.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.hamcrest:hamcrest@3.0": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "BSD-3-Clause"
+      ]
+    },
+    "org.hibernate.validator:hibernate-validator@8.0.3.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.jboss.logging:jboss-logging@3.6.3.Final": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.junit.jupiter:junit-jupiter-api@5.12.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL-2.0"
+      ]
+    },
+    "org.junit.jupiter:junit-jupiter-engine@5.12.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL-2.0"
+      ]
+    },
+    "org.junit.jupiter:junit-jupiter-params@5.12.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL-2.0"
+      ]
+    },
+    "org.junit.jupiter:junit-jupiter@5.12.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL-2.0"
+      ]
+    },
+    "org.junit.platform:junit-platform-commons@1.12.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL-2.0"
+      ]
+    },
+    "org.junit.platform:junit-platform-engine@1.12.2": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "EPL-2.0"
+      ]
+    },
+    "org.mockito:mockito-core@5.17.0": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "MIT"
+      ]
+    },
+    "org.mockito:mockito-junit-jupiter@5.17.0": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "MIT"
+      ]
+    },
+    "org.objenesis:objenesis@3.3": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.opentest4j:opentest4j@1.3.0": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.ow2.asm:asm@9.7.1": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "BSD-3-Clause"
+      ]
+    },
+    "org.reactivestreams:reactive-streams@1.0.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "MIT-0"
+      ]
+    },
+    "org.skyscreamer:jsonassert@1.5.3": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.slf4j:jul-to-slf4j@2.0.18": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "MIT"
+      ]
+    },
+    "org.slf4j:slf4j-api@2.0.18": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "MIT"
+      ]
+    },
+    "org.springframework.boot:spring-boot-autoconfigure@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-data-redis@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-jdbc@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-json@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-logging@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-test@3.5.16": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-tomcat@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-validation@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter-web@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-starter@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-test-autoconfigure@3.5.16": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot-test@3.5.16": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.boot:spring-boot@3.5.16": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.data:spring-data-commons@3.5.13": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.data:spring-data-keyvalue@3.5.13": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework.data:spring-data-redis@3.5.13": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-aop@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-beans@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-context-support@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-context@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-core@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-expression@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-jcl@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-jdbc@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-oxm@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-test@6.2.19": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-tx@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-web@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.springframework:spring-webmvc@6.2.19": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.xmlunit:xmlunit-core@2.10.4": {
+      "scopes": [
+        "test"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "org.yaml:snakeyaml@2.4": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "Apache-2.0"
+      ]
+    },
+    "redis.clients.authentication:redis-authx-core@0.1.1-beta2": {
+      "scopes": [
+        "compile"
+      ],
+      "licenses": [
+        "MIT"
+      ]
+    }
+  },
+  "advisories": {
+    "com.fasterxml.jackson.core:jackson-core@2.21.4/GHSA-7hhh-6rmp-j9qf": "f012c2888d3eeda96b8eae9fb4377ccd0b451202cdd5e5680fb11128ab923497",
+    "com.fasterxml.jackson.core:jackson-core@2.21.4/GHSA-p6pp-m3f8-5c89": "0d3b38e084d27839b7a3b6c4b8b14037e6d8168f01dc703fb2265333b4ac3804",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-5gvw-p9qm-jgwh": "3f01f2db97ea9355df5354767218eca730d6d4b91947ce5f354855f89fa9a05f",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-5jmj-h7xm-6q6v": "ebaf6cd4b211995dc6d9fdc252b0ca8b0cb6f64986b8af939c8d4ba740ea56ae",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-cxp5-3px4-pw24": "62ab870ee7a666118ed207fcafa2ee0c15d916342fd8a5fb92f1437ebc63f24a",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-gx83-3vf8-gh7j": "be3a9e36aa40a7684249bce54a087b10cb7f8cb50c51b469e488dca881eb2ff4",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-mhm7-754m-9p8w": "a5f179eabd0745126596a3e152e88025f63dd44ef8deb304d850736a4c7b1f23",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-q4xh-88c3-wmh7": "5fb61819bc694348b50d121d51f996350f9b4f5ef5919ae11462df72749ede5d",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-vvgp-rfg2-7rr6": "eaaf34a7750755b1de09d2e35cabcefcdb68940606361a61082b35d48644c7d6",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-wjgm-6hv5-3cvf": "9f419fbaeddd9f4ae7e709603d33956446c8abf6675fbefe738a4fc05fc8d84e",
+    "com.fasterxml.jackson.core:jackson-databind@2.21.4/GHSA-wv8q-qhhj-9h54": "5f2a9b541f4526d2849fd46c539d083a9d705c41609160bdc45923769fd02302",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-5m9f-rphj-c435": "517c121e03abbf951603a3eda1d0843f58c2f0c899221037bb0a966d6ab544c1",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-5xwg-cfvj-gff5": "d0119ad0d97e84d3e345098515a6a253447d6f62fb1b6319e2fd05961e1f71de",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-68mj-5wr7-6fgg": "cbec6b8bf2e8e05adbc13be26f46b5aacd75447bb7db885c6085ac95188fe5d5",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-6g32-pxv4-2wfj": "344509e68510188caef333b0d33573032b8f12bff95d5271972d2fff2a95f58f",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-7822-rcf6-97fx": "ee329939683e91a176864e35a12a79c3277202c1b65e411413e9f510412a2e80",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-93j5-89vc-pph4": "42a2804a6ab5c6576cc61267b9a2113d23c2beee2095781446efa87276d5bf0e",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-cqgh-8p3p-mx4m": "957915b6df5c1f73458c2680f8dc932c974108732aaf5e3f6484311b27f1d6ff",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-h6w7-qmcm-q6xr": "580296b88fff64488775bccfd940081bfa301cb33cfd6e17a654443763539d86",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-jh4v-gfqj-7rhx": "c69bb3b041ee171ca5cf38b223cd4dd5464b938d489956595e04fd5b0730e7da",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-mm8h-8587-p46h": "e525f8dc2b43570129abc30e37f737e8b3e3743e4d089be9f280e25b9cef1ab2",
+    "com.rabbitmq:amqp-client@5.14.3/GHSA-qx7j-jv8m-fppr": "8294526aa9f47b4c59f37b297c4e100988f6003a62fbd271c5bf95608aeb321a",
+    "io.netty:netty-codec@4.1.135.Final/GHSA-558v-64gr-wgg4": "eb34042ec4b6078ae55a7fa43ed7142e2b2b3077c4b0914f6f1f443836eada2f",
+    "io.netty:netty-handler@4.1.135.Final/GHSA-c4c3-7fpv-j4q5": "e36a80fae4b5de4ab4431bfb9faf81f631f058a31d28c623ec1e37f3498630ee",
+    "io.netty:netty-handler@4.1.135.Final/GHSA-fccg-mwvh-qqg4": "891994d44e37b46f274fdd064a61b5de788a8c5c43a1a092c7cd334fcb500156",
+    "org.apache.logging.log4j:log4j-api@2.24.3/GHSA-qv9r-c865-cp47": "f5df2f41b4bcbd822477fec8d512b8ad624bbe3027a08465816a13ccbd587ba2",
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-9xv2-5v5q-p794": "806a09487332ccdd9b78c691467e6ca18990407a405d45da989e590634b6d02c",
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-gcx9-497g-6cp6": "2bc5ca0cfb47917e7f1b2c223d347ec9a97e1f682faa9a11341467366e6327b4",
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-h3x4-894j-xpx5": "a49d0caf871409b31cdf551979b83889815f5c56380be0fecf59aba22ceeac6e",
+    "org.springframework:spring-webmvc@6.2.19/GHSA-j9f9-w8pj-32f8": "67ecff805c7d03fa3b959b61206009babb74e73a0c4da9297582733d628615bf",
+    "org.springframework:spring-webmvc@6.2.19/GHSA-pc63-qcmh-9cmg": "74e393a5de3ae0f56dfeec35b1a897c885a35699af84ba654459de4df2e34197"
+  },
+  "applicability_inputs": {
+    "backend/pom.xml": "8a0ccbec58613a1ab651177bee44fdc23da5299cada70613a3496e7e0db5f191",
+    "backend/src/main/java/cn/qingye/QingyeApplication.java": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
+    "backend/src/main/java/cn/qingye/api/Api.java": "f816e7b6190ce89a010a7be1fe48796ebda4de42d29b7ae0019b30bb520fdd21",
+    "backend/src/main/java/cn/qingye/api/AuthFilter.java": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
+    "backend/src/main/java/cn/qingye/api/Errors.java": "45cc6dcd06f91cc3e36573606e53c7ae977c653b7013867915cad9763fb1bdb7",
+    "backend/src/main/java/cn/qingye/api/Forms.java": "37f54cf3bccd45c67cdaf0d09a5086b42649900321cd309b93e890788cccbd92",
+    "backend/src/main/java/cn/qingye/integration/ExternalHttp.java": "a7792d6e02f7c3c0e1be84e776e0319a062ae22a9de5cf8ac3607e7f2c701e57",
+    "backend/src/main/java/cn/qingye/integration/LlmPlanner.java": "a52378927ea5afb312fb94079072245ba99389ae554ae9405e623e7eba21587d",
+    "backend/src/main/java/cn/qingye/integration/QueryCache.java": "1ad48b0901a2470229e65d8b7b72dc9752f2a700b437bae87f4c631e532d0808",
+    "backend/src/main/java/cn/qingye/integration/RabbitBridge.java": "3b66989beb9af1b203c6796654d78a261250ec5ec06d90cbfda23090ef9c7df3",
+    "backend/src/main/resources/application.yml": "7e9534a7003f39b53aa14b54ef65784139682654fe666dd38ee9ef3aead0b4d0"
+  }
+}
