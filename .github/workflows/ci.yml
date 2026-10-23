@@ -49,6 +49,8 @@ jobs:
         with:
           python-version: '3.10'
       - run: python -B scripts/check.py h2
+      - name: Fresh production bytecode analysis and retained-risk change gate
+        run: python -B scripts/check.py static
       - name: Retain H2 test and coverage reports, including failures
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -59,6 +61,7 @@ jobs:
             backend/target/surefire-reports/*.txt
             backend/target/jacoco.exec
             backend/target/site/jacoco/
+            backend/target/static-analysis/spotbugsXml.xml
           if-no-files-found: warn
           retention-days: 90
 

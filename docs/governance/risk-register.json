@@ -1,0 +1,2611 @@
+{
+  "schema": "qingye-risk-register/v1",
+  "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+  "review_base": "b12f1de60a863f5ee15fb0affa2349e1bebdf670",
+  "scope": "Governance inventory and static-change gate; not risk acceptance or a release decision.",
+  "owner_definition": "Repository-maintainer is the repository's maintenance role, not an assignment to a new person or an SLA.",
+  "scanner": {
+    "plugin": "com.github.spotbugs:spotbugs-maven-plugin:4.10.5.0",
+    "engine": "4.10.5",
+    "effort": "Max",
+    "threshold": "Low",
+    "include_tests": false
+  },
+  "evidence": {
+    "dependency_scan_sha256": "dea0d553214f7b2ac082411137267c49f8f1b65815df8b0118bcab588b83365a",
+    "static_scan_sha256": "b2332d4031d6e0ec40a0f66178c2768b510442cbe89ca58e27fc33b965a35f22",
+    "note": "Original reports retained in the maintainer's scan artifact store; absolute local paths are not published. Reproduction commands and public source coordinates are in risk-register.md. New CI reports are retained by run and attempt."
+  },
+  "dependency_findings": [
+    {
+      "id": "GHSA-5m9f-rphj-c435",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-5m9f-rphj-c435",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:N/VC:N/VI:N/VA:N/SC:H/SI:L/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:51:13.150501327Z",
+        "aliases": [
+          "CVE-2026-63336"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "The sole factory uses explicit plaintext host/port setters and never enables the affected TLS API. This excludes the named trust-manager defect, NOT plaintext transport risk.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-5m9f-rphj-c435"
+      ]
+    },
+    {
+      "id": "GHSA-5xwg-cfvj-gff5",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-5xwg-cfvj-gff5",
+        "scannerSeverity": "LOW",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:H/AT:P/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:51:13.134044568Z",
+        "aliases": [
+          "CVE-2026-61634"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "Frame decode precedes callback validation; broker/network trust and the exact old-version frame-limit path remain unresolved.",
+      "unknowns": [
+        "Establish supported broker/queue/network trust, ACLs and message-size limits; inspect exact library path for the frozen version and validate a bounded counterexample before confirmation."
+      ],
+      "next_action": "Keep open; review on related dependency or MQ changes using existing source and supported configuration only. Do not infer safety from a self-managed broker.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-5xwg-cfvj-gff5"
+      ]
+    },
+    {
+      "id": "GHSA-68mj-5wr7-6fgg",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-68mj-5wr7-6fgg",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:51:13.151154373Z",
+        "aliases": [
+          "CVE-2026-69219"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "AMQP handshake occurs before task-ID validation. There is no application allocation guard before the client decoder; supported attacker access to broker/wire remains unresolved.",
+      "unknowns": [
+        "Establish supported broker/queue/network trust, ACLs and message-size limits; inspect exact library path for the frozen version and validate a bounded counterexample before confirmation."
+      ],
+      "next_action": "Keep open; review on related dependency or MQ changes using existing source and supported configuration only. Do not infer safety from a self-managed broker.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-68mj-5wr7-6fgg"
+      ]
+    },
+    {
+      "id": "GHSA-6g32-pxv4-2wfj",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-6g32-pxv4-2wfj",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:P/VC:H/VI:H/VA:H/SC:L/SI:L/SA:L",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:51:13.214436792Z",
+        "aliases": [
+          "CVE-2026-63337"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "The shipped bridge uses raw Channel basicPublish/basicConsume with a numeric task ID, never JSON-RPC or service-description class loading.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-6g32-pxv4-2wfj"
+      ]
+    },
+    {
+      "id": "GHSA-7822-rcf6-97fx",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-7822-rcf6-97fx",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-10-07T20:30:07.156315722Z",
+        "aliases": [
+          "CVE-2026-106122"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "Bridge only consumes body/envelope tag; outgoing properties are fixed PERSISTENT_TEXT_PLAIN and numeric ID. No property echo/RPC; recovery is explicitly false.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-7822-rcf6-97fx"
+      ]
+    },
+    {
+      "id": "GHSA-93j5-89vc-pph4",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-93j5-89vc-pph4",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:51:13.771990072Z",
+        "aliases": [
+          "CVE-2026-69220"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "The callback cannot guard protocol tables decoded during handshake; actual broker/network threat boundary is not established.",
+      "unknowns": [
+        "Establish supported broker/queue/network trust, ACLs and message-size limits; inspect exact library path for the frozen version and validate a bounded counterexample before confirmation."
+      ],
+      "next_action": "Keep open; review on related dependency or MQ changes using existing source and supported configuration only. Do not infer safety from a self-managed broker.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-93j5-89vc-pph4"
+      ]
+    },
+    {
+      "id": "GHSA-cqgh-8p3p-mx4m",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-cqgh-8p3p-mx4m",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-07T21:00:04.481305005Z",
+        "aliases": [
+          "CVE-2026-106121"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "Bridge delivers numeric text only and does not instantiate JsonRpcClient, JsonRpcServer or default JSON mapper.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-cqgh-8p3p-mx4m"
+      ]
+    },
+    {
+      "id": "GHSA-h6w7-qmcm-q6xr",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-h6w7-qmcm-q6xr",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "type": "CVSS_V3"
+          },
+          {
+            "score": "CVSS:4.0/AV:L/AC:L/AT:P/PR:L/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-10-19T19:45:04.498976139Z",
+        "aliases": [
+          "CVE-2026-106123"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "Factory is built with separate setters; no load/property-file URI path. Catch blocks do not expose this advisory's URI exception.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-h6w7-qmcm-q6xr"
+      ]
+    },
+    {
+      "id": "GHSA-jh4v-gfqj-7rhx",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-jh4v-gfqj-7rhx",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-17T15:00:06.805894716Z",
+        "aliases": [
+          "CVE-2026-75516"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "Need confirm the advisory's newer frame-limit implementation maps to 5.14.3 as well as broker/wire trust. Version range alone cannot prove this exact defect.",
+      "unknowns": [
+        "Establish supported broker/queue/network trust, ACLs and message-size limits; inspect exact library path for the frozen version and validate a bounded counterexample before confirmation."
+      ],
+      "next_action": "Keep open; review on related dependency or MQ changes using existing source and supported configuration only. Do not infer safety from a self-managed broker.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-jh4v-gfqj-7rhx",
+        "https://github.com/rabbitmq/rabbitmq-java-client/releases/tag/v5.14.3",
+        "https://repo.maven.apache.org/maven2/com/rabbitmq/amqp-client/5.14.3/amqp-client-5.14.3-sources.jar"
+      ],
+      "followup_observation": "The exact 5.14.3 blocking decoder uses a fixed cap; the advisory's later setFrameMax/Math.min(0) path is absent. Positive counterevidence is retained; this inventory does not silently close the prior UNRESOLVED item."
+    },
+    {
+      "id": "GHSA-mm8h-8587-p46h",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-mm8h-8587-p46h",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-10T03:50:03.942059951Z",
+        "aliases": [
+          "CVE-2023-46120"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "The numeric-ID regex runs only after delivery.getBody() has been allocated; queue ACL, broker size limits and supported publisher trust are not established.",
+      "unknowns": [
+        "Establish supported broker/queue/network trust, ACLs and message-size limits; inspect exact library path for the frozen version and validate a bounded counterexample before confirmation."
+      ],
+      "next_action": "Keep open; review on related dependency or MQ changes using existing source and supported configuration only. Do not infer safety from a self-managed broker.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-mm8h-8587-p46h",
+        "https://github.com/rabbitmq/rabbitmq-java-client/releases/tag/v5.14.3",
+        "https://repo.maven.apache.org/maven2/com/rabbitmq/amqp-client/5.14.3/amqp-client-5.14.3-sources.jar"
+      ],
+      "followup_observation": "5.14.3 release notes and the checksum-verified source/binary contain the 64 MiB inbound cap. Positive counterevidence is retained; this inventory does not silently close the prior UNRESOLVED item."
+    },
+    {
+      "id": "GHSA-qx7j-jv8m-fppr",
+      "component": "com.rabbitmq:amqp-client",
+      "version": "com.rabbitmq:amqp-client@5.14.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-qx7j-jv8m-fppr",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:H",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:50:54.002021426Z",
+        "aliases": [
+          "CVE-2026-63335"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "13-29",
+          "detail": "Factory configured by explicit setters; optional MQ with operator host/port; automatic recovery disabled."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+          "lines": "50-70",
+          "detail": "Fixed queue, AMQP consumer reads a numeric task ID after client frame/message decoding."
+        }
+      ],
+      "rationale": "Client assembler executes before callback; broker/wire trust and exact consequence on the shipped version remain unresolved.",
+      "unknowns": [
+        "Establish supported broker/queue/network trust, ACLs and message-size limits; inspect exact library path for the frozen version and validate a bounded counterexample before confirmation."
+      ],
+      "next_action": "Keep open; review on related dependency or MQ changes using existing source and supported configuration only. Do not infer safety from a self-managed broker.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-qx7j-jv8m-fppr"
+      ]
+    },
+    {
+      "id": "GHSA-7hhh-6rmp-j9qf",
+      "component": "com.fasterxml.jackson.core:jackson-core",
+      "version": "com.fasterxml.jackson.core:jackson-core@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-7hhh-6rmp-j9qf",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-01T15:30:05.552671898Z",
+        "aliases": [
+          "CVE-2026-89425"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "All explicit inputs are Strings; MVC uses servlet InputStream conversion. No DataInput parser or custom converter is shipped. This is not a claim about all JSON parser bugs.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-7hhh-6rmp-j9qf"
+      ]
+    },
+    {
+      "id": "GHSA-p6pp-m3f8-5c89",
+      "component": "com.fasterxml.jackson.core:jackson-core",
+      "version": "com.fasterxml.jackson.core:jackson-core@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-p6pp-m3f8-5c89",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-01T15:30:13.452657713Z",
+        "aliases": [
+          "CVE-2026-89407"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "Exact 2.21.4 source calls the regex from floating, Number and BigDecimal deserializers. Forms use bounded integer/long, String and LocalDateTime types; Map/List/tree keep strings as strings. No affected coercion call is shipped.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-p6pp-m3f8-5c89"
+      ]
+    },
+    {
+      "id": "GHSA-5gvw-p9qm-jgwh",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-5gvw-p9qm-jgwh",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-19T19:45:04.650428177Z",
+        "aliases": [
+          "CVE-2026-59889"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "Closed request DTOs have neither annotation; authentication and authorization are explicit application code, not this view gate.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-5gvw-p9qm-jgwh"
+      ]
+    },
+    {
+      "id": "GHSA-5jmj-h7xm-6q6v",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-5jmj-h7xm-6q6v",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-10T03:51:08.069993966Z",
+        "aliases": [
+          "CVE-2026-54515"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "DTOs do not define these property annotations or use ignored-property gates. Alternate case-insensitive flags alone do not create the required annotated property.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-5jmj-h7xm-6q6v"
+      ]
+    },
+    {
+      "id": "GHSA-cxp5-3px4-pw24",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-cxp5-3px4-pw24",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-30T15:46:18.051343022Z",
+        "aliases": [
+          "CVE-2026-91777"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "Closed DTOs have no identity annotations; untyped Map/List parse data directly without identity object-ID resolution.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-cxp5-3px4-pw24"
+      ]
+    },
+    {
+      "id": "GHSA-gx83-3vf8-gh7j",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-gx83-3vf8-gh7j",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-28T21:00:05.608227628Z",
+        "aliases": [
+          "CVE-2026-83557"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "No polymorphic DTO/default typing/mixins are shipped; Boot mapper and explicit parsing targets do not activate the affected type gate.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-gx83-3vf8-gh7j"
+      ]
+    },
+    {
+      "id": "GHSA-mhm7-754m-9p8w",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-mhm7-754m-9p8w",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-10T03:50:52.852212609Z",
+        "aliases": null
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "Neither annotation nor active-view reader exists in shipped DTO/controller/parser paths.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-mhm7-754m-9p8w"
+      ]
+    },
+    {
+      "id": "GHSA-q4xh-88c3-wmh7",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-q4xh-88c3-wmh7",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-28T20:30:05.315085978Z",
+        "aliases": [
+          "CVE-2026-68497"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "Request times are java.time.LocalDateTime, not XML types; other parsing is untyped JSON or String-only QueryPlan.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-q4xh-88c3-wmh7"
+      ]
+    },
+    {
+      "id": "GHSA-vvgp-rfg2-7rr6",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-vvgp-rfg2-7rr6",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-28T20:30:05.324367371Z",
+        "aliases": [
+          "CVE-2026-77310"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "DTOs and explicit parser targets contain no InetAddress; polymorphic typing is not enabled.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-vvgp-rfg2-7rr6"
+      ]
+    },
+    {
+      "id": "GHSA-wjgm-6hv5-3cvf",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-wjgm-6hv5-3cvf",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-28T20:30:05.331167692Z",
+        "aliases": [
+          "CVE-2026-19032"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "No Path-typed input or polymorphic binding in shipped parser paths; untyped Maps keep URI strings inert.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-wjgm-6hv5-3cvf"
+      ]
+    },
+    {
+      "id": "GHSA-wv8q-qhhj-9h54",
+      "component": "com.fasterxml.jackson.core:jackson-databind",
+      "version": "com.fasterxml.jackson.core:jackson-databind@2.21.4",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-wv8q-qhhj-9h54",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-30T15:46:18.451708212Z",
+        "aliases": [
+          "CVE-2026-91776"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "lines": "6-35",
+          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "lines": "19-30",
+          "detail": "External response parsed from String into untyped Map."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "24-36",
+          "detail": "Redis JSON String parsed into untyped List."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "lines": "55-64",
+          "detail": "String tree parser then finite String-only QueryPlan record."
+        }
+      ],
+      "rationale": "No JsonTypeInfo/defaultImpl/default typing or custom modules in current app; fixed DTOs and untyped Map/List/tree do not perform named-type fallback.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-wv8q-qhhj-9h54"
+      ]
+    },
+    {
+      "id": "GHSA-qv9r-c865-cp47",
+      "component": "org.apache.logging.log4j:log4j-api",
+      "version": "org.apache.logging.log4j:log4j-api@2.24.3",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-qv9r-c865-cp47",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:L/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:50:52.972700022Z",
+        "aliases": [
+          "CVE-2026-49844"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Errors.java",
+          "lines": "27-30",
+          "detail": "Only explicit application logger is SLF4J with class name."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/pom.xml",
+          "lines": "7-10",
+          "detail": "Boot default logging dependency; resolved BOM confirms bridge/Logback and no JSON layout."
+        }
+      ],
+      "rationale": "Resolved runtime is Log4j-to-SLF4J to Logback, no Log4j Core or JsonTemplateLayout; application logs exception class name through SLF4J, not MapMessage JSON.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-qv9r-c865-cp47"
+      ]
+    },
+    {
+      "id": "GHSA-558v-64gr-wgg4",
+      "component": "io.netty:netty-codec",
+      "version": "io.netty:netty-codec@4.1.135.Final",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-558v-64gr-wgg4",
+        "scannerSeverity": "HIGH",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-10T03:50:12.358146459Z",
+        "aliases": [
+          "CVE-2026-59901"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/pom.xml",
+          "lines": "7-12",
+          "detail": "Netty arrives via Redis/Lettuce, web server is starter-web/Tomcat."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "14-36",
+          "detail": "StringRedisTemplate client reads optional Redis cache, no server pipeline registration."
+        }
+      ],
+      "rationale": "Only Netty consumer is Lettuce 6.6.0 Redis client. Its inspected ConnectionBuilder installs RESP encoder/command handlers, not Bzip2; no application customizer is shipped.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-558v-64gr-wgg4"
+      ]
+    },
+    {
+      "id": "GHSA-c4c3-7fpv-j4q5",
+      "component": "io.netty:netty-handler",
+      "version": "io.netty:netty-handler@4.1.135.Final",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-c4c3-7fpv-j4q5",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-08T18:27:48.571082951Z",
+        "aliases": [
+          "CVE-2026-75595"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/pom.xml",
+          "lines": "7-12",
+          "detail": "Netty arrives via Redis/Lettuce, web server is starter-web/Tomcat."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "14-36",
+          "detail": "StringRedisTemplate client reads optional Redis cache, no server pipeline registration."
+        }
+      ],
+      "rationale": "Netty is used as Redis client, not TLS server. Lettuce SSL client handler is not SslClientHelloHandler/SniHandler; HTTP is embedded Tomcat.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-c4c3-7fpv-j4q5"
+      ]
+    },
+    {
+      "id": "GHSA-fccg-mwvh-qqg4",
+      "component": "io.netty:netty-handler",
+      "version": "io.netty:netty-handler@4.1.135.Final",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-fccg-mwvh-qqg4",
+        "scannerSeverity": "MODERATE",
+        "cvss": [
+          {
+            "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N",
+            "type": "CVSS_V4"
+          }
+        ],
+        "modified": "2026-09-08T18:27:48.113951573Z",
+        "aliases": [
+          "CVE-2026-75596"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/pom.xml",
+          "lines": "7-12",
+          "detail": "Netty arrives via Redis/Lettuce, web server is starter-web/Tomcat."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+          "lines": "14-36",
+          "detail": "StringRedisTemplate client reads optional Redis cache, no server pipeline registration."
+        }
+      ],
+      "rationale": "Same inspected client pipeline contains no SNI server handler; enabling Redis client SSL does not create an inbound TLS server.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-fccg-mwvh-qqg4"
+      ]
+    },
+    {
+      "id": "GHSA-j9f9-w8pj-32f8",
+      "component": "org.springframework:spring-webmvc",
+      "version": "org.springframework:spring-webmvc@6.2.19",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-j9f9-w8pj-32f8",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-07T13:30:04.802772884Z",
+        "aliases": [
+          "CVE-2026-47890"
+        ]
+      },
+      "upstream_rating": {
+        "severity": "LOW",
+        "url": "https://spring.io/security/cve-2026-47890/"
+      },
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Api.java",
+          "lines": "11-205",
+          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+          "lines": "9-18",
+          "detail": "Boot application and Clock bean; no view or servlet-security customizer."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/resources/application.yml",
+          "lines": "1-36",
+          "detail": "Shipped runtime configuration; no XSLT/SSE/security-constraint configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "README.md",
+          "lines": "31-46",
+          "detail": "Executable JAR local/LAN deployment; not external WAR/container configuration."
+        }
+      ],
+      "rationale": "No controller emits SSE/fragments. Inspected Boot 3.5.16 WebMvcAutoConfiguration installs normal view resolvers, not an SSE-producing route; local/LAN bind change alone does not create one.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-j9f9-w8pj-32f8"
+      ]
+    },
+    {
+      "id": "GHSA-pc63-qcmh-9cmg",
+      "component": "org.springframework:spring-webmvc",
+      "version": "org.springframework:spring-webmvc@6.2.19",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-pc63-qcmh-9cmg",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-05T23:30:04.884745277Z",
+        "aliases": [
+          "CVE-2026-47884"
+        ]
+      },
+      "upstream_rating": {
+        "severity": "MEDIUM",
+        "url": "https://spring.io/security/cve-2026-47884/"
+      },
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Api.java",
+          "lines": "11-205",
+          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+          "lines": "9-18",
+          "detail": "Boot application and Clock bean; no view or servlet-security customizer."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/resources/application.yml",
+          "lines": "1-36",
+          "detail": "Shipped runtime configuration; no XSLT/SSE/security-constraint configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "README.md",
+          "lines": "31-46",
+          "detail": "Executable JAR local/LAN deployment; not external WAR/container configuration."
+        }
+      ],
+      "rationale": "No XSLT view bean/resolver or implicit view-returning controller. Boot auto-config resolves InternalResource/BeanName/content negotiation, not XsltView; resources are schema.sql and application.yml.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-pc63-qcmh-9cmg"
+      ]
+    },
+    {
+      "id": "GHSA-9xv2-5v5q-p794",
+      "component": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "org.apache.tomcat.embed:tomcat-embed-core@10.1.55",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-9xv2-5v5q-p794",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-11T08:25:52.825871989Z",
+        "aliases": [
+          "BIT-tomcat-2026-65905",
+          "CVE-2026-65905"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Api.java",
+          "lines": "11-205",
+          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+          "lines": "9-18",
+          "detail": "Boot application and Clock bean; no view or servlet-security customizer."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/resources/application.yml",
+          "lines": "1-36",
+          "detail": "Shipped runtime configuration; no XSLT/SSE/security-constraint configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "README.md",
+          "lines": "31-46",
+          "detail": "Executable JAR local/LAN deployment; not external WAR/container configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/AuthFilter.java",
+          "lines": "19-36",
+          "detail": "Application authenticates Bearer tokens through AuthService, not container FORM/DIGEST or web.xml constraints."
+        }
+      ],
+      "rationale": "Executable-JAR application uses HMAC Bearer authentication, no DIGEST login config, realm or security descriptor in shipped deployment.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-9xv2-5v5q-p794"
+      ]
+    },
+    {
+      "id": "GHSA-gcx9-497g-6cp6",
+      "component": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "org.apache.tomcat.embed:tomcat-embed-core@10.1.55",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-gcx9-497g-6cp6",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-11T08:25:41.300012858Z",
+        "aliases": [
+          "BIT-tomcat-2026-65182",
+          "CVE-2026-65182"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Api.java",
+          "lines": "11-205",
+          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+          "lines": "9-18",
+          "detail": "Boot application and Clock bean; no view or servlet-security customizer."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/resources/application.yml",
+          "lines": "1-36",
+          "detail": "Shipped runtime configuration; no XSLT/SSE/security-constraint configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "README.md",
+          "lines": "31-46",
+          "detail": "Executable JAR local/LAN deployment; not external WAR/container configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/AuthFilter.java",
+          "lines": "19-36",
+          "detail": "Application authenticates Bearer tokens through AuthService, not container FORM/DIGEST or web.xml constraints."
+        }
+      ],
+      "rationale": "No container security-constraint configuration or customizer; application enforces auth in AuthFilter and business Access methods. Not a proof that all path authorization is correct.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-gcx9-497g-6cp6"
+      ]
+    },
+    {
+      "id": "GHSA-h3x4-894j-xpx5",
+      "component": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "org.apache.tomcat.embed:tomcat-embed-core@10.1.55",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "scanner_rating": {
+        "id": "GHSA-h3x4-894j-xpx5",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-09-11T08:25:40.118635278Z",
+        "aliases": [
+          "BIT-tomcat-2026-68525",
+          "CVE-2026-68525"
+        ]
+      },
+      "upstream_rating": null,
+      "evidence": [
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/Api.java",
+          "lines": "11-205",
+          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+          "lines": "9-18",
+          "detail": "Boot application and Clock bean; no view or servlet-security customizer."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/resources/application.yml",
+          "lines": "1-36",
+          "detail": "Shipped runtime configuration; no XSLT/SSE/security-constraint configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "README.md",
+          "lines": "31-46",
+          "detail": "Executable JAR local/LAN deployment; not external WAR/container configuration."
+        },
+        {
+          "label": "source evidence",
+          "path": "backend/src/main/java/cn/qingye/api/AuthFilter.java",
+          "lines": "19-36",
+          "detail": "Application authenticates Bearer tokens through AuthService, not container FORM/DIGEST or web.xml constraints."
+        }
+      ],
+      "rationale": "No FORM login or servlet security constraints; current authentication is independent Bearer filter.",
+      "unknowns": [
+        "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
+      ],
+      "next_action": "Recheck applicability when dependency, call path, configuration or supported surface changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-h3x4-894j-xpx5"
+      ]
+    }
+  ],
+  "static_findings": [
+    {
+      "id": "spotbugs-001",
+      "hash": "fb5810a29a9a4e89ad3149f9165b71a7",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.api.Api",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/api/Api.java:33"
+      ],
+      "summary": "new cn.qingye.api.Api(AuthService, ClubService, ActivityService, LoanService, UserStore, MessageStore, Recommendation, AssistantService, QueryCache, RabbitBridge, LlmPlanner, Clock, Access) may expose internal representation by storing an externally mutable object into Api.messages",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-002",
+      "hash": "9ade1307d429b80bac59c51cd2c2077",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.api.AuthFilter",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/api/AuthFilter.java:17"
+      ],
+      "summary": "new cn.qingye.api.AuthFilter(AuthService, ObjectMapper) may expose internal representation by storing an externally mutable object into AuthFilter.json",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-003",
+      "hash": "71463288b4e0c3d565fc71a78cec3e84",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.api.Forms$Messages",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/api/Forms.java:30"
+      ],
+      "summary": "cn.qingye.api.Forms$Messages.ids() may expose internal representation by returning Forms$Messages.ids",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-004",
+      "hash": "f16dbe93b048a7b09c77c4193f28d572",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.api.Forms$Messages",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/api/Forms.java:30"
+      ],
+      "summary": "new cn.qingye.api.Forms$Messages(List) may expose internal representation by storing an externally mutable object into Forms$Messages.ids",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-005",
+      "hash": "f198b91c2ea60aa7554b9092518c9414",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.ActivityService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/ActivityService.java:25"
+      ],
+      "summary": "new cn.qingye.business.ActivityService(ActivityStore, LoanStore, ClubStore, Access, MessageStore, Clock) may expose internal representation by storing an externally mutable object into ActivityService.messages",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-006",
+      "hash": "bc60db44f7e796e1bdbde69f0dc50c48",
+      "occurrence": 0,
+      "type": "CT_CONSTRUCTOR_THROW",
+      "priority": 2,
+      "rank": 16,
+      "class": "cn.qingye.business.AuthService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/AuthService.java:34",
+        "backend/src/main/java/cn/qingye/business/AuthService.java:34",
+        "backend/src/main/java/cn/qingye/business/AuthService.java:39"
+      ],
+      "summary": "Exception thrown in class cn.qingye.business.AuthService at new cn.qingye.business.AuthService(UserStore, Sql, ExternalHttp, Clock, boolean, String, String, String) will leave the constructor. The object under construction remains partially initialized and may be vulnerable to Finalizer attacks.",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-007",
+      "hash": "71965229e62d493b042207cd5dd47395",
+      "occurrence": 0,
+      "type": "DMI_RANDOM_USED_ONLY_ONCE",
+      "priority": 1,
+      "rank": 14,
+      "class": "cn.qingye.business.AuthService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/AuthService.java:36"
+      ],
+      "summary": "Random object created and used only once in new cn.qingye.business.AuthService(UserStore, Sql, ExternalHttp, Clock, boolean, String, String, String)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-008",
+      "hash": "a243526812709c8fe71bed1ee730cb33",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.AuthService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/AuthService.java:27"
+      ],
+      "summary": "new cn.qingye.business.AuthService(UserStore, Sql, ExternalHttp, Clock, boolean, String, String, String) may expose internal representation by storing an externally mutable object into AuthService.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-009",
+      "hash": "a4eb9705720c90350b71f03ac7473646",
+      "occurrence": 0,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 2,
+      "rank": 17,
+      "class": "cn.qingye.business.AuthService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/AuthService.java:102"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.business.AuthService.authenticate(String)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-010",
+      "hash": "fa2905d069d0031384b3b1070f2a1174",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.ClubService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/ClubService.java:23"
+      ],
+      "summary": "new cn.qingye.business.ClubService(ClubStore, UserStore, Access, MessageStore, Clock) may expose internal representation by storing an externally mutable object into ClubService.messages",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-011",
+      "hash": "12923ef6a74f1f564a35e333f512b66b",
+      "occurrence": 0,
+      "type": "DLS_DEAD_LOCAL_STORE",
+      "priority": 2,
+      "rank": 17,
+      "class": "cn.qingye.business.DemoData",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/DemoData.java:23"
+      ],
+      "summary": "Dead store to other in cn.qingye.business.DemoData.run(ApplicationArguments)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-012",
+      "hash": "19cd8a3233c99e14b192f7a4b68b9246",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.DemoData",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/DemoData.java:15"
+      ],
+      "summary": "new cn.qingye.business.DemoData(Sql, Clock, boolean) may expose internal representation by storing an externally mutable object into DemoData.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-013",
+      "hash": "787ffaea3759c919ae03ac3443f4aeac",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.LoanService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/LoanService.java:23"
+      ],
+      "summary": "new cn.qingye.business.LoanService(LoanStore, ActivityStore, Access, MessageStore, Clock) may expose internal representation by storing an externally mutable object into LoanService.messages",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-014",
+      "hash": "ad80a0dc56647d9bd756ccaebf6466e3",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.TaskService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/TaskService.java:13"
+      ],
+      "summary": "new cn.qingye.business.TaskService(MessageStore, Clock) may expose internal representation by storing an externally mutable object into TaskService.messages",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-015",
+      "hash": "60454d2f688cb24e786b7c9e59545701",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.ActivityStore",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/ActivityStore.java:11"
+      ],
+      "summary": "new cn.qingye.db.ActivityStore(Sql) may expose internal representation by storing an externally mutable object into ActivityStore.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-016",
+      "hash": "be4aea04cfa6020325da8345c04dea37",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.ClubStore",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/ClubStore.java:9"
+      ],
+      "summary": "new cn.qingye.db.ClubStore(Sql) may expose internal representation by storing an externally mutable object into ClubStore.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-017",
+      "hash": "64660a0979ce0948e3b655ff9c2ae0da",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.LoanStore",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/LoanStore.java:13"
+      ],
+      "summary": "new cn.qingye.db.LoanStore(Sql) may expose internal representation by storing an externally mutable object into LoanStore.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-018",
+      "hash": "f6d6479b3ef2edceb6b095ddeb0152af",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.MessageStore",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/MessageStore.java:11"
+      ],
+      "summary": "new cn.qingye.db.MessageStore(Sql) may expose internal representation by storing an externally mutable object into MessageStore.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-019",
+      "hash": "f8114013aa6d5397e6a0ac46bf3aa8c6",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.SchemaUpgrade",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/SchemaUpgrade.java:13"
+      ],
+      "summary": "new cn.qingye.db.SchemaUpgrade(JdbcTemplate) may expose internal representation by storing an externally mutable object into SchemaUpgrade.jdbc",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-020",
+      "hash": "6dda0577134892372dd42d395f0de44e",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.Sql",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/Sql.java:17"
+      ],
+      "summary": "new cn.qingye.db.Sql(JdbcTemplate) may expose internal representation by storing an externally mutable object into Sql.jdbc",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-021",
+      "hash": "2fbd9a109d1958a798aecbbe4ee1fecd",
+      "occurrence": 0,
+      "type": "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+      "priority": 2,
+      "rank": 13,
+      "class": "cn.qingye.db.Sql",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/Sql.java:52",
+        "backend/src/main/java/cn/qingye/db/Sql.java:52"
+      ],
+      "summary": "Possible null pointer dereference in cn.qingye.db.Sql.count(String, Object[]) due to return value of called method",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-022",
+      "hash": "d041b5e513e30c439fe83aa78502583c",
+      "occurrence": 0,
+      "type": "OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE",
+      "priority": 2,
+      "rank": 20,
+      "class": "cn.qingye.db.Sql",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/Sql.java:60",
+        "backend/src/main/java/cn/qingye/db/Sql.java:63"
+      ],
+      "summary": "cn.qingye.db.Sql.lambda$insert$1(String, Object[], Connection) may fail to clean up java.sql.Statement on checked exception",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-023",
+      "hash": "204197e71d24d4e9766fd79e33fad268",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.UserStore",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/UserStore.java:11"
+      ],
+      "summary": "new cn.qingye.db.UserStore(Sql) may expose internal representation by storing an externally mutable object into UserStore.sql",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-024",
+      "hash": "78627413b0e349ad10004ab2961fc497",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.integration.ExternalHttp",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/ExternalHttp.java:15"
+      ],
+      "summary": "new cn.qingye.integration.ExternalHttp(ObjectMapper) may expose internal representation by storing an externally mutable object into ExternalHttp.json",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-025",
+      "hash": "df337efa71c64a6eb31147ac728010f7",
+      "occurrence": 0,
+      "type": "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
+      "priority": 3,
+      "rank": 19,
+      "class": "cn.qingye.integration.ExternalHttp",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/ExternalHttp.java:24"
+      ],
+      "summary": "Method lists Exception in its throws clause, but it could be more specific.",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-026",
+      "hash": "ec787d612e050d336618bbd927099c57",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.integration.LlmPlanner",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/LlmPlanner.java:20"
+      ],
+      "summary": "new cn.qingye.integration.LlmPlanner(ExternalHttp, ObjectMapper, Clock, String, String, String) may expose internal representation by storing an externally mutable object into LlmPlanner.json",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-027",
+      "hash": "4674ef93712f16ad7be1ac05eb8c716c",
+      "occurrence": 0,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 2,
+      "rank": 17,
+      "class": "cn.qingye.integration.LlmPlanner",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/LlmPlanner.java:71"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.LlmPlanner.plan(String)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-028",
+      "hash": "4674ef93712f16ad7be1ac05eb8c716c",
+      "occurrence": 1,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 3,
+      "rank": 20,
+      "class": "cn.qingye.integration.LlmPlanner",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/LlmPlanner.java:27"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.LlmPlanner.plan(String)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-029",
+      "hash": "938219219a700931a620961f11371105",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.integration.QueryCache",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/QueryCache.java:23"
+      ],
+      "summary": "new cn.qingye.integration.QueryCache(StringRedisTemplate, ObjectMapper, boolean) may expose internal representation by storing an externally mutable object into QueryCache.json",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-030",
+      "hash": "1c10b25a5610944c6d37ecb6ec29f8f5",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.integration.QueryCache",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/QueryCache.java:22"
+      ],
+      "summary": "new cn.qingye.integration.QueryCache(StringRedisTemplate, ObjectMapper, boolean) may expose internal representation by storing an externally mutable object into QueryCache.redis",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-031",
+      "hash": "10cec39b91a6cf8b78fb1474e4b842a4",
+      "occurrence": 0,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 2,
+      "rank": 17,
+      "class": "cn.qingye.integration.QueryCache",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/QueryCache.java:38"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.QueryCache.publicList(String, Supplier)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-032",
+      "hash": "4115537b89eef8a9f70e3f4ebd713e54",
+      "occurrence": 0,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 3,
+      "rank": 20,
+      "class": "cn.qingye.integration.QueryCache",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/QueryCache.java:60"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.QueryCache.invalidate()",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-033",
+      "hash": "10cec39b91a6cf8b78fb1474e4b842a4",
+      "occurrence": 1,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 3,
+      "rank": 20,
+      "class": "cn.qingye.integration.QueryCache",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/QueryCache.java:28"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.QueryCache.publicList(String, Supplier)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-034",
+      "hash": "5c09a899f677c982033bc45ad9d3b83d",
+      "occurrence": 0,
+      "type": "DE_MIGHT_IGNORE",
+      "priority": 3,
+      "rank": 19,
+      "class": "cn.qingye.integration.RabbitBridge",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/RabbitBridge.java:76",
+        "backend/src/main/java/cn/qingye/integration/RabbitBridge.java:76"
+      ],
+      "summary": "cn.qingye.integration.RabbitBridge.close() might ignore java.lang.Exception",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-035",
+      "hash": "7cdf2190b8cfa5c86cfbbe2e527f14c6",
+      "occurrence": 0,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 3,
+      "rank": 20,
+      "class": "cn.qingye.integration.RabbitBridge",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/RabbitBridge.java:66"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.RabbitBridge.lambda$connect$0(Channel, String, Delivery)",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-036",
+      "hash": "f92fe3456c96dd03d5c393d13bbf260e",
+      "occurrence": 0,
+      "type": "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
+      "priority": 3,
+      "rank": 19,
+      "class": "cn.qingye.integration.RabbitBridge",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/RabbitBridge.java:51"
+      ],
+      "summary": "Method lists Exception in its throws clause, but it could be more specific.",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-037",
+      "hash": "9a1d3ab0402832dfdf6c4bba23157e5a",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.integration.TaskWorker",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/TaskWorker.java:18"
+      ],
+      "summary": "new cn.qingye.integration.TaskWorker(MessageStore, RabbitBridge, TaskService, Clock) may expose internal representation by storing an externally mutable object into TaskWorker.messages",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-038",
+      "hash": "11c32ed13748d591703029f7ee700c27",
+      "occurrence": 0,
+      "type": "REC_CATCH_EXCEPTION",
+      "priority": 3,
+      "rank": 20,
+      "class": "cn.qingye.integration.TaskWorker",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/integration/TaskWorker.java:40"
+      ],
+      "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.TaskWorker.tick()",
+      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
+      "risk_accepted": false
+    }
+  ]
+}
+

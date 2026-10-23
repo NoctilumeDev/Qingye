@@ -135,18 +135,20 @@ def main():
 
 
 PROTECTED = set()
-CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "CONTRIBUTING.md", "docs/项目简介.md",
+CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "CONTRIBUTING.md", "SECURITY.md", "docs/项目简介.md",
                 "docs/assistant-contract.md", "docs/repository-governance.md",
+                "docs/governance/risk-register.md",
                 "miniprogram/assets/README.md"]
 DB_SUFFIXES = ["_URL", "_USER", "_PASSWORD"]
-GROUPS = ["hygiene", "client", "h2", "mysql", "quick", "all"]
-EXPAND = {"quick": ["hygiene", "client", "h2"], "all": ["hygiene", "client", "h2", "mysql"]}
+GROUPS = ["hygiene", "client", "h2", "mysql", "static", "quick", "all"]
+EXPAND = {"quick": ["hygiene", "client", "h2", "static"], "all": ["hygiene", "client", "h2", "mysql", "static"]}
 
 
 def check(group):
     if group == "hygiene":
         if hygiene():
             raise RuntimeError("Repository hygiene rejected")
+        run([sys.executable, "-B", str(ROOT / "scripts/check-static.py")])
         run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "scripts/tests"])
     elif group == "client":
         run([sys.executable, "-B", str(ROOT / "scripts/check-client.py")])
@@ -161,6 +163,14 @@ def check(group):
         env = mysql_environment("QINGYE_TEST", {"qingye_test"})
         run([executable("mvn"), "-B", "-ntp", "clean", "test"], ROOT / "backend", env)
         coverage_report(ROOT / "backend/target/site/jacoco/jacoco.xml", ROOT / "backend/target/classes")
+    elif group == "static":
+        # Compile a fresh production class set; this goal neither packages nor runs the application.
+        # Keep test/coverage results from h2/mysql by using an isolated Maven output directory.
+        run([executable("mvn"), "-B", "-ntp", "-Pstatic-analysis", "clean", "compile",
+             "com.github.spotbugs:spotbugs-maven-plugin:4.10.5.0:spotbugs"], ROOT / "backend")
+        run([sys.executable, "-B", str(ROOT / "scripts/check-static.py"),
+             "--report", str(ROOT / "backend/target/static-analysis/spotbugsXml.xml"),
+             "--classes", str(ROOT / "backend/target/static-analysis/classes")])
 
 
 if __name__ == "__main__":
