@@ -14,11 +14,14 @@ Java 17、Maven 3.9、Python 3.10+、Node 24.14.0：
 
 ```powershell
 python -B scripts/check.py quick
+python -B scripts/check.py dependencies
 ```
 
 该入口运行维护反例、客户端结构与逻辑、H2 回归、有限架构约束、覆盖率报告校验和静态变更门禁。
 静态分析会重新编译生产类；历史未知告警保留在[风险账册](docs/governance/risk-register.md)，不能为了绿灯自动更新基线。
 覆盖率报告位于 `backend/target/site/jacoco/index.html`，不提交构建产物；本批没有百分比门槛。
+`dependencies` 是独立联网检查，CI 在 H2 必需 job 中执行；包、许可声明、公告及分诊引用源码变化需人工复核，
+不得为绿灯自动更新审查清单。工具范围、素材来源未决项与覆盖盲区见[有限核查](docs/governance/continuous-checks.md)。
 真实 MySQL 按 README 准备独占 `qingye_test` 与仅有该库权限的账号后运行 `all`。
 测试会清空测试业务表，不得指向正式库或共用业务数据。CI 的 H2 与 MySQL 结果分别留存。
 

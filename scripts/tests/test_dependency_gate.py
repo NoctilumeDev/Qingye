@@ -1,0 +1,144 @@
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import tempfile
+import unittest
+from unittest.mock import patch
+
+SCRIPT = Path(__file__).parents[1] / "check-dependencies.py"
+spec = importlib.util.spec_from_file_location("dependency_gate", SCRIPT)
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+
+
+class DependencyGateTest(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        (self.root / "backend").mkdir()
+        (self.root / "backend/pom.xml").write_text("fixture\n", encoding="utf-8")
+        self.bom = {"bomFormat": "CycloneDX", "specVersion": "1.6", "components": [
+            {"group": "fixture", "name": "lib", "version": "1", "licenses": [{"license": {"id": "MIT"}}]}]}
+        self.tree = {"children": [{"groupId": "fixture", "artifactId": "lib", "version": "1", "scope": "test"}]}
+        self.inventory = m.inventory(self.bom, self.tree)
+        self.report = {"results": [{"source": {"type": "sbom"}, "packages": [{
+            "package": {"ecosystem": "Maven", "name": "fixture:lib", "version": "1"},
+            "vulnerabilities": [{"id": "GHSA-fixture", "summary": "Fixture", "severity": []}]}]}]}
+        self.findings = m.scan_findings(self.report, self.inventory, 1)
+        self.register = {"dependency_findings": [{"version": "fixture:lib@1", "id": "GHSA-fixture",
+                         "status": "UNRESOLVED", "evidence": [{"path": "backend/pom.xml"}], "risk_accepted": False}]}
+        self.policy = {"schema": "qingye-dependency-policy/v1", "source_revision": "a" * 40,
+                       "components": self.inventory, "advisories": self.findings,
+                       "applicability_inputs": {"backend/pom.xml": hashlib.sha256(b"fixture\n").hexdigest()}}
+
+    def validate(self, **kwargs):
+        args = dict(current=self.inventory, findings=self.findings, policy=self.policy, register=self.register, root=self.root)
+        args.update(kwargs)
+        return m.validate_policy(**args)
+
+    def test_unchanged_unresolved_remains_visible(self):
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
+        self.assertFalse(self.register["dependency_findings"][0]["risk_accepted"])
+
+    def test_missing_duplicate_and_wrong_format_sbom_fail(self):
+        for change in ({"components": []}, {"components": self.bom["components"] * 2}, {"specVersion": "1.0"}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                m.inventory({**self.bom, **change}, self.tree)
+        with self.assertRaises(ValueError):
+            m.inventory(self.bom, {"children": []})
+
+    def test_license_scope_and_version_changes_require_review(self):
+        for field, value in (("licenses", ["unknown"]), ("scopes", ["runtime"])):
+            changed = copy.deepcopy(self.inventory)
+            changed["fixture:lib@1"][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.validate(current=changed)
+        with self.assertRaises(ValueError):
+            self.validate(current={"fixture:lib@2": self.inventory["fixture:lib@1"]})
+
+    def test_partial_duplicate_missing_and_failed_scans_are_not_clean(self):
+        variants = [{}, {"results": []}, {"results": [{"source": {"type": "sbom"}, "packages": []}]}]
+        duplicate = copy.deepcopy(self.report)
+        duplicate["results"][0]["packages"] *= 2
+        variants.append(duplicate)
+        for report in variants:
+            with self.subTest(report=report), self.assertRaises(ValueError):
+                m.scan_findings(report, self.inventory, 1)
+        for code in (0, 2, -1):
+            with self.subTest(code=code), self.assertRaises(ValueError):
+                m.scan_findings(self.report, self.inventory, code)
+
+    def test_new_changed_and_disappeared_advisories_require_review(self):
+        for change in ({}, {**self.findings, "fixture:lib@1/GHSA-new": "a" * 64},
+                       {key: "b" * 64 for key in self.findings}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                self.validate(findings=change)
+        changed = copy.deepcopy(self.report)
+        changed["results"][0]["packages"][0]["vulnerabilities"][0]["severity"] = [{"score": "changed"}]
+        self.assertNotEqual(m.scan_findings(changed, self.inventory, 1), self.findings)
+
+    def test_clean_scanner_exit_requires_full_package_coverage(self):
+        report = copy.deepcopy(self.report)
+        report["results"][0]["packages"][0]["vulnerabilities"] = []
+        self.assertEqual(m.scan_findings(report, self.inventory, 0), {})
+        with self.assertRaises(ValueError):
+            m.scan_findings(report, self.inventory, 1)
+
+    def test_confirmed_or_recurring_remediated_findings_block(self):
+        for status in ("CONFIRMED", "REMEDIATED"):
+            self.register["dependency_findings"][0]["status"] = status
+            with self.subTest(status=status), self.assertRaises(ValueError):
+                self.validate()
+
+    def test_changed_missing_or_removed_applicability_evidence_blocks(self):
+        path = self.root / "backend/pom.xml"
+        path.write_bytes(b"fixture\r\n")
+        self.validate()  # Checkout newline normalization does not change source semantics.
+        path.write_text("changed", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "input changed"):
+            self.validate()
+        path.unlink()
+        with self.assertRaises(OSError):
+            self.validate()
+        self.policy["applicability_inputs"] = {}
+        with self.assertRaises(ValueError):
+            self.validate()
+
+    def test_duplicate_json_keys_and_missing_reports_fail(self):
+        path = self.root / "report.json"
+        with self.assertRaises(OSError):
+            m.read_json(path)
+        path.write_text('{"results": [], "results": []}', encoding="utf-8")
+        with self.assertRaises(ValueError):
+            m.read_json(path)
+
+    def test_failed_maven_does_not_read_stale_reports(self):
+        with patch.object(m, "ROOT", self.root), patch.object(m.shutil, "which", return_value="mvn"), \
+             patch.object(m.subprocess, "check_output", side_effect=["a" * 40, ""]), \
+             patch.object(m.subprocess, "run", side_effect=subprocess.CalledProcessError(1, "mvn")) as run, \
+             patch.object(m, "read_json") as reader, patch.object(m, "scanner_binary") as scanner:
+            with self.assertRaises(subprocess.CalledProcessError):
+                m.execute_scan()
+            reader.assert_not_called()
+            scanner.assert_not_called()
+            self.assertEqual(run.call_count, 1)
+            records = list((self.root / "backend/target/dependency-audit").glob("run-*/run.json"))
+            self.assertEqual(len(records), 1)
+            self.assertEqual(json.loads(records[0].read_text())["state"], "STARTED")
+
+    def test_corrupted_scanner_is_rejected_before_execution(self):
+        folder = self.root / ".tools" / ("osv-scanner-" + m.VERSION)
+        folder.mkdir(parents=True)
+        name = m.BINARIES[("Linux", "x86_64")][0]
+        (folder / name).write_bytes(b"not the pinned scanner")
+        with patch.object(m, "ROOT", self.root), patch.object(m.platform, "system", return_value="Linux"), \
+             patch.object(m.platform, "machine", return_value="x86_64"), self.assertRaisesRegex(ValueError, "checksum"):
+            m.scanner_binary()
+
+
+if __name__ == "__main__":
+    unittest.main()
