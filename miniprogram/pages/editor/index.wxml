@@ -145,6 +145,6 @@
         </picker>
       </view>
     </block>
-    <button class="primary gap" loading="{{busy}}" disabled="{{busy}}" bindtap="save">{{kind === 'activity' || kind === 'loan' ? '提交审核 ↗' : '保存 ↗'}}</button>
+    <view class="gap"><qy-action variant="primary" loading="{{busy}}" disabled="{{busy}}" bindactivate="save">{{kind === 'activity' || kind === 'loan' ? '提交审核 ↗' : '保存 ↗'}}</qy-action></view>
     <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
   </view>

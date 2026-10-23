@@ -117,6 +117,7 @@ LOCK TABLES `club_member` WRITE;
 INSERT INTO `club_member` VALUES (1,1,2,'MANAGER','ACTIVE','2026-09-30 23:01:41.092240'),(2,2,4,'MANAGER','ACTIVE','2026-09-30 23:01:41.094122'),(3,3,2,'MANAGER','ACTIVE','2026-09-30 23:01:41.095308'),(4,2,2,'MEMBER','ACTIVE','2026-09-30 23:01:41.095798'),(5,1,3,'MEMBER','ACTIVE','2026-09-30 23:01:41.096328'),(17,1,1,'MEMBER','ACTIVE','2026-10-01 16:33:31.395243'),(18,2,1,'MEMBER','PENDING','2026-10-01 15:04:02.674559');
 /*!40000 ALTER TABLE `club_member` ENABLE KEYS */;
 UNLOCK TABLES;
+DROP TABLE IF EXISTS `equipment_alias`;
 DROP TABLE IF EXISTS `equipment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -138,6 +139,16 @@ LOCK TABLES `equipment` WRITE;
 /*!40000 ALTER TABLE `equipment` DISABLE KEYS */;
 INSERT INTO `equipment` VALUES (1,'单反相机','摄影','用于活动记录和校园外拍，配套电池与存储卡。','',4,1,'2026-09-30 23:01:41.118688'),(2,'轻便三脚架','摄影','让相机稳稳站住，也让灵感自由发生。','',8,1,'2026-09-30 23:01:41.119783'),(3,'便携投影仪','展示','社团分享会与活动展示的好搭档。','',3,1,'2026-09-30 23:01:41.120266'),(4,'开发板套件','科技','从点亮一颗灯开始，把想法变成作品。','',20,1,'2026-09-30 23:01:41.120777');
 /*!40000 ALTER TABLE `equipment` ENABLE KEYS */;
+UNLOCK TABLES;
+CREATE TABLE `equipment_alias` (
+  `equipment_id` bigint NOT NULL,
+  `alias` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`equipment_id`,`alias`),
+  KEY `idx_equipment_alias` (`alias`,`equipment_id`),
+  CONSTRAINT `equipment_alias_ibfk_1` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+LOCK TABLES `equipment_alias` WRITE;
+INSERT INTO `equipment_alias` VALUES (1,'相机'),(2,'三脚架'),(3,'投影仪');
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `loan`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

@@ -2,7 +2,7 @@
   <text class="eyebrow">SHARE THE GOOD STUFF</text>
   <view class="title gap">好装备，一起用。</view>
   <view class="subtitle">社团负责人为活动预约，按时间共享校园器材。</view>
-  <button wx:if="{{user.admin}}" class="secondary small gap" bindtap="create">＋ 添加器材</button>
+  <view wx:if="{{user.admin}}" class="gap"><qy-action variant="secondary" size="compact" bindactivate="create">＋ 添加器材</qy-action></view>
   <view class="section"><text class="section-title">共享器材室</text><text class="muted">{{items.length}} 类装备</text></view>
   <view wx:for="{{items}}" wx:key="id" class="card equipment">
     <view class="equipment-row">
@@ -16,10 +16,10 @@
     </view>
     <view class="equipment-description">{{item.description}}</view>
     <view class="actions">
-      <button wx:if="{{user.workbench && item.enabled}}" class="primary small" data-id="{{item.id}}" bindtap="apply">为活动预约</button>
+      <qy-action wx:if="{{user.workbench && item.enabled}}" variant="primary" size="compact" data-id="{{item.id}}" bindactivate="apply">为活动预约</qy-action>
       <text wx:elif="{{!item.enabled}}" class="badge orange">暂停预约</text>
       <text wx:else="" class="muted">请由社团负责人申请借用</text>
-      <button wx:if="{{user.admin}}" class="secondary small" data-id="{{item.id}}" bindtap="edit">管理</button>
+      <qy-action wx:if="{{user.admin}}" variant="secondary" size="compact" data-id="{{item.id}}" bindactivate="edit">管理</qy-action>
     </view>
   </view>
   <view class="footnote">当前实物数量供浏览参考；预约余量需选择时间后查询，审批和领取会重新校验。</view>

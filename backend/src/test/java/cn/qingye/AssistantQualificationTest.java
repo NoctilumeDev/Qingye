@@ -53,8 +53,7 @@ class AssistantQualificationTest {
         var mixed=QueryPlan.batch(List.of(ready,partial));assertThat(mixed.valid()).isFalse();
         var draft=AssistantQualification.incompleteDraft(mixed).orElseThrow();
         assertThat(draft.action()).isEqualTo("CLARIFY");assertThat(draft.queries()).containsExactly(ready,partial);assertThat(draft.valid()).isTrue();
-        var unsupported=new QueryPlan("CLARIFY","ACTIVITIES",null,null,null,null,null,null,"UNSUPPORTED_FILTER");
-        assertThat(AssistantQualification.incompleteDraft(QueryPlan.batch(List.of(ready,unsupported))).orElseThrow().reason()).isEqualTo("UNSUPPORTED_FILTER");
-        assertThat(AssistantQualification.incompleteDraft(QueryPlan.batch(List.of(ready,QueryPlan.reject("PRIVATE_DATA"))))).isEmpty();
+        var malformed=new QueryPlan("REJECT",null,null,null,null,null,null,null,"PRIVATE_DATA");
+        assertThat(AssistantQualification.incompleteDraft(QueryPlan.batch(List.of(ready,malformed)))).isEmpty();
     }
 }

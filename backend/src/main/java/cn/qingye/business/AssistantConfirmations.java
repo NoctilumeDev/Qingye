@@ -10,7 +10,7 @@ import java.util.*;
 final class AssistantConfirmations {
     record Offer(long user,String sessionHash,String requestId,QueryPlan plan,AssistantTime period,String mode,int offset,Instant expiresAt) {}
     record Issued(String token,Instant expiresAt) {}
-    record Dialogue(long user,String sessionHash,String requestId,List<String> turns,int replies,boolean retry,LocalDate day,Instant expiresAt) {}
+    record Dialogue(long user,String sessionHash,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,boolean retry,LocalDate day,Instant expiresAt) {}
     private record Owner(long user,String sessionHash) {}
     private record Request(String id,Instant expiresAt) {}
     private final Clock clock;
@@ -35,13 +35,13 @@ final class AssistantConfirmations {
         requests.put(owner,request);
         return request.id();
     }
-    synchronized Optional<Issued> clarify(long user,String session,String requestId,List<String> turns,int replies,boolean retry) {
+    synchronized Optional<Issued> clarify(long user,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,boolean retry) {
         purgeExpired();
         if(session==null||requestId==null||dialogues.size()>=512)return Optional.empty();
         var owner=new Owner(user,hash(session));var current=requests.get(owner);
         if(current==null||!current.id().equals(requestId))return Optional.empty();
         String token=UUID.randomUUID().toString();var expires=current.expiresAt();
-        dialogues.put(token,new Dialogue(user,owner.sessionHash(),requestId,List.copyOf(turns),replies,retry,LocalDate.now(clock.withZone(ZoneId.of("Asia/Shanghai"))),expires));
+        dialogues.put(token,new Dialogue(user,owner.sessionHash(),requestId,List.copyOf(turns),List.copyOf(questions),List.copyOf(candidates),replies,retry,LocalDate.now(clock.withZone(ZoneId.of("Asia/Shanghai"))),expires));
         return Optional.of(new Issued(token,expires));
     }
     synchronized Optional<Dialogue> reply(long user,String session,String token,boolean retry) {

@@ -1,15 +1,16 @@
 const { request, guard, confirm } = require('../../utils/request')
 const { keyboard } = require('../../utils/keyboard')
 const contract = require('../../utils/assistant-contract')
-const emptyTokens = { confirmationToken: '', nextToken: '', clarificationToken: '', amendmentToken: '', retryToken: '' }
+const emptyTokens = { confirmationToken: '', nextToken: '', clarificationToken: '', retryToken: '' }
+const emptyPresentation = { statusTitle: '', statusHint: '', statusTone: 'neutral', showAnswerText: false }
 Page({
-  data: { question: '', answer: '', busy: false, status: '', interpretation: '', corrections: [], correcting: false, ...emptyTokens,
-    hasMore: false, facetOpen: false, objects: contract.intentLabels, objectIndex: 0, times: contract.timeLabels, timeKeys: contract.times, timeIndex: 0,
+  data: { question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens,
+    ...emptyPresentation, hasMore: false, facetOpen: false, objects: contract.intentLabels, objectIndex: 0, times: contract.timeLabels, timeKeys: contract.times, timeIndex: 0,
     categories: ['全部分类', ...contract.categoryLabels], categoryIndex: 0, states: ['全部状态'], stateIndex: 0,
-    entity: '', location: '', date: '', suggestions: ['查全部活动', '后天有什么活动？', '我的报名活动有哪些？', '相机现在还有多少？'],
-    items: [], sections: [], queuedQueries: [], queuedSummaries: [], hasPendingQueries: false, draftSummaries: [], missingConditions: [], facetPending: [], completionDraft: null, entityPending: false, editingIndex: -1, followupQuestion: '', replyText: '', recoveryMessage: '', keyboardHeight: 0 },
+    entity: '', location: '', date: '', suggestions: contract.entryCommands.map(c => c.label),
+    items: [], sections: [], queuedQueries: [], queuedSummaries: [], hasPendingQueries: false, draftSummaries: [], missingConditions: [], facetPending: [], completionDraft: null, entityPending: false, editingIndex: -1, followupQuestion: '', clarificationRound: 0, maxClarifications: contract.maxClarifications, replyText: '', recoveryMessage: '', keyboardHeight: 0 },
   onLoad() { if (guard()) this.keyboardLayout = keyboard(this, 'keyboardHeight') },
-  input(e) { if (!this.data.busy) { this.lastPreviewRequest = null; this.setData({ question: e.detail.value, ...emptyTokens, sections: [], items: [], answer: '', interpretation: '', corrections: [], intent: '', status: '', hasMore: false, recoveryMessage: '' }) } },
+  input(e) { if (!this.data.busy) { this.lastPreviewRequest = null; this.setData({ question: e.detail.value, ...emptyTokens, ...emptyPresentation, sections: [], items: [], answer: '', interpretation: '', intent: '', status: '', hasMore: false, recoveryMessage: '' }) } },
   replyInput(e) { if (!this.data.busy) this.setData({ replyText: e.detail.value }) },
   focusQuestion(e) { this.keyboardLayout.focus('#assistant-query', 16, '', e && e.detail) },
   blurQuestion() { this.keyboardLayout.blur() }, keyboardChange(e) { this.keyboardLayout.change(e) },
@@ -29,6 +30,15 @@ Page({
     if (this.data.queuedQueries.length) this.applyDraft(this.data.queuedQueries[0])
   },
   toggleFacets() { if (!this.data.busy) this.setData({ facetOpen: !this.data.facetOpen }) },
+  openDirectory(e) { this.selectDirectory(Number(e.currentTarget.dataset.index), '') },
+  selectDirectory(index, search) {
+    if (this.data.busy || !contract.intents[index]) return
+    const intent = contract.intents[index], keys = contract.timeOptionsByIntent[intent] || contract.times
+    this.invalidate(); this.lastPreviewRequest = null; this.syncQueue([])
+    this.setData({ facetOpen: true, objectIndex: index, timeKeys: keys, times: keys.map(k => this.timeLabel(k, intent)), timeIndex: keys.indexOf(intent === 'EQUIPMENT' ? 'CURRENT' : 'ANY'),
+      states: contract.states[intent].map(k => contract.stateLabels[k]), stateIndex: 0, entity: search || '', location: '', date: '', categoryIndex: 0,
+      facetPending: [], completionDraft: null, entityPending: false, editingIndex: -1 })
+  },
   facetField(e) {
     if (this.data.busy) return
     const field = e.currentTarget.dataset.field, value = e.detail.value
@@ -68,7 +78,10 @@ Page({
     const object = contract.intentLabels[contract.intents.indexOf(p.intent)] || '对象待补充', time = this.timeLabel(p.timeOption, p.intent) || '时间待补充'
     return [object, p.entity === 'ALL' ? '全部器材' : p.entity, time, p.date, p.category && contract.categoryLabels[contract.categories.indexOf(p.category)], p.location, p.status && contract.stateLabels[p.status]].filter(Boolean).join(' · ')
   },
-  syncQueue(queries, editingIndex = -1) { this.setData({ queuedQueries: queries, queuedSummaries: queries.map(p => this.summaryOf(p)), hasPendingQueries: queries.some(p => p._needsReview), editingIndex }) },
+  syncQueue(queries, editingIndex = -1) {
+    const queuedQueries = queries.map(query => query._key ? query : { ...query, _key: 'queue-' + (this.queueSequence = (this.queueSequence || 0) + 1) })
+    this.setData({ queuedQueries, queuedSummaries: queuedQueries.map(p => this.summaryOf(p)), hasPendingQueries: queuedQueries.some(p => p._needsReview), editingIndex })
+  },
   facetBody() {
     const d = this.data, intent = contract.intents[d.objectIndex], timeOption = d.timeKeys[d.timeIndex]
     if (d.facetPending.length || !intent || !timeOption || !contract.states[intent][d.stateIndex]) { wx.showToast({ title: '请明确选择待补充条件，不会默认查全部', icon: 'none' }); return null }
@@ -81,7 +94,7 @@ Page({
     if (this.data.busy) return
     const body = this.facetBody(); if (!body) return
     const queued = this.data.queuedQueries.slice()
-    if (this.data.editingIndex >= 0) queued[this.data.editingIndex] = body
+    if (this.data.editingIndex >= 0) queued[this.data.editingIndex] = { ...body, _key: queued[this.data.editingIndex]._key }
     else if (queued.length < contract.maxQueries) queued.push(body)
     else return wx.showToast({ title: '每次最多四项独立查询', icon: 'none' })
     this.invalidate(); this.syncQueue(queued)
@@ -132,47 +145,69 @@ Page({
   },
   section(result) {
     const labels = { ...contract.stateLabels, PUBLISHED: '已发布' }
-    return { ...result, items: (result.items || []).map(r => ({ ...r, displayName: r.title || r.equipmentName || r.name, startLabel: (r.startTime || r.plannedStart || '').replace('T', ' '), endLabel: (r.endTime || r.plannedEnd || '').replace('T', ' '), stateLabel: labels[r.registrationStatus || r.status] || '' })) }
+    return { ...result, warnings: result.warnings || [], items: (result.items || []).map(r => ({ ...r, displayName: r.title || r.equipmentName || r.name, startLabel: (r.startTime || r.plannedStart || '').replace('T', ' '), endLabel: (r.endTime || r.plannedEnd || '').replace('T', ' '), stateLabel: labels[r.registrationStatus || r.status] || '' })) }
+  },
+  presentation(status, sections) {
+    const count = sections.reduce((total, section) => total + section.items.length, 0)
+    const hasMore = sections.some(section => section.hasMore)
+    if (status === 'QUERY' && count) return { statusTitle: '查询结果', statusHint: hasMore ? '已显示本页结果，下面还有更多记录。' : '以下内容来自当前业务数据。', statusTone: 'success', showAnswerText: false }
+    if (status === 'QUERY') return { statusTitle: '没有匹配记录', statusHint: '只表示当前确认条件下没有找到，不代表从未存在或以后不会有。', statusTone: 'neutral', showAnswerText: false }
+    const states = {
+      CONFIRM_SCOPE: ['请确认查询范围', '确认后才会读取业务记录。', 'pending'],
+      CLARIFY: ['还差一点信息', '补充后继续判断，当前尚未查询。', 'pending'],
+      CLARIFICATION_PAUSED: ['暂时无法确定', '本轮尚未查询。你可以换种说法，或自己选择查询条件。', 'unknown'],
+      UNSUPPORTED: ['当前条件无法完整查询', '不会忽略你提出的条件，也不会用更宽的结果冒充完成。', 'warning'],
+      REJECT: ['这个请求不能执行', '青野只会读取当前账号有权查看的信息。', 'danger'],
+      SYSTEM_ERROR: ['暂时没能完成', '已知内容不会冒充查询结果，你仍可自己选择查询条件。', 'warning']
+    }
+    const value = states[status]
+    return value ? { statusTitle: value[0], statusHint: value[1], statusTone: value[2], showAnswerText: true } : emptyPresentation
+  },
+  batchPresentation(sections) {
+    if (sections.some(section => section.status === 'CONFIRM_SCOPE' && section.confirmationToken)) return { status: 'CONFIRM_SCOPE', statusTitle: '还有查询范围待确认', statusHint: '已完成的结果保留在下方，其余项确认后才会读取。', statusTone: 'pending', showAnswerText: false }
+    const stopped = sections.find(section => section.status && section.status !== 'QUERY')
+    if (stopped) return { status: stopped.status, ...this.presentation(stopped.status, sections) }
+    return { status: 'QUERY', ...this.presentation('QUERY', sections) }
   },
   accept(result, append = false, index = null) {
-    if (result.contractVersion && result.contractVersion !== contract.version) { this.invalidate(); this.setData({ status: 'SYSTEM_ERROR', items: [], sections: [], answer: '业务能力版本不一致，请更新小程序后重新核对。' }); return }
+    if (result.contractVersion && result.contractVersion !== contract.version) { this.invalidate(); this.setData({ status: 'SYSTEM_ERROR', items: [], sections: [], answer: '业务能力版本不一致，请更新小程序后重新核对。', ...this.presentation('SYSTEM_ERROR', []) }); return }
     const s = this.section(result)
     if (index != null && this.data.intent === 'BATCH') {
       const sections = this.data.sections.slice(), previous = sections[index]
       sections[index] = { ...s, key: previous.key, items: append ? previous.items.concat(s.items) : s.items }
-      this.setData({ sections, busy: false }); return
+      this.setData({ sections, busy: false, hasMore: sections.some(section => section.hasMore), ...this.batchPresentation(sections) }); return
     }
     const sections = result.sections ? result.sections.map((value, i) => ({ ...this.section(value), key: 'query-' + i })) : [{ ...s, key: 'query-0', items: append ? this.data.items.concat(s.items) : s.items }]
-    const change = { answer: result.answer, items: result.sections ? [] : sections[0].items, sections, intent: result.intent, status: result.status || '', interpretation: result.interpretation || '', corrections: result.corrections || [], ...emptyTokens,
-      confirmationToken: result.confirmationToken || '', nextToken: result.nextToken || '', clarificationToken: result.clarificationToken || '', amendmentToken: result.amendmentToken || '', retryToken: result.retryToken || '', hasMore: !!result.hasMore, followupQuestion: result.question || '', recoveryMessage: '' }
+    const change = { answer: result.answer, items: result.sections ? [] : sections[0].items, sections, intent: result.intent, status: result.status || '', interpretation: result.interpretation || '', ...emptyTokens, ...this.presentation(result.status || '', sections),
+      confirmationToken: result.confirmationToken || '', nextToken: result.nextToken || '', clarificationToken: result.clarificationToken || '', retryToken: result.retryToken || '', hasMore: !!result.hasMore, followupQuestion: result.question || '', clarificationRound: result.clarificationRound || 0, maxClarifications: result.maxClarifications || contract.maxClarifications, recoveryMessage: '' }
     this.setData(change)
     if (result.plan && result.status === 'CONFIRM_SCOPE' && result.intent !== 'BATCH') {
       this.setData({ entity: '', location: '', date: '', categoryIndex: 0, stateIndex: 0 }); this.applyDraft(result.plan)
     }
-    this.setData({ draftSummaries: [], missingConditions: result.missingConditions || [], replyText: '' })
+    this.setData({ draftSummaries: [], missingConditions: (result.missingConditions || []).map((condition, i) => ({ ...condition, _key: 'missing-' + condition.queryIndex + '-' + (condition.field || condition.label) + '-' + i })), replyText: '' })
     if (result.draft) {
       if (!result.draft.queries) this.applyDraft(result.draft, true)
-      this.setData({ draftSummaries: (result.draft.queries || [result.draft]).map(p => this.summaryOf(p)) })
+      this.setData({ draftSummaries: (result.draft.queries || [result.draft]).map((p, i) => ({ _key: 'draft-' + i, text: this.summaryOf(p) })) })
       if (result.draft.queries) this.syncQueue(result.draft.queries.map(p => ({ ...this.bodyOf(p), _needsReview: p.action !== 'QUERY', reason: p.reason })))
     }
-    if (['CLARIFY', 'NOT_UNDERSTOOD', 'UNSUPPORTED', 'SYSTEM_ERROR'].includes(result.status)) this.setData({ facetOpen: true })
+    if (['CLARIFY', 'CLARIFICATION_PAUSED', 'UNSUPPORTED', 'SYSTEM_ERROR'].includes(result.status)) this.setData({ facetOpen: true })
   },
   async load(url, body) {
     const generation = this.queryGeneration = (this.queryGeneration || 0) + 1
     if (url === '/assistant/query' || url === '/assistant/queries') this.lastPreviewRequest = { url, body }
-    this.setData({ busy: true, answer: '', items: [], sections: [], intent: '', interpretation: '', corrections: [], status: '', ...emptyTokens, hasMore: false, recoveryMessage: '' })
+    this.setData({ busy: true, answer: '', items: [], sections: [], intent: '', interpretation: '', status: '', ...emptyTokens, ...emptyPresentation, hasMore: false, recoveryMessage: '' })
     try { const result = await request(url, 'POST', body); if (generation === this.queryGeneration) { this.accept(result); this.setData({ busy: false }); if (result.status === 'CLARIFY' && result.clarificationToken) await this.promptClarification(generation) } }
     catch (e) { if (generation === this.queryGeneration) this.setData({ status: 'SYSTEM_ERROR', recoveryMessage: '本次请求未能完成，请重新发起或手选分区；不会假装已查完。' }) }
     finally { if (generation === this.queryGeneration) this.setData({ busy: false }) }
   },
-  async reply() { const token = this.data.clarificationToken || this.data.amendmentToken; if (this.data.busy || !token) return; const answer = this.data.replyText.trim(); if (!answer) return wx.showToast({ title: '请填写要补充或修改的条件', icon: 'none' }); return this.load('/assistant/clarify', { token, answer }) },
+  async reply() { const token = this.data.clarificationToken; if (this.data.busy || !token) return; const answer = this.data.replyText.trim(); if (!answer) return wx.showToast({ title: '请填写要补充的条件', icon: 'none' }); return this.load('/assistant/clarify', { token, answer }) },
   async promptClarification(generation = this.queryGeneration) {
     if (typeof generation !== 'number') generation = this.queryGeneration
     const token = this.data.clarificationToken
     if (this.data.busy || !token || this.clarificationPromptOpen) return
     this.clarificationPromptOpen = true
     try {
-      const answer = await confirm((this.data.followupQuestion || this.data.answer) + '\n尚未查询。取消将保留草稿，不会执行。', true,
+      const answer = await confirm((this.data.followupQuestion || this.data.answer) + (this.data.clarificationRound ? '\n本轮第 ' + this.data.clarificationRound + ' 次澄清，最多 ' + this.data.maxClarifications + ' 次。' : '') + '\n尚未查询。取消将保留上下文，不会执行。', true,
         { title: '请补充查询条件', placeholderText: '填写缺少的条件，已明确内容会保留', confirmText: '继续判断', cancelText: '暂不补充' })
       if (generation !== this.queryGeneration || token !== this.data.clarificationToken || this.data.busy) return
       if (typeof answer !== 'string' || !answer.trim()) return

@@ -41,6 +41,11 @@ CREATE TABLE IF NOT EXISTS equipment (
  total_quantity INT NOT NULL, enabled BOOLEAN NOT NULL DEFAULT TRUE,
  created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), CHECK(total_quantity >= 0)
 );
+CREATE TABLE IF NOT EXISTS equipment_alias (
+ equipment_id BIGINT NOT NULL, alias VARCHAR(60) NOT NULL,
+ PRIMARY KEY(equipment_id,alias), FOREIGN KEY(equipment_id) REFERENCES equipment(id) ON DELETE CASCADE,
+ INDEX idx_equipment_alias(alias,equipment_id)
+);
 CREATE TABLE IF NOT EXISTS loan (
  id BIGINT AUTO_INCREMENT PRIMARY KEY, activity_id BIGINT NOT NULL, applicant_id BIGINT NOT NULL,
  equipment_id BIGINT NOT NULL, quantity INT NOT NULL, planned_start TIMESTAMP(6) NOT NULL,

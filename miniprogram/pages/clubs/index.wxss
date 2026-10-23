@@ -5,7 +5,7 @@
   margin:-22rpx 0 0 -20rpx;
 }
 
-page button.club-back {
+.club-back {
   display:flex;
   align-items:center;
   justify-content:center;

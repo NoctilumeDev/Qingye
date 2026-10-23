@@ -2,7 +2,6 @@ package cn.qingye.db;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import cn.qingye.model.EquipmentNames;
 
 /** Only server-owned SQL fragments; user strings are always bound values. */
 final class AssistantSql {
@@ -22,7 +21,7 @@ final class AssistantSql {
     }
     static String literalContains(String value) { return "%"+value.replace("!","!!").replace("%","!%").replace("_","!_")+"%"; }
     static String equipmentName(String name,List<Object> args) {
-        var names=EquipmentNames.resolve(name);args.addAll(names);
-        return " AND e.name IN ("+String.join(",",java.util.Collections.nCopies(names.size(),"?"))+")";
+        args.add(name);args.add(name);
+        return " AND (e.name=? OR EXISTS (SELECT 1 FROM equipment_alias ea WHERE ea.equipment_id=e.id AND ea.alias=?))";
     }
 }

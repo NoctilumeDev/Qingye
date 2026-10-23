@@ -4,14 +4,16 @@
     <text class="failure-code">{{failure.code}}</text>
     <view class="headline">{{failure.title}}</view>
     <view class="failure-description">{{failure.description}}</view>
-    <view class="failure-actions"><button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="retry">重新尝试</button><button class="secondary" disabled="{{busy}}" bindtap="backToLogin">返回登录</button></view>
+    <view class="failure-actions"><qy-action variant="primary" loading="{{busy}}" disabled="{{busy}}" bindactivate="retry">重新尝试</qy-action><qy-action variant="secondary" disabled="{{busy}}" bindactivate="backToLogin">返回登录</qy-action></view>
   </view>
   <view wx:else>
   <view class="welcome"><image src="/assets/campus/campus-friends-v1.jpg" mode="aspectFill" /></view>
   <view class="headline">把青春，留在校园里。</view>
   <view class="subtitle">遇见同好，参加活动。<view>一起把课后的生活过得有声有色。</view></view>
-  <view class="gap"><button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="wechat">微信登录，开启校园生活</button></view>
-  <button wx:if="{{!accounts.length}}" class="secondary" disabled="{{busy}}" bindtap="loadAccounts">重新载入体验身份</button>
+  <view class="gap login-actions">
+    <qy-action variant="primary" loading="{{busy}}" disabled="{{busy}}" bindactivate="wechat">微信登录，开启校园生活</qy-action>
+    <qy-action wx:if="{{!accounts.length}}" variant="secondary" disabled="{{busy}}" bindactivate="loadAccounts">重新载入体验身份</qy-action>
+  </view>
   <view wx:if="{{accounts.length}}" class="demo">
     <view class="row"><text class="section-title">体验青野</text><text class="muted">本地演示</text></view>
     <view class="footnote">选一个身份，看看校园里正在发生什么。</view>

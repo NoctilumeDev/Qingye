@@ -399,7 +399,7 @@ test('a failed assistant query leaves no stale facts and permits a retry', async
 
 test('assistant shows the executed interpretation and correction never submits by itself', async () => {
   let calls = 0
-  const assistant = page('assistant', async () => { calls++; return { status: 'QUERY', intent: 'MY_LOANS', answer: '你的借用记录', items: [], interpretation: '我按「你的借用记录 · 当前登录用户」帮你查了。', corrections: ['查相机', '我的借用记录'] } })
+  const assistant = page('assistant', async () => { calls++; return { status: 'QUERY', intent: 'MY_LOANS', answer: '你的借用记录', items: [], interpretation: '我按「你的借用记录 · 当前登录用户」帮你查了。' } })
   assistant.setData({ question: '查相机' }); await assistant.ask()
   assert.equal(assistant.data.status, 'QUERY'); assert.match(assistant.data.interpretation, /你的借用记录/)
   assistant.correct(); assert.equal(assistant.data.correcting, true); assert.equal(calls, 1)
@@ -408,11 +408,11 @@ test('assistant shows the executed interpretation and correction never submits b
 })
 test('assistant keeps clarification and refusal distinct and clears old interpretation on failure', async () => {
   let status = 'CLARIFY', fail = false
-  const assistant = page('assistant', async () => { if (fail) throw new Error('offline'); return { status, intent: '', answer: status, items: [], interpretation: status === 'CLARIFY' ? '尚未确定查询计划' : '请求不允许执行', corrections: ['查相机'] } })
+  const assistant = page('assistant', async () => { if (fail) throw new Error('offline'); return { status, intent: '', answer: status, items: [], interpretation: status === 'CLARIFY' ? '尚未确定查询计划' : '请求不允许执行' } })
   assistant.setData({ question: '查器材' }); await assistant.ask()
   assert.equal(assistant.data.status, 'CLARIFY'); assert.match(assistant.data.interpretation, /尚未确定/)
   status = 'REJECT'; await assistant.ask(); assert.equal(assistant.data.status, 'REJECT')
-  fail = true; await assistant.ask(); assert.equal(assistant.data.interpretation, ''); assert.equal(assistant.data.corrections.length, 0)
+  fail = true; await assistant.ask(); assert.equal(assistant.data.interpretation, '')
 })
 
 test('personal scope waits for consent and confirmation sends only the displayed token once', async () => {
@@ -518,7 +518,7 @@ test('clarification retains known conditions and sends the answer through its ow
     calls.push({ url, body }); return url === '/assistant' ? { status: 'CLARIFY', intent: '', answer: '请补充时间', draft, clarificationToken: 'followup', question: '过去还是未来？', items: [] } : { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan: { ...draft, action: 'QUERY', reason: null, timeOption: 'TOMORROW' }, confirmationToken: 'scope', answer: '明天摄影社', items: [] }
   })
   assistant.setData({ question: '摄影社东操场活动' }); await assistant.ask()
-  assert.equal(assistant.data.entity, '摄影社'); assert.equal(assistant.data.location, '东操场'); assert.match(assistant.data.draftSummaries[0], /摄影社.*东操场/)
+  assert.equal(assistant.data.entity, '摄影社'); assert.equal(assistant.data.location, '东操场'); assert.match(assistant.data.draftSummaries[0].text, /摄影社.*东操场/)
   assistant.replyInput({ detail: { value: '明天' } }); await assistant.reply()
   assert.equal(calls.length, 2); assert.equal(calls[1].url, '/assistant/clarify'); assert.deepEqual(JSON.parse(JSON.stringify(calls[1].body)), { token: 'followup', answer: '明天' })
   assert.equal(assistant.data.confirmationToken, 'scope'); assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.replyText, '')
@@ -530,17 +530,8 @@ test('system retry uses the server context token and never pretends to have an a
   await assistant.retry(); assert.equal(calls[1].url, '/assistant/retry'); assert.deepEqual(JSON.parse(JSON.stringify(calls[1].body)), { token: 'retry-context' }); assert.equal(assistant.data.clarificationToken, 'followup')
 })
 
-test('voluntary correction keeps the original server context and never submits old consent', async () => {
-  const pending = deferred(), calls = [], assistant = page('assistant', (url, method, body) => { calls.push({ url, body }); return pending.promise })
-  assistant.accept({ status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', answer: '明天摄影社', items: [], confirmationToken: 'old-consent', amendmentToken: 'context' })
-  assistant.replyInput({ detail: { value: '改成后天，其他不变' } }); const changing = assistant.reply()
-  await assistant.confirmScope(); assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/clarify'); assert.equal(calls[0].body.token, 'context'); assert.equal(assistant.data.confirmationToken, '')
-  pending.resolve({ status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', answer: '后天摄影社', items: [], confirmationToken: 'new-consent' }); await changing
-  assert.equal(assistant.data.confirmationToken, 'new-consent'); assert.equal(assistant.data.amendmentToken, '')
-})
-
-test('unsupported, not understood, refusal and empty query remain different results without automatic fallback', async () => {
-  for (const status of ['UNSUPPORTED', 'NOT_UNDERSTOOD', 'REJECT', 'QUERY']) {
+test('unsupported, paused clarification, refusal and empty query remain different results without automatic fallback', async () => {
+  for (const status of ['UNSUPPORTED', 'CLARIFICATION_PAUSED', 'REJECT', 'QUERY']) {
     let calls = 0; const assistant = page('assistant', async () => { calls++; return { status, intent: '', answer: status, items: [] } })
     assistant.setData({ question: '我的活动关联器材比较' }); await assistant.ask()
     assert.equal(assistant.data.status, status); assert.equal(calls, 1); assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.clarificationToken, '')
@@ -554,14 +545,18 @@ test('independent queries require separate previews and update only the confirme
   await assistant.confirmScope({ currentTarget: { dataset: { index: 1 } } })
   assert.deepEqual(JSON.parse(JSON.stringify(calls[1].body)), { token: 'equipment-token' }); assert.equal(assistant.data.sections[1].items[0].id, 8)
   assert.equal(assistant.data.sections[0].confirmationToken, 'activity-token'); assert.equal(assistant.data.sections[0].items.length, 0)
+  assert.equal(assistant.data.statusTitle, '还有查询范围待确认')
+  await assistant.confirmScope({ currentTarget: { dataset: { index: 0 } } })
+  assert.equal(assistant.data.status, 'QUERY'); assert.equal(assistant.data.statusTitle, '查询结果')
 })
 
 test('manual independent query queue is bounded, editable and uses a single batch preview', async () => {
   const calls = [], hints = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', intent: 'BATCH', sections: [], answer: '逐项确认' } }, { showToast: h => hints.push(h) })
   for (let i = 0; i < 5; i++) { assistant.setData({ entity: '活动' + i, timeIndex: i % 2 }); assistant.addFacet() }
   assert.equal(assistant.data.queuedQueries.length, 4); assert.match(hints[0].title, /最多四项/)
+  assert.equal(new Set(assistant.data.queuedQueries.map(query => query._key)).size, 4); const editedKey = assistant.data.queuedQueries[2]._key
   assistant.editQueued({ currentTarget: { dataset: { index: 2 } } }); assistant.facetField({ currentTarget: { dataset: { field: 'location' } }, detail: { value: '东操场' } }); assistant.addFacet()
-  assert.equal(assistant.data.queuedQueries[0].location, null); assert.equal(assistant.data.queuedQueries[2].location, '东操场'); assert.match(assistant.data.queuedSummaries[2], /东操场/)
+  assert.equal(assistant.data.queuedQueries[0].location, null); assert.equal(assistant.data.queuedQueries[2].location, '东操场'); assert.equal(assistant.data.queuedQueries[2]._key, editedKey); assert.match(assistant.data.queuedSummaries[2], /东操场/)
   await assistant.previewQueued(); assert.equal(calls[0].url, '/assistant/queries'); assert.equal(calls[0].body.queries.length, 4); assert.equal(assistant.data.items.length, 0)
 })
 
@@ -599,13 +594,14 @@ test('manual preview network recovery does not require an unrelated natural lang
 test('contract version mismatch cannot restore execution or continuation credentials', async () => {
   const assistant = page('assistant', async () => ({ contractVersion: 'unknown-future-contract', status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', confirmationToken: 'must-not-use', nextToken: 'must-not-use', answer: '旧版本不了解的计划', items: [{ id: 4 }] }))
   assistant.setData({ question: '查相机' }); await assistant.ask(); assert.equal(assistant.data.status, 'SYSTEM_ERROR'); assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.items.length, 0); assert.match(assistant.data.answer, /版本不一致/)
+  assert.equal(assistant.data.statusTitle, '暂时没能完成'); assert.equal(assistant.data.showAnswerText, true)
 })
 
 test('a partial combination shows known conditions without turning its drafts into executable queries', async () => {
   const queries = [{ action: 'QUERY', intent: 'EQUIPMENT', entity: '相机', timeOption: 'CURRENT', status: 'ANY' }, { action: 'CLARIFY', intent: 'MY_REGISTRATIONS', entity: '摄影社', timeOption: null, status: 'CANCELLED' }]
   const assistant = page('assistant', async () => ({ status: 'CLARIFY', answer: '补充时间', draft: { action: 'CLARIFY', queries }, clarificationToken: 'followup', question: '本人报名要查哪段时间？', items: [] }))
   assistant.setData({ question: '查相机，和摄影社取消报名' }); await assistant.ask()
-  assert.equal(assistant.data.draftSummaries.length, 2); assert.match(assistant.data.draftSummaries[1], /摄影社.*已取消/); assert.equal(assistant.data.queuedQueries.length, 2); assert.equal(assistant.data.queuedQueries[1]._needsReview, true); assert.equal(assistant.data.sections[0].confirmationToken, undefined)
+  assert.equal(assistant.data.draftSummaries.length, 2); assert.match(assistant.data.draftSummaries[1].text, /摄影社.*已取消/); assert.equal(assistant.data.queuedQueries.length, 2); assert.equal(assistant.data.queuedQueries[1]._needsReview, true); assert.equal(assistant.data.sections[0].confirmationToken, undefined)
 })
 
 test('a new user question clears old manual conditions rather than carrying hidden filters', async () => {
@@ -743,4 +739,79 @@ test('workbench guards confirmation as well as writes for operations and members
     const cancelled = page('workbench', async () => { throw new Error('unexpected write') }, {}, async () => false)
     cancelled.data.clubs = [{ id: 1 }]; await cancelled[kind](event); assert.equal(cancelled.data.busy, false)
   }
+})
+
+test('business directory search is available before any model request and new names are ordinary data', async () => {
+  const calls = [], name = '新录_' + require('node:crypto').randomBytes(6).toString('hex')
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', confirmationToken: 'manual', items: [] } }, { showToast() {} })
+  assert.equal(assistant.data.facetOpen, false)
+  assistant.openDirectory({ currentTarget: { dataset: { index: 0 } } })
+  assert.equal(assistant.data.facetOpen, true)
+  assistant.facetField({ currentTarget: { dataset: { field: 'entity' } }, detail: { value: name } })
+  await assistant.searchFacets()
+  assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/query'); assert.equal(calls[0].body.entity, name)
+  assert.equal(calls[0].body.timeOption, 'ANY'); assert.equal(calls[0].body.category, null)
+})
+
+test('user-facing assistant states distinguish results, empty data, clarification, refusal and outages', () => {
+  const assistant = page('assistant', async () => ({}))
+  assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', answer: '内部事实摘要不应与卡片重复', items: [{ id: 1, title: '蓝晒活动' }], hasMore: false })
+  assert.equal(assistant.data.statusTitle, '查询结果'); assert.equal(assistant.data.statusTone, 'success'); assert.equal(assistant.data.showAnswerText, false)
+  assistant.accept({ status: 'QUERY', intent: 'EQUIPMENT', answer: '内部事实摘要', warnings: ['分页不是固定快照'], items: [{ id: 2, name: '相机' }], hasMore: true })
+  assert.deepEqual(assistant.data.sections[0].warnings, ['分页不是固定快照'])
+  assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', answer: '没有记录', items: [] })
+  assert.equal(assistant.data.statusTitle, '没有匹配记录'); assert.match(assistant.data.statusHint, /不代表从未存在/); assert.equal(assistant.data.showAnswerText, false)
+  for (const [status, title, tone] of [
+    ['CLARIFY', '还差一点信息', 'pending'],
+    ['CLARIFICATION_PAUSED', '暂时无法确定', 'unknown'],
+    ['UNSUPPORTED', '当前条件无法完整查询', 'warning'],
+    ['REJECT', '这个请求不能执行', 'danger'],
+    ['SYSTEM_ERROR', '暂时没能完成', 'warning']
+  ]) {
+    assistant.accept({ status, answer: status, items: [] })
+    assert.equal(assistant.data.statusTitle, title); assert.equal(assistant.data.statusTone, tone); assert.equal(assistant.data.showAnswerText, true)
+  }
+})
+
+test('a resolved model location uses the existing confirmation path without forcing a second form', async () => {
+  const calls = [], plan = { action: 'QUERY', intent: 'ACTIVITIES', entity: '陌生业务名称', timeOption: 'ANY', status: 'ANY', category: null, location: null }
+  const assistant = page('assistant', async (url, method, body) => { calls.push(url); return url === '/assistant' ? { status: 'CONFIRM_SCOPE', confirmationToken: 'ready', intent: 'ACTIVITIES', mode: 'BUSINESS_DIRECTORY', plan, items: [] } : { status: 'QUERY', intent: 'ACTIVITIES', plan, items: [{ id: 71, title: '陌生业务名称', location: '新馆' }] } }, {}, async () => true)
+  assistant.setData({ question: '陌生业务名称在哪里' }); await assistant.ask(); await assistant.confirmScope()
+  assert.deepEqual(calls, ['/assistant', '/assistant/confirm']); assert.equal(assistant.data.items[0].location, '新馆')
+})
+
+test('model outage leaves the same business form usable and does not become an outside-domain rejection', async () => {
+  const calls = []
+  const assistant = page('assistant', async (url, method, body) => { calls.push(url); return url === '/assistant' ? { status: 'SYSTEM_ERROR', reason: 'MODEL_UNAVAILABLE', mode: 'LOCAL', items: [], answer: '模型辅助暂不可用，目录仍可使用' } : { status: 'CONFIRM_SCOPE', confirmationToken: 'offline', items: [] } }, { showToast() {} })
+  assistant.setData({ question: '新社团活动在哪里' }); await assistant.ask(); assistant.openDirectory({ currentTarget: { dataset: { index: 0 } } }); await assistant.searchFacets()
+  assert.deepEqual(calls, ['/assistant', '/assistant/query']); assert.equal(assistant.data.confirmationToken, 'offline')
+})
+
+test('five automatic clarification dialogs pause without a sixth question or an accidental query', async () => {
+  const calls = [], prompts = []
+  const assistant = page('assistant', async (url, method, body) => {
+    calls.push({ url, body }); const answered = calls.length - 1
+    return answered < 5 ? { status: 'CLARIFY', clarificationToken: 'c' + answered, clarificationRound: answered + 1, maxClarifications: 5, question: '必要条件' + (answered + 1), items: [] }
+      : { status: 'CLARIFICATION_PAUSED', reason: 'CLARIFICATION_LIMIT', answer: '仍待明确：对象', clarificationsAnswered: 5, maxClarifications: 5, items: [] }
+  }, {}, async (text, editable) => { prompts.push({ text, editable }); return '补充' + prompts.length })
+  assistant.setData({ question: '那个对象' }); await assistant.ask()
+  assert.equal(prompts.length, 5); assert.equal(calls.length, 6); assert.equal(assistant.data.status, 'CLARIFICATION_PAUSED')
+  assert.ok(prompts.every(p => p.editable)); assert.match(prompts[4].text, /第 5 次澄清/)
+  assert.equal(assistant.data.clarificationToken, ''); assert.equal(assistant.data.confirmationToken, '')
+  assert.deepEqual(calls.slice(1).map(c => c.url), Array(5).fill('/assistant/clarify'))
+  await assistant.promptClarification(); assert.equal(prompts.length, 5)
+})
+
+test('a resolved fifth clarification still gets its separate execution confirmation', async () => {
+  const calls = []; let questions = 0, consents = 0
+  const assistant = page('assistant', async (url, method, body) => {
+    calls.push(url)
+    if (url === '/assistant/confirm') return { status: 'QUERY', intent: 'ACTIVITIES', items: [{ id: 88, title: '目标', location: '北门' }] }
+    return calls.length <= 5 ? { status: 'CLARIFY', clarificationToken: 'c' + calls.length, clarificationRound: calls.length, maxClarifications: 5, question: '缺口' + calls.length, items: [] }
+      : { status: 'CONFIRM_SCOPE', confirmationToken: 'fifth-ready', intent: 'ACTIVITIES', answer: '完整目标', items: [] }
+  }, {}, async (text, editable) => { if (editable) { questions++; return '补充' + questions } consents++; return true })
+  assistant.setData({ question: '找目标' }); await assistant.ask()
+  assert.equal(questions, 5); assert.equal(consents, 0); assert.equal(assistant.data.items.length, 0)
+  await assistant.confirmScope(); assert.equal(consents, 1); assert.equal(questions, 5); assert.equal(assistant.data.items[0].location, '北门')
+  assert.equal(calls.at(-1), '/assistant/confirm')
 })

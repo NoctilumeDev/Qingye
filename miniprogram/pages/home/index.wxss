@@ -50,7 +50,7 @@
   font-size:24rpx;
   height:42rpx;
 }
-page button.search-cancel {
+.search-cancel {
   width: auto;
   padding: 0 8rpx;
   margin: 0;
@@ -60,6 +60,8 @@ page button.search-cancel {
   font-size: 26rpx;
   background: transparent;
 }
+
+.search-cancel-pressed { opacity:.6; }
 
 .hero {
   height:515rpx;

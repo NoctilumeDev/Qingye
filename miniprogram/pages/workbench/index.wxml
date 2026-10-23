@@ -6,9 +6,9 @@
     <view class="title gap">让好事，<view>顺利发生。</view>
     </view>
     <view class="actions">
-      <button class="primary small" bindtap="createActivity">＋ 发起活动</button>
-      <button class="secondary small" bindtap="equipment">共享器材室 ↗</button>
-      <button wx:if="{{user.admin}}" class="secondary small" bindtap="createClub">＋ 创建社团</button>
+      <qy-action variant="primary" size="compact" bindactivate="createActivity">＋ 发起活动</qy-action>
+      <qy-action variant="secondary" size="compact" bindactivate="equipment">共享器材室 ↗</qy-action>
+      <qy-action wx:if="{{user.admin}}" variant="secondary" size="compact" bindactivate="createClub">＋ 创建社团</qy-action>
     </view>
     <view class="tabs">
       <view wx:for="{{tabs}}" wx:key="key" class="tab {{tab === item.key ? 'selected' : ''}}" data-key="{{item.key}}" bindtap="tab">{{item.name}}</view>
@@ -24,13 +24,13 @@
         <view wx:if="{{item.reviewNote}}" class="footnote">审核意见：{{item.reviewNote}}</view>
         <view class="actions">
           <block wx:if="{{user.admin && item.status === 'PENDING'}}">
-            <button class="primary small" disabled="{{busy}}" data-kind="activities" data-id="{{item.id}}" data-action="approve" bindtap="operation">批准发布</button>
-            <button class="danger small" disabled="{{busy}}" data-kind="activities" data-id="{{item.id}}" data-action="reject" bindtap="operation">退回</button>
+            <qy-action variant="primary" size="compact" disabled="{{busy}}" data-kind="activities" data-id="{{item.id}}" data-action="approve" bindactivate="operation">批准发布</qy-action>
+            <qy-action variant="danger" size="compact" disabled="{{busy}}" data-kind="activities" data-id="{{item.id}}" data-action="reject" bindactivate="operation">退回</qy-action>
           </block>
-          <button wx:if="{{item.status !== 'CANCELLED'}}" class="secondary small" disabled="{{busy}}" data-kind="activities" data-id="{{item.id}}" data-action="cancel" bindtap="operation">取消活动</button>
+          <qy-action wx:if="{{item.status !== 'CANCELLED'}}" variant="secondary" size="compact" disabled="{{busy}}" data-kind="activities" data-id="{{item.id}}" data-action="cancel" bindactivate="operation">取消活动</qy-action>
         </view>
       </view>
-      <button wx:if="{{more}}" class="secondary" bindtap="more">查看更多活动</button>
+      <qy-action wx:if="{{more}}" variant="secondary" bindactivate="more">查看更多活动</qy-action>
       <view wx:if="{{!activities.length && !loading}}" class="empty">还没有可管理的活动，先发起一场吧。</view>
     </block>
     <block wx:if="{{tab === 'loans'}}">
@@ -47,12 +47,12 @@
         </view>
         <view class="actions">
           <block wx:if="{{user.admin && item.status === 'PENDING'}}">
-            <button class="primary small" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="approve" bindtap="operation">批准预约</button>
-            <button class="danger small" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="reject" bindtap="operation">拒绝</button>
+            <qy-action variant="primary" size="compact" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="approve" bindactivate="operation">批准预约</qy-action>
+            <qy-action variant="danger" size="compact" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="reject" bindactivate="operation">拒绝</qy-action>
           </block>
-          <button wx:if="{{user.admin && item.status === 'APPROVED'}}" class="primary small" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="checkout" bindtap="operation">确认领取</button>
-          <button wx:if="{{user.admin && item.status === 'CHECKED_OUT'}}" class="primary small" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="return" bindtap="operation">确认整单归还</button>
-          <button wx:if="{{item.status === 'PENDING' || item.status === 'APPROVED'}}" class="secondary small" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="cancel" bindtap="operation">取消申请</button>
+          <qy-action wx:if="{{user.admin && item.status === 'APPROVED'}}" variant="primary" size="compact" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="checkout" bindactivate="operation">确认领取</qy-action>
+          <qy-action wx:if="{{user.admin && item.status === 'CHECKED_OUT'}}" variant="primary" size="compact" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="return" bindactivate="operation">确认整单归还</qy-action>
+          <qy-action wx:if="{{item.status === 'PENDING' || item.status === 'APPROVED'}}" variant="secondary" size="compact" disabled="{{busy}}" data-kind="loans" data-id="{{item.id}}" data-action="cancel" bindactivate="operation">取消申请</qy-action>
         </view>
       </view>
       <view wx:if="{{!loans.length && !loading}}" class="empty">还没有器材申请，去器材室看看吧。</view>
@@ -63,7 +63,7 @@
           <view class="picker">{{clubNames[clubIndex] || '暂无社团'}} ▾</view>
         </picker>
       </view>
-      <button wx:if="{{clubs.length}}" class="secondary small" bindtap="editClub">编辑社团资料</button>
+      <qy-action wx:if="{{clubs.length}}" variant="secondary" size="compact" bindactivate="editClub">编辑社团资料</qy-action>
       <view class="gap">
         <view wx:for="{{members}}" wx:key="id" class="card">
           <view class="row">
@@ -72,11 +72,11 @@
           </view>
           <view class="actions">
             <block wx:if="{{item.status === 'PENDING'}}">
-              <button class="primary small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="approve" bindtap="member">通过申请</button>
-              <button class="danger small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="reject" bindtap="member">拒绝</button>
+              <qy-action variant="primary" size="compact" disabled="{{busy}}" data-id="{{item.userId}}" data-action="approve" bindactivate="member">通过申请</qy-action>
+              <qy-action variant="danger" size="compact" disabled="{{busy}}" data-id="{{item.userId}}" data-action="reject" bindactivate="member">拒绝</qy-action>
             </block>
-            <button wx:if="{{user.admin && item.status === 'ACTIVE' && item.role !== 'MANAGER'}}" class="secondary small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="promote" bindtap="member">设为负责人</button>
-            <button wx:if="{{user.admin && item.status === 'ACTIVE' && item.role === 'MANAGER'}}" class="secondary small" disabled="{{busy}}" data-id="{{item.userId}}" data-action="demote" bindtap="member">交接为普通成员</button>
+            <qy-action wx:if="{{user.admin && item.status === 'ACTIVE' && item.role !== 'MANAGER'}}" variant="secondary" size="compact" disabled="{{busy}}" data-id="{{item.userId}}" data-action="promote" bindactivate="member">设为负责人</qy-action>
+            <qy-action wx:if="{{user.admin && item.status === 'ACTIVE' && item.role === 'MANAGER'}}" variant="secondary" size="compact" disabled="{{busy}}" data-id="{{item.userId}}" data-action="demote" bindactivate="member">交接为普通成员</qy-action>
           </view>
         </view>
       </view>

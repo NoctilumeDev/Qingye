@@ -6,7 +6,6 @@
 .failure-code { display:block; color:#187553; font-size:72rpx; font-weight:750; margin-bottom:28rpx; }
 .failure-description { margin:24rpx 0 36rpx; color:#65767d; font-size:27rpx; line-height:1.8; }
 .failure-actions { display:flex; flex-direction:column; gap:16rpx; }
-.failure-actions button { width:100%; }
 
 .brand {
   display:flex;
@@ -51,6 +50,12 @@
 
 .subtitle {
   font-size:25rpx;
+}
+
+.login-actions {
+  display:flex;
+  flex-direction:column;
+  gap:16rpx;
 }
 
 .demo {

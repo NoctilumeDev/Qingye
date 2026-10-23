@@ -71,7 +71,10 @@ public class AssistantBusinessProbe {
                     var expectedService=new AssistantService(activities,loans,capacity,planner,CLOCK);
                     var oracle=execute(expectedService,expectedService.query(ACTOR,expected,"live-test"));
                     qualified &= actualIds.equals(ids(expectedService,oracle));
-                } else qualified=c.path("expected").path("action").asText().equals(preview.get("status"));
+                } else {
+                    String expectedStatus=c.path("expected").path("status").asText(c.path("expected").path("action").asText());
+                    qualified=expectedStatus.equals(preview.get("status"));
+                }
                 if(!snapshot(sql).equals(before)) throw new IllegalStateException("READ_ONLY_INVARIANT_BROKEN");
                 var row=new LinkedHashMap<String,Object>();row.put("caseId",c.path("id").asText());row.put("repeat",repeat);row.put("provider",provider);row.put("question",c.path("question").asText());row.put("expected",c.path("expected"));row.put("preview",preview);row.put("result",actual);row.put("actualIds",actualIds);row.put("businessMatch",qualified);row.put("readOnly",true);
                 out.write(JSON.writeValueAsString(row));out.newLine();out.flush();

@@ -1,42 +1,311 @@
 {
-  "version": "qingye-query-v4.3",
-  "decisionOrder": ["BOUNDARY", "OBJECT", "SUPPORTED_CONDITIONS", "COMPLETE_CONDITIONS", "CONFIRM_SCOPE", "FIXED_READ"],
+  "version": "qingye-query-v5.5",
+  "decisionOrder": [
+    "BUSINESS_ENTRY",
+    "READ_COMPLETE_REQUEST",
+    "CHECK_COVERAGE",
+    "NECESSARY_CLARIFICATION",
+    "READ_ONLY_PROTOCOL",
+    "FIXED_READ"
+  ],
   "decisionRules": {
-    "BOUNDARY":"先核对助手只读能力和当前会话主体；不允许请求不能靠补充条件取得权限",
-    "OBJECT":"确定公开活动、器材库存、本人报名、本人借用；无法确定就追问，不默认选第一个对象",
-    "SUPPORTED_CONDITIONS":"逐项核对用户明确条件；不支持的条件明确停止，不能删去后继续",
-    "COMPLETE_CONDITIONS":"对象、相应时间、指定日期、记录状态、器材名称或明确全部必须齐全；缺项只保留不可执行草稿，弹窗补充，不默认填ANY。组合中任一子项需要澄清，整组只可澄清；任一子项明确不支持，整组停止；全部合格才预览确认",
-    "CONFIRM_SCOPE":"完整候选才可展示实际范围；用户确认后执行同一计划。确认不证明语义正确",
-    "FIXED_READ":"会话绑定、固定只读查询与授权详情投影；不重新规划"
+    "BUSINESS_ENTRY": "目录、表单和固定完整入口独立于模型；陌生专名不等于域外；格子是能力，不是数据实例",
+    "READ_COMPLETE_REQUEST": "结合完整请求理解对象、否定、修饰和有序改口；不提前锁死目标。明确条件优先于推测，未变条件保留；冲突先澄清",
+    "CHECK_COVERAGE": "允许完整授权对象和同目标相关候选；不能把摄影变ART、扩大身份权限、丢硬条件或加未要求的CURRENT。非必要未知不参与决策",
+    "NECESSARY_CLARIFICATION": "仅缺必要条件时询问；每请求最多五次自动澄清，保留原请求和问答；第五次已确定照常查询，否则暂停，不等于拒绝或不支持；无进展可提前暂停",
+    "READ_ONLY_PROTOCOL": "服务器编译有限只读请求并展示范围；身份只从会话绑定；范围确认和技术重试不计入澄清次数，确认不证明原意正确；允许有限选项的唯一合同标签规范化为ID，不重解释原句；出处检查继续生效",
+    "FIXED_READ": "格子对应固定参数化查询、同一计划和授权事实；本地不重解释中文或更换目标；新增业务数据不改变能力定义"
   },
   "maxQueries": 4,
-  "maxClarifications": 2,
-  "requiredFields": {"ACTIVITIES":["timeOption","status"],"EQUIPMENT":["entity","timeOption","status"],"MY_REGISTRATIONS":["timeOption","status"],"MY_LOANS":["timeOption","status"]},
-  "intents": ["ACTIVITIES", "EQUIPMENT", "MY_REGISTRATIONS", "MY_LOANS"],
-  "intentLabels": ["公开活动", "器材库存", "我的报名", "我的借用"],
-  "times": ["ANY", "TODAY", "TOMORROW", "DAY_AFTER_TOMORROW", "PAST", "CURRENT", "FUTURE", "THIS_WEEK", "NEXT_WEEK", "WEEKEND", "DATE"],
-  "timeLabels": ["全部时间", "今天", "明天", "后天", "过去（已结束）", "现在（进行中）", "未来（未开始）", "本周剩余", "下周", "周末剩余", "指定日期"],
-  "categories": ["SPORT", "ART", "TECH", "VOLUNTEER", "OTHER"],
-  "categoryLabels": ["运动", "艺术", "科技", "志愿", "其他分类"],
+  "maxClarifications": 5,
+  "requiredFields": {
+    "ACTIVITIES": [
+      "timeOption",
+      "status"
+    ],
+    "EQUIPMENT": [
+      "entity",
+      "timeOption",
+      "status"
+    ],
+    "MY_REGISTRATIONS": [
+      "timeOption",
+      "status"
+    ],
+    "MY_LOANS": [
+      "timeOption",
+      "status"
+    ]
+  },
+  "intents": [
+    "ACTIVITIES",
+    "EQUIPMENT",
+    "MY_REGISTRATIONS",
+    "MY_LOANS"
+  ],
+  "intentLabels": [
+    "公开活动",
+    "器材库存",
+    "我的报名",
+    "我的借用"
+  ],
+  "times": [
+    "ANY",
+    "TODAY",
+    "TOMORROW",
+    "DAY_AFTER_TOMORROW",
+    "PAST",
+    "CURRENT",
+    "FUTURE",
+    "THIS_WEEK",
+    "NEXT_WEEK",
+    "WEEKEND",
+    "DATE"
+  ],
+  "timeLabels": [
+    "全部时间",
+    "今天",
+    "明天",
+    "后天",
+    "过去（已结束）",
+    "现在（进行中）",
+    "未来（未开始）",
+    "本周剩余",
+    "下周",
+    "周末剩余",
+    "指定日期"
+  ],
+  "categories": [
+    "SPORT",
+    "ART",
+    "TECH",
+    "VOLUNTEER",
+    "OTHER"
+  ],
+  "categoryLabels": [
+    "运动",
+    "艺术",
+    "科技",
+    "志愿",
+    "其他分类"
+  ],
   "states": {
-    "ACTIVITIES": ["ANY"], "EQUIPMENT": ["ANY"],
-    "MY_REGISTRATIONS": ["ANY", "NON_CANCELLED", "REGISTERED", "WAITLISTED", "CANCELLED"],
-    "MY_LOANS": ["ANY", "NON_CANCELLED", "PENDING", "APPROVED", "REJECTED", "CHECKED_OUT", "RETURNED", "CANCELLED"]
+    "ACTIVITIES": [
+      "ANY"
+    ],
+    "EQUIPMENT": [
+      "ANY"
+    ],
+    "MY_REGISTRATIONS": [
+      "ANY",
+      "NON_CANCELLED",
+      "REGISTERED",
+      "WAITLISTED",
+      "CANCELLED"
+    ],
+    "MY_LOANS": [
+      "ANY",
+      "NON_CANCELLED",
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "CHECKED_OUT",
+      "RETURNED",
+      "CANCELLED"
+    ]
   },
-  "stateLabels": {"ANY":"全部状态", "NON_CANCELLED":"未取消", "REGISTERED":"已报名", "WAITLISTED":"候补", "CANCELLED":"已取消", "PENDING":"待审核", "APPROVED":"已批准", "REJECTED":"未通过", "CHECKED_OUT":"已领取未归还", "RETURNED":"已归还"},
-  "equipmentNameGroups": {"相机":["相机","单反相机"],"三脚架":["三脚架","轻便三脚架"],"投影仪":["投影仪","便携投影仪"]},
-  "timeOptionsByIntent": {"EQUIPMENT":["CURRENT","TODAY","TOMORROW","DAY_AFTER_TOMORROW","THIS_WEEK","NEXT_WEEK","WEEKEND","DATE"]},
-  "timeLabelsByIntent": {"EQUIPMENT":{"CURRENT":"当前库存"}},
+  "stateLabels": {
+    "ANY": "全部状态",
+    "NON_CANCELLED": "未取消",
+    "REGISTERED": "已报名",
+    "WAITLISTED": "候补",
+    "CANCELLED": "已取消",
+    "PENDING": "待审核",
+    "APPROVED": "已批准",
+    "REJECTED": "未通过",
+    "CHECKED_OUT": "已领取未归还",
+    "RETURNED": "已归还"
+  },
+  "timeOptionsByIntent": {
+    "EQUIPMENT": [
+      "CURRENT",
+      "TODAY",
+      "TOMORROW",
+      "DAY_AFTER_TOMORROW",
+      "THIS_WEEK",
+      "NEXT_WEEK",
+      "WEEKEND",
+      "DATE"
+    ]
+  },
+  "timeLabelsByIntent": {
+    "EQUIPMENT": {
+      "CURRENT": "当前库存"
+    }
+  },
   "querySemantics": {
-    "ACTIVITIES":"启用社团的已发布活动；标题或社团名称包含词，地点精确匹配；时间按活动起止时段",
-    "MY_REGISTRATIONS":"当前会话用户现存的全部报名记录，含取消和停用社团；时间按活动时段，不是报名时间；报名不证明出席",
-    "MY_LOANS":"当前会话用户现存的借用记录；时间按计划借用时段；不是实际申请、领取或归还日期",
-    "EQUIPMENT":"启用和停用目录原名/已声明名称分组；当前库存或未结束具体时段的预约可用量；没有存放地点台账",
-    "BATCH":"最多四项相互独立的查询；不是关联、交集、排除、统计、极值、冲突比较或依赖执行",
-    "ALL":"仅放开用户明确指定的维度，其余条件保留；全部指当前保留且被授权的记录，不代表完整历史",
-    "PAGING":"每页10条、相同计划继续；当前状态分页而非跨页快照，期间业务变更可能影响完整性，需要时重新核对",
-    "DISPLAY":"可展示同一正确对象的完整授权详情；不能以宽候选冒充满足不支持的硬条件"
+    "ACTIVITIES": "启用社团的已发布活动；标题或社团名称包含词，地点精确匹配；时间按活动起止时段",
+    "MY_REGISTRATIONS": "当前会话用户现存的全部报名记录，含取消和停用社团；时间按活动时段，不是报名时间；报名不证明出席",
+    "MY_LOANS": "当前会话用户现存的借用记录；时间按计划借用时段；不是实际申请、领取或归还日期",
+    "EQUIPMENT": "启用和停用目录原名/业务数据别名；当前库存或未结束具体时段的预约可用量；没有存放地点台账",
+    "BATCH": "最多四项相互独立的查询；不是关联、交集、排除、统计、极值、冲突比较或依赖执行",
+    "ALL": "仅放开用户明确指定的维度，其余条件保留；全部指当前保留且被授权的记录，不代表完整历史",
+    "PAGING": "每页10条、相同计划继续；当前状态分页而非跨页快照，期间业务变更可能影响完整性，需要时重新核对",
+    "DISPLAY": "可展示同一正确对象的完整授权详情；不能以宽候选冒充满足不支持的硬条件",
+    "NATURAL_LANGUAGE_LIMIT": "陌生名称本身不能证明业务类型；目录不能确定就问业务对象，不猜一个目录返回空结果。未支持的明确排除条件必须停止，不能LOCATE宽列表。"
   },
-  "clarifications": ["MISSING_INFO", "MISSING_TIME", "UNKNOWN_ENTITY", "DATE_MEANING", "MULTIPLE_REQUESTS", "UNSUPPORTED_FILTER", "NOT_UNDERSTOOD"],
-  "rejections": ["OUTSIDE_DOMAIN", "PRIVATE_DATA", "WRITE_OPERATION", "IDENTITY_CLAIM", "UNSUPPORTED_CAPABILITY", "INVALID_PROTOCOL"]
+  "clarifications": [
+    "MISSING_INFO",
+    "MISSING_TIME",
+    "UNKNOWN_ENTITY",
+    "DATE_MEANING",
+    "MULTIPLE_REQUESTS",
+    "NOT_UNDERSTOOD"
+  ],
+  "entryCommands": [
+    {
+      "label": "全部活动",
+      "intent": "ACTIVITIES",
+      "timeOption": "ANY"
+    },
+    {
+      "label": "今天活动",
+      "intent": "ACTIVITIES",
+      "timeOption": "TODAY"
+    },
+    {
+      "label": "明天活动",
+      "intent": "ACTIVITIES",
+      "timeOption": "TOMORROW"
+    },
+    {
+      "label": "后天活动",
+      "intent": "ACTIVITIES",
+      "timeOption": "DAY_AFTER_TOMORROW"
+    },
+    {
+      "label": "全部器材",
+      "intent": "EQUIPMENT",
+      "timeOption": "CURRENT"
+    },
+    {
+      "label": "我的报名",
+      "intent": "MY_REGISTRATIONS",
+      "timeOption": "ANY"
+    },
+    {
+      "label": "我的借用",
+      "intent": "MY_LOANS",
+      "timeOption": "ANY"
+    }
+  ],
+  "explicitSelections": {
+    "TIME": {
+      "ANY": [
+        "全部时间",
+        "所有日期",
+        "时间不限"
+      ],
+      "TODAY": [
+        "今天"
+      ],
+      "TOMORROW": [
+        "明天"
+      ],
+      "DAY_AFTER_TOMORROW": [
+        "后天"
+      ],
+      "PAST": [
+        "过去",
+        "已结束"
+      ],
+      "CURRENT": [
+        "进行中",
+        "正在举办",
+        "正在进行"
+      ],
+      "FUTURE": [
+        "未来",
+        "未开始"
+      ],
+      "THIS_WEEK": [
+        "本周",
+        "这周"
+      ],
+      "NEXT_WEEK": [
+        "下周"
+      ],
+      "WEEKEND": [
+        "周末",
+        "本周末"
+      ]
+    },
+    "STATE": {
+      "ANY": [
+        "全部状态"
+      ],
+      "NON_CANCELLED": [
+        "未取消"
+      ],
+      "REGISTERED": [
+        "已报名"
+      ],
+      "WAITLISTED": [
+        "候补"
+      ],
+      "CANCELLED": [
+        "已取消"
+      ],
+      "PENDING": [
+        "待审核"
+      ],
+      "APPROVED": [
+        "已批准"
+      ],
+      "REJECTED": [
+        "未通过",
+        "被拒绝"
+      ],
+      "CHECKED_OUT": [
+        "已领取未归还",
+        "尚未归还",
+        "未归还"
+      ],
+      "RETURNED": [
+        "已归还"
+      ]
+    },
+    "CATEGORY": {
+      "SPORT": [
+        "运动"
+      ],
+      "ART": [
+        "艺术"
+      ],
+      "TECH": [
+        "科技"
+      ],
+      "VOLUNTEER": [
+        "志愿"
+      ],
+      "OTHER": [
+        "其他分类"
+      ]
+    }
+  },
+  "clarificationPolicy": {
+    "limitOutcome": "CLARIFICATION_PAUSED",
+    "confirmationsCounted": false,
+    "retryCounted": false,
+    "stopOnRepeatedQuestion": true
+  },
+  "clarificationQuestions": {
+    "BUSINESS_OBJECT": "你想查看公开活动、器材库存、自己的报名，还是自己的借用？",
+    "OBJECT_NAME": "你想找哪个对象？可以补充名称或社团线索；不确定具体名称也可以说明要浏览的相关范围。",
+    "TIME_SCOPE": "这次确实需要限定哪个时间范围？请说明时间；不限制也可以明确选择全部。",
+    "DATE_MEANING": "你说的日期指活动举办、计划借用，还是报名或实际归还？当前支持前两种时间。",
+    "HARD_CONDITION": "哪些条件必须保留？请明确时间、状态或其他必要限制；不能支持的条件不会被悄悄忽略。",
+    "REQUEST_CHOICE": "你想先查哪一项？原有表单也可组合最多四项独立查询，不能替代跨对象关联。",
+    "CONFLICT": "前后条件有冲突，请说明最终采用哪个条件；没有修改的条件会保留。"
+  }
 }

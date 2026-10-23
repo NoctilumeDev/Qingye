@@ -32,9 +32,9 @@ public class DemoData implements ApplicationRunner {
         activity(coding,photo,admin,"把你的奇思妙想做出来","一起做一个小网页、一张海报，或者分享最近的灵感。欢迎带着半成品来。","TECH","创客教室 203",now.plusDays(4).withHour(19).withMinute(0),16);
         activity(basketball,sport,admin,"草坪上的校园志愿日","给校园公共空间做一次小整理，用一个下午换一个更舒服的角落。","VOLUNTEER","图书馆前草坪",now.plusDays(5).withHour(14).withMinute(0),30);
         long demoActivity=activity(photography,photo,admin,"今天的追光准备会","用于演示器材申请、审批、领取与归还的活动。","ART","社团器材室",now.plusHours(2),10);
-        long camera=equipment("单反相机","摄影","用于活动记录和校园外拍，配套电池与存储卡。",5);
-        equipment("轻便三脚架","摄影","让相机稳稳站住，也让灵感自由发生。",8);
-        equipment("便携投影仪","展示","社团分享会与活动展示的好搭档。",3);
+        long camera=equipment("单反相机","摄影","用于活动记录和校园外拍，配套电池与存储卡。",5,"相机");
+        equipment("轻便三脚架","摄影","让相机稳稳站住，也让灵感自由发生。",8,"三脚架");
+        equipment("便携投影仪","展示","社团分享会与活动展示的好搭档。",3,"投影仪");
         equipment("开发板套件","科技","从点亮一颗灯开始，把想法变成作品。",20);
         long music=club("风铃音乐社","在草坪和晚风里，分享一首喜欢的歌。","blue",admin,photo);
         long craft=club("漫游手作社","用纸张、植物和双手，记录校园的四季。","orange",admin,photo);
@@ -70,7 +70,12 @@ public class DemoData implements ApplicationRunner {
         return id;
     }
     private long equipment(String name,String category,String description,int quantity) {
-        return sql.insert("INSERT INTO equipment(name,category,description,total_quantity) VALUES (?,?,?,?)",name,category,description,quantity);
+        return equipment(name,category,description,quantity,new String[0]);
+    }
+    private long equipment(String name,String category,String description,int quantity,String... aliases) {
+        long id=sql.insert("INSERT INTO equipment(name,category,description,total_quantity) VALUES (?,?,?,?)",name,category,description,quantity);
+        for(String alias:aliases)sql.update("INSERT INTO equipment_alias(equipment_id,alias) VALUES (?,?)",id,alias);
+        return id;
     }
     private long activity(long club,long creator,long admin,String title,String description,String category,String location,LocalDateTime start,int capacity) {
         return sql.insert("INSERT INTO activity(club_id,created_by,title,description,category,location,start_time,end_time,signup_deadline,capacity,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",club,creator,title,description,category,location,start,start.plusHours(2),start.minusHours(1),capacity,"PUBLISHED",admin,LocalDateTime.now(clock));

@@ -14,13 +14,10 @@ public record QueryPlan(String action, String intent, String entity, String cate
     public static QueryPlan query(String intent,String entity,String category,String timeOption) {
         return new QueryPlan("QUERY",intent,entity,category,timeOption,null,"ANY",null,null);
     }
-    public static QueryPlan clarify(String reason) { return new QueryPlan("CLARIFY",null,null,null,null,null,null,null,reason); }
-    public static QueryPlan reject(String reason) { return new QueryPlan("REJECT",null,null,null,null,null,null,null,reason); }
     public static QueryPlan batch(List<QueryPlan> queries) { return new QueryPlan("QUERY","BATCH",null,null,null,null,null,null,null,queries); }
     public boolean batch() { return "QUERY".equals(action)&&"BATCH".equals(intent); }
 
     public boolean valid() {
-        if("REJECT".equals(action)) return emptyConditions()&&queries==null&&AssistantContract.REJECTIONS.contains(Objects.toString(reason,""));
         if(batch()) return entity==null&&category==null&&timeOption==null&&date==null&&status==null&&location==null&&reason==null
             &&queries!=null&&queries.size()>=2&&queries.size()<=AssistantContract.MAX_QUERIES
             &&queries.stream().allMatch(q->q!=null&&q.queries()==null&&"QUERY".equals(q.action())&&q.valid());
@@ -28,7 +25,7 @@ public record QueryPlan(String action, String intent, String entity, String cate
         if(!draft&&!"QUERY".equals(action)) return false;
         if(draft ? !AssistantContract.CLARIFICATIONS.contains(Objects.toString(reason,"")) : reason!=null) return false;
         if(queries!=null) return draft&&(intent==null||intent.equals("BATCH"))&&entity==null&&category==null&&timeOption==null&&date==null&&status==null&&location==null&&!queries.isEmpty()&&queries.size()<=AssistantContract.MAX_QUERIES
-            &&queries.stream().allMatch(q->q!=null&&q.queries()==null&&!"REJECT".equals(q.action())&&q.valid());
+            &&queries.stream().allMatch(q->q!=null&&q.queries()==null&&q.valid());
         if(intent!=null&&!AssistantContract.INTENTS.contains(intent)||!draft&&intent==null) return false;
         if (entity!=null && (entity.isBlank() || entity.length()>80 || !entity.equals(entity.strip()) || entity.codePoints().anyMatch(Character::isISOControl))) return false;
         if(timeOption!=null&&!AssistantContract.TIMES.contains(timeOption)||!draft&&timeOption==null)return false;
@@ -47,5 +44,4 @@ public record QueryPlan(String action, String intent, String entity, String cate
         if("EQUIPMENT".equals(intent))return (draft||entity!=null)&&(entity==null||entity.length()<=60)&&category==null&&location==null;
         return !"ALL".equals(entity);
     }
-    private boolean emptyConditions(){return intent==null&&entity==null&&category==null&&timeOption==null&&date==null&&status==null&&location==null;}
 }

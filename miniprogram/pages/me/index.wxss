@@ -251,9 +251,8 @@
   gap:18rpx;
 }
 
-.edit-actions > button {
+.edit-actions > qy-action {
   flex:1;
-  min-height:88rpx;
 }
 
 .edit-error {

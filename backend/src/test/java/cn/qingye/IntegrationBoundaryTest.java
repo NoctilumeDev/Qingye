@@ -5,7 +5,7 @@ import cn.qingye.db.ActivityStore;
 import cn.qingye.db.LoanStore;
 import cn.qingye.business.LoanService;
 import cn.qingye.model.Actor;
-import cn.qingye.model.QueryPlan;
+import cn.qingye.model.AssistantHint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class IntegrationBoundaryTest {
     @Test void explicitModelClarificationIsNotReplacedByACanonicalFallback() throws Exception {
         var json=new ObjectMapper().findAndRegisterModules();
         byte[] body=json.writeValueAsBytes(Map.of("choices",List.of(Map.of("finish_reason","stop","message",
-                Map.of("content","{\"action\":\"CLARIFY\",\"intent\":null,\"entity\":null,\"category\":null,\"timeOption\":null,\"date\":null,\"status\":null,\"location\":null,\"reason\":\"MISSING_INFO\"}")))));
+                Map.of("content","{\"action\":\"CLARIFY\",\"intent\":null,\"search\":null,\"reason\":\"MISSING_INFO\",\"selections\":[],\"question\":\"BUSINESS_OBJECT\"}")))));
         var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
         server.createContext("/plan",exchange->{
             exchange.getRequestBody().readAllBytes();
@@ -42,7 +42,7 @@ class IntegrationBoundaryTest {
             var responses=questions.stream().map(question->service.ask(student,question,"s")).toList();
             System.out.println("MODEL_STUB_RESPONSE_BYTES="+new String(body,StandardCharsets.UTF_8));
             System.out.println("MODEL_STUB_QUERY_RESULTS="+json.writeValueAsString(responses));
-            assertThat(responses).allSatisfy(response->assertThat(response).containsEntry("status","CLARIFY").containsEntry("mode","MODEL_PLAN"));
+            assertThat(responses).allSatisfy(response->assertThat(response).containsEntry("status","CLARIFY").containsEntry("mode","MODEL_LOCATOR"));
             verifyNoInteractions(loans,activities);
         } finally { server.stop(0); }
     }
@@ -62,75 +62,23 @@ class IntegrationBoundaryTest {
         assertThat(cache.mode()).isEqualTo("DB_FALLBACK");
         verify(values,times(1)).get("qingye:v1:equipment");
     }
-    @Test void modelHttpAdapterAcceptsOnlyQueryParametersAndDegradesOnProviderFailure() throws Exception {
-        var json=new ObjectMapper().findAndRegisterModules();
-        var payload=new AtomicReference<>("{\"action\":\"QUERY\",\"intent\":\"EQUIPMENT\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"CURRENT\",\"date\":null,\"status\":\"ANY\",\"location\":null,\"reason\":null}");
-        var request=new AtomicReference<Map<?,?>>();
-        var status=new AtomicReference<>(200);
-        var finish=new AtomicReference<>("stop");
+    @Test void locatorHttpProtocolHasNoFilterOrExecutionAuthority()throws Exception{
+        var json=new ObjectMapper();var payload=new AtomicReference<>(json.writeValueAsString(AssistantHint.locate("ACTIVITIES","陌生名称")));var request=new AtomicReference<Map<?,?>>();var code=new AtomicReference<>(200);
         var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
-        server.createContext("/plan",exchange-> {
-            request.set(json.readValue(exchange.getRequestBody(),Map.class));
-            byte[] body=json.writeValueAsBytes(Map.of("choices",List.of(Map.of("finish_reason",finish.get(),"message",Map.of("content",payload.get())))));
-            exchange.sendResponseHeaders(status.get(),body.length);
-            try(var output=exchange.getResponseBody()) {
-                output.write(body);
-            }
-        });
-        server.start();
-        try {
-            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/plan","test-fixture","deepseek-flash");
-            assertThat(planner.plan("查相机器材")).hasValueSatisfying(plan->assertThat(plan.entity()).isEqualTo("相机"));
-            assertThat(request.get().get("response_format")).isEqualTo(Map.of("type","json_object"));
+        server.createContext("/locate",e->{request.set(json.readValue(e.getRequestBody(),Map.class));byte[] body=json.writeValueAsBytes(Map.of("choices",List.of(Map.of("finish_reason","stop","message",Map.of("content",payload.get())))));
+            e.sendResponseHeaders(code.get(),body.length);try(var out=e.getResponseBody()){out.write(body);}});server.start();
+        try{
+            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/locate","fixture-only","deepseek-flash");
+            assertThat(planner.locate("陌生名称在哪里")).contains(AssistantHint.locate("ACTIVITIES","陌生名称"));assertThat(request.get().get("max_tokens")).isEqualTo(350);
             assertThat(request.get().get("thinking")).isEqualTo(Map.of("type","disabled"));
-            assertThat(request.get().get("max_tokens")).isEqualTo(1500);
-            var single=QueryPlan.query("EQUIPMENT","相机",null,"CURRENT");
-            payload.set(json.writeValueAsString(QueryPlan.batch(List.of(single,QueryPlan.query("ACTIVITIES","摄影",null,"NEXT_WEEK")))));
-            assertThat(planner.plan("查相机和下周摄影活动")).hasValueSatisfying(p->assertThat(p.batch()).isTrue());
-            var partial=new QueryPlan("CLARIFY","ACTIVITIES","摄影社",null,null,null,"ANY",null,"MISSING_TIME");
-            payload.set(json.writeValueAsString(partial));assertThat(planner.plan("摄影社活动")).contains(partial);
-            var composite=new QueryPlan("CLARIFY","BATCH",null,null,null,null,null,null,"MISSING_TIME",List.of(single,partial));
-            payload.set(json.writeValueAsString(composite));assertThat(planner.plan("相机和摄影社活动")).contains(composite);
-            var incompleteQuery=new QueryPlan("QUERY","ACTIVITIES","摄影社",null,null,null,"ANY",null,null);
-            payload.set(json.writeValueAsString(incompleteQuery));
-            assertThat(planner.plan("摄影社活动")).hasValueSatisfying(p->{assertThat(p.action()).isEqualTo("CLARIFY");assertThat(p.reason()).isEqualTo("MISSING_TIME");assertThat(p.entity()).isEqualTo("摄影社");assertThat(p.timeOption()).isNull();});
-            payload.set(json.writeValueAsString(QueryPlan.batch(List.of(single,partial))));
-            assertThat(planner.plan("相机与摄影社活动")).hasValueSatisfying(p->{assertThat(p.action()).isEqualTo("CLARIFY");assertThat(p.queries()).containsExactly(single,partial);});
-            var nested=json.valueToTree(QueryPlan.batch(List.of(single,single)));
-            ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).put("userId",4);
-            payload.set(json.writeValueAsString(nested));assertThat(planner.plan("查全部")).hasValueSatisfying(p->assertThat(p.action()).isEqualTo("REJECT"));
-            ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).remove("userId");
-            ((com.fasterxml.jackson.databind.node.ObjectNode)nested.path("queries").get(1)).remove("status");
-            payload.set(json.writeValueAsString(nested));assertThat(planner.plan("查全部")).hasValueSatisfying(p->assertThat(p.action()).isEqualTo("REJECT"));
-            for(String invalid:List.of(
-                "{\"intent\":\"EQUIPMENT\",\"sql\":\"SELECT * FROM app_user\"}",
-                "{\"intent\":\"MY_LOANS\",\"userId\":2}",
-                "{\"intent\":\"EQUIPMENT\",\"answer\":\"相机999台\"}",
-                "{\"intent\":\"EQUIPMENT\",\"keyword\":123}",
-                "{\"intent\":\"EQUIPMENT\",\"keyword\":[\"相机\"]}",
-                "{\"intent\":\"EQUIPMENT\",\"start\":\"not-a-date\"}",
-                "{\"intent\":\"EQUIPMENT\",\"intent\":\"MY_LOANS\"}",
-                "{\"intent\":\"EQUIPMENT\"} {\"sql\":\"DROP TABLE loan\"}",
-                "[]","null","","this is not JSON")) {
-                payload.set(invalid);
-                assertThat(planner.plan("查相机器材").map(plan->plan.action().equals("QUERY")).orElse(false)).as(invalid).isFalse();
+            for(String field:List.of("timeOption","date","status","category","location","userId","sql","queries")){
+                var extra=json.valueToTree(AssistantHint.locate("ACTIVITIES","陌生名称"));((com.fasterxml.jackson.databind.node.ObjectNode)extra).put(field,"CURRENT");payload.set(json.writeValueAsString(extra));assertThatThrownBy(()->planner.locate("在哪里")).as(field).isInstanceOf(AssistantHintDecoder.ProtocolViolation.class);
             }
-            payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":\"相机\",\"category\":null,\"timeOption\":\"NEXT_YEAR\",\"date\":null,\"status\":\"ANY\",\"location\":null,\"reason\":null}");
-            assertThat(planner.plan("我的相机借用")).hasValueSatisfying(plan->assertThat(plan.action()).isEqualTo("CLARIFY"));
-            payload.set("{\"action\":\"QUERY\",\"intent\":\"MY_LOANS\",\"entity\":null,\"category\":null,\"timeOption\":\"ANY\",\"reason\":null,\"userId\":99}");
-            assertThat(planner.plan("我的借用")).hasValueSatisfying(plan->assertThat(plan.action()).isEqualTo("REJECT"));
-            payload.set("{\"intent\":\"EQUIPMENT\"}");
-            finish.set("length");
-            assertThat(planner.plan("查相机器材")).isEmpty();
-            finish.set("stop");
-            status.set(503);
-            assertThat(planner.plan("查相机器材")).isEmpty();
-            server.stop(0);
-            assertThat(planner.plan("查相机器材")).isEmpty();
-        }
-        finally {
-            server.stop(0);
-        }
+            for(String bad:List.of("[]","null","{}","{\"action\":\"LOCATE\",\"action\":\"REJECT\",\"intent\":\"ACTIVITIES\",\"search\":null,\"reason\":null}","{} {}","not JSON")){
+                payload.set(bad);assertThatThrownBy(()->planner.locate("在哪里")).isInstanceOf(AssistantHintDecoder.ProtocolViolation.class);
+            }
+            payload.set(json.writeValueAsString(AssistantHint.locate("ACTIVITIES","陌生名称")));code.set(503);assertThat(planner.locate("在哪里")).isEmpty();
+        }finally{server.stop(0);}
     }
     @Test void modelTimeoutFallsBackWithinTheClientDeadline() throws Exception {
         var server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
@@ -146,7 +94,7 @@ class IntegrationBoundaryTest {
             var json=new ObjectMapper().findAndRegisterModules();
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/slow","test-fixture","test-model");
             long started=System.nanoTime();
-            assertThat(planner.plan("查相机器材")).isEmpty();
+            assertThat(planner.locate("查相机器材")).isEmpty();
             assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(7),Duration.ofMillis(9500));
         }
         finally { server.stop(0);executor.shutdownNow(); }
@@ -164,7 +112,7 @@ class IntegrationBoundaryTest {
         try {
             var json=new ObjectMapper().findAndRegisterModules();
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/stalled-body","test-fixture","test-model");
-            long started=System.nanoTime();assertThat(planner.plan("查相机")).isEmpty();
+            long started=System.nanoTime();assertThat(planner.locate("查相机")).isEmpty();
             assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(7),Duration.ofMillis(9500));
         } finally { server.stop(0);executor.shutdownNow(); }
     }

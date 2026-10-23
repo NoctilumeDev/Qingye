@@ -18,27 +18,27 @@ class AssistantDecisionTest {
     final LoanService capacity=mock(LoanService.class);final LlmPlanner planner=mock(LlmPlanner.class);
     final AssistantService service=new AssistantService(activities,loans,capacity,planner,clock);
     Map<String,Object> run(QueryPlan p,String text) {
-        when(planner.plan(anyString())).thenReturn(Optional.of(p));var preview=service.ask(student,text,"s");
+        var preview=service.query(student,p,"s");
         assertThat(preview).containsEntry("status","CONFIRM_SCOPE");return service.confirm(student,preview.get("confirmationToken").toString(),"s");
     }
     Map<String,Object> equipment(long id,String name){return Map.of("id",id,"name",name,"totalQuantity",5,"borrowedQuantity",0,"enabled",true);}
     @Test void everyQueryWaitsWithoutReadingFacts() {
         for(var p:List.of(QueryPlan.query("ACTIVITIES",null,null,"TODAY"),QueryPlan.query("EQUIPMENT","ALL",null,"CURRENT"),QueryPlan.query("MY_REGISTRATIONS",null,null,"ANY"),QueryPlan.query("MY_LOANS",null,null,"ANY"))) {
-            when(planner.plan(anyString())).thenReturn(Optional.of(p));
-            assertThat(service.ask(student,"查校园活动和器材","s")).containsEntry("status","CONFIRM_SCOPE").containsEntry("items",List.of());
+
+            assertThat(service.query(student,p,"s")).containsEntry("status","CONFIRM_SCOPE").containsEntry("items",List.of());
         }
         verifyNoInteractions(activities,loans,capacity);
     }
     @Test void sameSubjectSessionPlanOnceAndNoReplanning() {
-        var p=QueryPlan.query("MY_LOANS",null,null,"ANY");when(planner.plan(anyString())).thenReturn(Optional.of(p));
-        var preview=service.ask(student,"我的借用","s");String token=preview.get("confirmationToken").toString();
-        when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("MY_REGISTRATIONS",null,null,"ANY")));
+        var p=QueryPlan.query("MY_LOANS",null,null,"ANY");
+        var preview=service.query(student,p,"s");String token=preview.get("confirmationToken").toString();
+
         assertThat(service.more(student,token,"s")).containsEntry("status","CLARIFY");
         assertThat(service.confirm(admin,token,"s")).containsEntry("status","CLARIFY");
         assertThat(service.confirm(student,token,"another")).containsEntry("status","CLARIFY");
         assertThat(service.confirm(student,token,"s")).containsEntry("status","QUERY");
         assertThat(service.confirm(student,token,"s")).containsEntry("status","CLARIFY");
-        verify(planner,times(1)).plan(anyString());verify(loans).assistantMine(eq(student.id()),eq(p),isNull(),isNull(),any(),eq(0));verify(loans,never()).list(any());
+        verifyNoInteractions(planner);verify(loans).assistantMine(eq(student.id()),eq(p),isNull(),isNull(),any(),eq(0));verify(loans,never()).list(any());
     }
     @Test void duplicatesAreCandidatesAndUnknownEquipmentDoesNotExpandToAll() {
         when(loans.assistantEquipment("相机",0)).thenReturn(List.of(equipment(1,"相机"),equipment(2,"相机")));
@@ -49,41 +49,42 @@ class AssistantDecisionTest {
         run(QueryPlan.query("EQUIPMENT","ALL",null,"CURRENT"),"查全部器材");verify(loans).assistantEquipment("ALL",0);
     }
     @Test void unavailableModelNeverGuessesCanonicalMessagesAndExplicitClarifyIsNeverOverridden() {
-        when(planner.plan(anyString())).thenReturn(Optional.empty());
+        when(planner.locate(anyString())).thenReturn(Optional.empty());
         for(String q:List.of("查相机？","查那个相机","我的借用记录和器材库存","手机不用管，查相机","查相机，不对，查摄像机")) assertThat(service.ask(student,q,"s")).containsEntry("status","SYSTEM_ERROR").containsEntry("reason","MODEL_UNAVAILABLE").containsKey("retryToken");
-        when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.clarify("MISSING_INFO")));
+        when(planner.locate(anyString())).thenReturn(Optional.of(AssistantHint.clarify(null,null)));
         assertThat(service.ask(student,"查相机","s")).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);
     }
     @Test void historyDoesNotReplaceTheCurrentModelPlan() {
         String q="我之前借用相机，现在只查投影仪库存";run(QueryPlan.query("EQUIPMENT","投影仪",null,"CURRENT"),q);
-        verify(planner).plan(java.text.Normalizer.normalize(q,java.text.Normalizer.Form.NFKC));verify(loans).assistantEquipment("投影仪",0);verify(loans,never()).assistantEquipment(eq("相机"),anyInt());
+        verifyNoInteractions(planner);verify(loans).assistantEquipment("投影仪",0);verify(loans,never()).assistantEquipment(eq("相机"),anyInt());
     }
     @Test void newQuestionAndExactExpiryInvalidateConsent() {
         var now=new AtomicReference<>(clock.instant());var timed=new AssistantService(activities,loans,capacity,planner,ticking(now));
-        when(planner.plan(anyString())).thenReturn(Optional.of(QueryPlan.query("MY_LOANS",null,null,"ANY")));
-        var first=timed.ask(student,"我的借用","s");timed.ask(student,"帮我批准器材预约","s");
+
+        var first=timed.query(student,QueryPlan.query("MY_LOANS",null,null,"ANY"),"s");timed.ask(student,"帮我批准器材预约","s");
         assertThat(timed.confirm(student,first.get("confirmationToken").toString(),"s")).containsEntry("status","CLARIFY");
-        var second=timed.ask(student,"我的借用","s");now.set(now.get().plusSeconds(300));
+        var second=timed.query(student,QueryPlan.query("MY_LOANS",null,null,"ANY"),"s");now.set(now.get().plusSeconds(300));
         assertThat(timed.confirm(student,second.get("confirmationToken").toString(),"s")).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);
     }
     Clock ticking(AtomicReference<Instant> now){return new Clock(){public ZoneId getZone(){return clock.getZone();}public Clock withZone(ZoneId z){return this;}public Instant instant(){return now.get();}};}
     @Test void midnightKeepsTheDisplayedDate() {
         var now=new AtomicReference<>(Instant.parse("2026-10-07T15:59:50Z"));var timed=new AssistantService(activities,loans,capacity,planner,ticking(now));
-        var p=QueryPlan.query("ACTIVITIES",null,null,"TODAY");when(planner.plan(anyString())).thenReturn(Optional.of(p));
-        var preview=timed.ask(student,"今天有什么活动","s");assertThat(preview.get("answer").toString()).contains("2026-10-07");
+        var p=QueryPlan.query("ACTIVITIES",null,null,"TODAY");
+        var preview=timed.query(student,p,"s");assertThat(preview.get("answer").toString()).contains("2026-10-07");
         now.set(now.get().plusSeconds(20));timed.confirm(student,preview.get("confirmationToken").toString(),"s");
         verify(activities).assistant(eq(student),eq(p),eq(LocalDateTime.of(2026,10,7,0,0)),eq(LocalDateTime.of(2026,10,8,0,0)),any(),eq(0));
     }
     @Test void lateModelResponseCannotReviveOldConsent() throws Exception {
         var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var pool=Executors.newSingleThreadExecutor();
-        when(planner.plan(anyString())).thenAnswer(i->{entered.countDown();release.await(3,TimeUnit.SECONDS);return Optional.of(QueryPlan.query("MY_LOANS",null,null,"ANY"));});
-        try{var old=pool.submit(()->service.ask(student,"我的借用","s"));assertThat(entered.await(2,TimeUnit.SECONDS)).isTrue();service.ask(student,"帮我批准器材预约","s");release.countDown();assertThat(old.get(2,TimeUnit.SECONDS)).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);}
+        when(planner.locate(anyString())).thenAnswer(i->{entered.countDown();release.await(3,TimeUnit.SECONDS);return Optional.of(AssistantHint.locate("MY_LOANS",null));});
+        try{var old=pool.submit(()->service.ask(student,"模糊的借用请求","s"));assertThat(entered.await(2,TimeUnit.SECONDS)).isTrue();service.ask(student,"帮我批准器材预约","s");release.countDown();assertThat(old.get(2,TimeUnit.SECONDS)).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);}
         finally{release.countDown();pool.shutdownNow();}
     }
     @Test void weekendAvailabilityDoesNotMutateCatalog() {
         var cached=equipment(1,"相机");when(loans.assistantEquipment("相机",0)).thenReturn(List.of(cached));when(capacity.availability(anyLong(),any(),any())).thenReturn(Map.of("availableQuantity",2));
         var r=run(QueryPlan.query("EQUIPMENT","相机",null,"WEEKEND"),"周末相机能借吗");
-        verify(capacity).availability(1,LocalDateTime.of(2026,10,10,0,0),LocalDateTime.of(2026,10,12,0,0));assertThat(r.get("answer").toString()).contains("不保证届时可借");assertThat(cached).doesNotContainKey("availability");
+        verify(capacity).availability(1,LocalDateTime.of(2026,10,10,0,0),LocalDateTime.of(2026,10,12,0,0));assertThat(r.get("answer").toString()).contains("不保证届时可借");
+        assertThat((List<?>)r.get("warnings")).anySatisfy(warning->assertThat(warning.toString()).contains("不保证届时可借"));assertThat(cached).doesNotContainKey("availability");
     }
     @Test void malformedAndUnsupportedFacetsNeverExecuteOrDropConditions() {
         for(var p:List.of(new QueryPlan("QUERY","ACTIVITIES",null,null,"DATE","2026-02-30","ANY",null,null),
