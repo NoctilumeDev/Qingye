@@ -2,6 +2,8 @@
 
 **校园社团活动与共享资源管理系统的设计与实现**
 
+许可证：[Apache-2.0](LICENSE)。版权与第三方声明见 [NOTICE](NOTICE)；第三方依赖与素材保留各自许可。
+
 Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社团 → 活动 → 报名 / 候补 → 器材预约 → 审批 → 领取 → 归还」，三类用户共用小程序，管理操作在工作台完成。Redis、RabbitMQ 和模型能力可降级。
 
 ## 功能模块图
@@ -72,6 +74,8 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 ## 工程维护与复验
 
 青野现由本仓库独立维护。源码从 `dome/qingye` 的精确坐标提炼，来源、历史关系与权威切换见 [ORIGIN.md](ORIGIN.md)。[独立 CI](.github/workflows/ci.yml)在当前仓库运行，不以浏览器演示构建代替后端验收。
+
+[仓库治理与资格边界](docs/repository-governance.md)记录主线保护、检查职责、首败与发布缺口；历史证据和当前交付资格分别核对。治理工作不改变已确认的展示页面或业务范围。
 
 Java17、Maven3.9、Python3.10+、Node24.14.0。从本目录运行：
 

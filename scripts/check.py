@@ -104,7 +104,9 @@ def main():
 
 
 PROTECTED = set()
-CURRENT_DOCS = ["README.md", "docs/项目简介.md", "miniprogram/assets/README.md"]
+CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "docs/项目简介.md",
+                "docs/assistant-contract.md", "docs/repository-governance.md",
+                "miniprogram/assets/README.md"]
 DB_SUFFIXES = ["_URL", "_USER", "_PASSWORD"]
 GROUPS = ["hygiene", "client", "h2", "mysql", "quick", "all"]
 EXPAND = {"quick": ["hygiene", "client", "h2"], "all": ["hygiene", "client", "h2", "mysql"]}

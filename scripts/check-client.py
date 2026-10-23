@@ -20,7 +20,8 @@ def main():
         json.loads(file.read_text(encoding="utf-8"))
     for page in app["pages"]:
         for suffix in (".js", ".json", ".wxml", ".wxss"):
-            assert (CLIENT / (page + suffix)).is_file(), page + suffix
+            if not (CLIENT / (page + suffix)).is_file():
+                raise RuntimeError(f"Missing native page file: {page + suffix}")
     for file in CLIENT.rglob("*.js"):
         subprocess.run(["node", "--check", str(file)], check=True, capture_output=True)
     allowed = {"view", "text", "image", "scroll-view", "input", "textarea", "button", "picker", "switch", "checkbox", "block", "activity-card"}
@@ -33,7 +34,8 @@ def main():
         wrapped = re.sub(r'wx:else(?=\s|>)', 'wx:else=""', wrapped)
         tree = ET.fromstring(wrapped)
         for node in tree.iter():
-            assert node.tag == "root" or node.tag in allowed, f"Unsupported native tag {node.tag} in {file}"
+            if node.tag != "root" and node.tag not in allowed:
+                raise RuntimeError(f"Unsupported native tag {node.tag} in {file}")
     if args.compiler_dir:
         compiler = Path(args.compiler_dir)
         with tempfile.TemporaryDirectory(prefix="qingye-compile-") as out:
@@ -42,7 +44,9 @@ def main():
                 result = subprocess.run([str(compiler / exe), "-o", str(Path(out) / (exe + ".js")), *files], cwd=CLIENT, capture_output=True)
                 if result.returncode:
                     raise RuntimeError(result.stderr.decode("utf-8", errors="replace"))
-                assert (Path(out) / (exe + ".js")).stat().st_size > 0
+                output = Path(out) / (exe + ".js")
+                if not output.is_file() or output.stat().st_size == 0:
+                    raise RuntimeError(f"Native compiler produced no output: {exe}")
     print(f"Native mini-program checks passed: {len(app['pages'])} pages")
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ jobs:
   client:
     name: Qingye · client and hygiene
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -28,6 +29,7 @@ jobs:
   h2:
     name: Qingye · H2
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -39,10 +41,21 @@ jobs:
         with:
           python-version: '3.10'
       - run: python -B scripts/check.py h2
+      - name: Retain H2 test reports, including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: qingye-h2-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            backend/target/surefire-reports/TEST-*.xml
+            backend/target/surefire-reports/*.txt
+          if-no-files-found: warn
+          retention-days: 90
 
   mysql:
     name: Qingye · MySQL
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       mysql:
         image: mysql:8.0.44
@@ -77,3 +90,13 @@ jobs:
           QINGYE_TEST_USER: qingye_ci_app
           QINGYE_TEST_PASSWORD: qingye-ci-app-only
         run: python -B scripts/check.py mysql
+      - name: Retain MySQL test reports, including failures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: qingye-mysql-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            backend/target/surefire-reports/TEST-*.xml
+            backend/target/surefire-reports/*.txt
+          if-no-files-found: warn
+          retention-days: 90
