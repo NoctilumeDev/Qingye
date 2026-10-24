@@ -786,7 +786,7 @@
     "backend/src/main/java/cn/qingye/api/Errors.java": "45cc6dcd06f91cc3e36573606e53c7ae977c653b7013867915cad9763fb1bdb7",
     "backend/src/main/java/cn/qingye/api/Forms.java": "847549af6bf4561717a72c72025dd14ab4d8a441c6d2a35aa4ae32d88b09cbdc",
     "backend/src/main/java/cn/qingye/integration/ExternalHttp.java": "0b36d2ec41b985ba3088ce68bdd5aa88c478caa58c8333d5eb4ef916963b924c",
-    "backend/src/main/java/cn/qingye/integration/LlmPlanner.java": "c9fc068abf2f2a065e14c9d471b70596ce68115508a7dcefe8471c7d736f6997",
+    "backend/src/main/java/cn/qingye/integration/LlmPlanner.java": "8c96e18f90464c907afdb5713d4f9c5820b23f9cd8c0436aa59b1a944001c8b4",
     "backend/src/main/java/cn/qingye/integration/QueryCache.java": "1ad48b0901a2470229e65d8b7b72dc9752f2a700b437bae87f4c631e532d0808",
     "backend/src/main/java/cn/qingye/integration/RabbitBridge.java": "3b66989beb9af1b203c6796654d78a261250ec5ec06d90cbfda23090ef9c7df3",
     "backend/src/main/resources/application.yml": "7e9534a7003f39b53aa14b54ef65784139682654fe666dd38ee9ef3aead0b4d0",

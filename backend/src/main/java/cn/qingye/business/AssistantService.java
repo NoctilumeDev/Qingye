@@ -65,8 +65,8 @@ public class AssistantService {
         if(remote.isEmpty())return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"MODEL_UNAVAILABLE",null);
         var hint=remote.get();
         if(!hint.valid())return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","INVALID_HINT_VALUE");
-        if(hint.action().equals("CLARIFY")&&"UNSUPPORTED_FILTER".equals(hint.reason()))return stopped("UNSUPPORTED",hint.reason(),"MODEL_LOCATOR");
-        if(hint.action().equals("REJECT"))return stopped("UNSUPPORTED_CAPABILITY".equals(hint.reason())?"UNSUPPORTED":"REJECT",hint.reason(),"MODEL_LOCATOR");
+        var terminal=AssistantLocatorProtocol.terminalStatus(hint);
+        if(terminal.isPresent())return stopped(terminal.get(),hint.reason(),"MODEL_LOCATOR");
         boolean located=hint.action().equals("LOCATE");
         if(located){
             var compiled=AssistantContract.directoryQuery(hint,String.join("\n",turns));

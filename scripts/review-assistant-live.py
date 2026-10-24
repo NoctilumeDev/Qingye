@@ -58,7 +58,7 @@ def main():
                     self.send_error(503)
                     return
                 state['calls']+=1
-                identity='BQ-20261021-'+str(state['calls'])
+                identity=manifest.get('runId','BQ-20261021')+'-'+str(state['calls'])
             start=time.monotonic();status=0;body=b'';error=None
             try:
                 req=urllib.request.Request(ENDPOINTS[provider],data=payload,headers={'Content-Type':'application/json','Authorization':'Bearer '+keys[provider]},method='POST')

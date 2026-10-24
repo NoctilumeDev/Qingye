@@ -22,6 +22,16 @@ public final class AssistantContract {
         return times(intent).stream().map(key->overrides.getOrDefault(key,labels.get(TIMES.indexOf(key)))).toList();
     }
     public static List<String> intentLabels(){return list("intentLabels");}
+    public static String defaultTime(String intent){return "EQUIPMENT".equals(intent)?"CURRENT":"ANY";}
+    /** Resolve inherited options before exposing them to a locator or an offline reviewer. */
+    public static Map<String,Object> locatorView(){
+        var capabilities=new LinkedHashMap<String,Object>();
+        for(String intent:INTENTS)capabilities.put(intent,Map.of(
+            "timeOptions",times(intent),"states",states(intent),"defaultTime",defaultTime(intent),"defaultState","ANY"));
+        return Map.of("capabilities",Collections.unmodifiableMap(capabilities),"intents",INTENTS,"labels",intentLabels(),
+            "explicitSelections",locatorSelections(),"querySemantics",SPEC.get("querySemantics"),
+            "categories",CATEGORIES,"maxClarifications",MAX_CLARIFICATIONS,"clarificationQuestions",clarificationQuestions());
+    }
     @SuppressWarnings("unchecked") public static List<String> requiredFields(String intent){return ((Map<String,List<String>>)SPEC.get("requiredFields")).getOrDefault(intent,List.of());}
     @SuppressWarnings("unchecked") public static List<String> stateLabels(String intent){var labels=(Map<String,String>)SPEC.get("stateLabels");return states(intent).stream().map(labels::get).toList();}
     @SuppressWarnings("unchecked") public static Optional<QueryPlan> entryCommand(String text){
@@ -44,7 +54,7 @@ public final class AssistantContract {
         // A locator may retain a user-provided name fragment, but it cannot invent a new
         // narrowing term. Unknown names are ordinary business data and still pass here.
         if(hint.search()!=null&&!originalAndReplies.contains(hint.search()))return DirectoryCompilation.failed(DirectoryFailure.SEARCH_SOURCE_MISMATCH);
-        String time=hint.intent().equals("EQUIPMENT")?"CURRENT":"ANY",date=null,state="ANY",category=null,location=null;
+        String time=defaultTime(hint.intent()),date=null,state="ANY",category=null,location=null;
         var choices=(Map<String,Map<String,List<String>>>)SPEC.get("explicitSelections");
         for(var selection:hint.selections()){
             String field=selection.field(),value=selection.value(),source=selection.source();
@@ -65,7 +75,7 @@ public final class AssistantContract {
                 // no cue for a competing value. Default-valued selections are inert and
                 // may be omitted by the compiler after the literal-source check above.
                 boolean inertDefault=field.equals("STATE")&&value.equals("ANY")
-                    ||field.equals("TIME")&&value.equals(hint.intent().equals("EQUIPMENT")?"CURRENT":"ANY");
+                    ||field.equals("TIME")&&value.equals(defaultTime(hint.intent()));
                 if(!inertDefault&&!matchesUniqueCue(options,value,source))return DirectoryCompilation.failed(DirectoryFailure.UNSUPPORTED_SELECTION);
                 switch(field){case "TIME"->time=value;case "STATE"->state=value;case "CATEGORY"->category=value;default->{return DirectoryCompilation.failed(DirectoryFailure.UNSUPPORTED_SELECTION);}}
             }
