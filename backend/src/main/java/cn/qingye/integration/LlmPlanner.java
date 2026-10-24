@@ -48,7 +48,7 @@ public class LlmPlanner {
     }
     public static String instruction(Clock clock) throws java.io.IOException {
         return new ClassPathResource("assistant-planner.txt").getContentAsString(StandardCharsets.UTF_8)
-            +"\n已有业务目录与明确选项："+new ObjectMapper().writeValueAsString(Map.of("intents",AssistantContract.INTENTS,"labels",AssistantContract.intentLabels(),"explicitSelections",AssistantContract.locatorSelections(),"querySemantics",AssistantContract.describe().get("querySemantics"),"states",AssistantContract.describe().get("states"),"timeOptionsByIntent",AssistantContract.describe().get("timeOptionsByIntent"),"maxClarifications",AssistantContract.MAX_CLARIFICATIONS,"clarificationQuestions",AssistantContract.clarificationQuestions()))
+            +"\n已有业务目录与明确选项（capabilities按intent列出完整有效值，不是差量覆盖）："+new ObjectMapper().writeValueAsString(AssistantContract.locatorView())
             +"\nwireProtocol（程序解析器同源的输出字段、上限、原因和完整示例；不是新增业务能力）："+new ObjectMapper().writeValueAsString(AssistantLocatorProtocol.describe());
     }
 }

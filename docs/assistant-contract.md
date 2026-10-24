@@ -1,6 +1,6 @@
-# 校园助手能力合同 v3：分区搜索与固定详情
+# 校园助手能力合同：业务格子、候选协议与固定执行
 
-2026-10-21 的产品版本。旧版本与冻结实验保留在原提交及独立研究目录，不将本版本结果回填旧实验。
+当前业务能力版本为 `qingye-query-v5.5`；2026-10-24 补清候选到服务器动作的交接。业务能力与权限未扩张，旧实验及原始失败保持冻结。
 
 模型是搜索入口映射器：完整问题 → 有限候选条件 → 用户核对 → 固定参数化查询 → 授权详情卡。
 也可直接选择本地分区，完全不调用模型。没有在本地用另一套中文解析器改写模型计划。
@@ -10,16 +10,20 @@
 | 维度 | 值与含义 |
 | --- | --- |
 | 对象 intent | ACTIVITIES 公开已发布活动；EQUIPMENT 器材目录库存；MY_REGISTRATIONS 本人报名；MY_LOANS 本人借用 |
-| 时间 timeOption | ANY 全部；PAST 已结束；CURRENT 进行中（器材为当前库存）；FUTURE 尚未开始的已有排期；TODAY；TOMORROW；DAY_AFTER_TOMORROW；THIS_WEEK 本周剩余；WEEKEND 周末剩余；DATE 指定日期 |
+| 时间 timeOption | ANY 全部；PAST 已结束；CURRENT 进行中（器材为当前库存）；FUTURE 尚未开始的已有排期；TODAY；TOMORROW；DAY_AFTER_TOMORROW；THIS_WEEK 本周剩余；NEXT_WEEK 下周；WEEKEND 周末剩余；DATE 指定日期 |
 | date | 仅 DATE 使用 YYYY-MM-DD，支持 1900—2199 的有效单日；其余必须 null |
 | entity | 活动标题/社团名称的字面包含匹配；器材原名或三组固定名称分区；null 表示全部活动/本人对象；EQUIPMENT 查全部须为 ALL |
 | category | 活动/报名可用 SPORT、ART、TECH、VOLUNTEER、OTHER 或 null；OTHER 是业务分类，不是语义不确定 |
 | location | 活动/报名的完整地点精确匹配，null 不限；问“在哪里”是索取详情，不是地点条件 |
 | status | 活动/器材仅 ANY；报名 ANY/NON_CANCELLED/REGISTERED/WAITLISTED/CANCELLED；借用 ANY/NON_CANCELLED/PENDING/APPROVED/REJECTED/CHECKED_OUT/RETURNED/CANCELLED |
 
-候选 JSON 恰好九个字段：`action,intent,entity,category,timeOption,date,status,location,reason`。
-未知、重复字段、SQL、身份 ID、任意输出字段均不得进入执行。QUERY 的 reason=null。
-非 QUERY 的七个条件字段均 null，action 为 CLARIFY 或 REJECT，reason 使用有限枚举。
+模型线协议恰好六字段：`action,intent,search,reason,selections,question`，见 `assistant-locator-protocol.json`。动作是 LOCATE / CLARIFY / REJECT。它不同于程序编译后的 QueryPlan；模型不能直接输出执行计划或批量查询。未知、重复字段、SQL、身份 ID、任意输出字段均不能进入执行。
+
+模型可见的 `capabilities` 从实际合同展开每个 intent 的有效时间、状态及默认值；EQUIPMENT 不支持 ANY、PAST、FUTURE，不能把其他目录的时间枚举套到器材。无筛选时器材默认 CURRENT，其余目录默认 ANY；状态默认 ANY。重复的同值默认筛选如果通过来源校验，不因冗余本身判作业务错误。
+
+`terminalStates` 同时被服务器和提示词使用：CLARIFY + UNSUPPORTED_FILTER 先返回 UNSUPPORTED，即使 question=DATE_MEANING 也不追问；REJECT + UNSUPPORTED_CAPABILITY 返回 UNSUPPORTED，其余合法 REJECT 返回 REJECT。尚未确定日期角色应为 CLARIFY + MISSING_INFO + DATE_MEANING。其他 CLARIFY 按缺口追问，五次或无进展时暂停。不能用“不支持”代替尚待澄清。
+
+LOCATE 必须通过真实解码、目录编译、计划资格校验，才能生成 CONFIRM_SCOPE。任何协议失败和停止都不读取业务行；确认后才查询。`source` 字面存在只证明出处，不能证明时间等语义角色绑定正确。
 
 “全部”只清除指定维度，不能覆盖其他维度：明天全部摄影社活动仍保留明天与摄影社。
 空名称可以明确查全部；不确定的名称不能转成空名称。查全部逐页返回，每页10条，另取1条判断是否还有。
@@ -37,12 +41,12 @@
 器材只支持当前库存或尚未结束的具体计划时段（不超未来一年）；时段可用量来自当前预约，不保证将来可借。
 当前表没有专门的器材存放地点字段，页面明确说明缺项，不编地址。
 
-模型不确定、对象指代不明、多请求或无法表达必需条件时进入 CLARIFY“其他／待确认”区；用户自行选格子、补条件后重新核对。未知不是空结果，也不是全部，更不是 OTHER 分类。
+模型不确定、对象指代不明或多请求时进入 CLARIFY；已明确无法表达的必需条件则返回 UNSUPPORTED；用户自行选格子、补条件后重新核对。未知不是空结果，也不是全部，更不是 OTHER 分类。
 空结果仅说明本次条件下未匹配，不能证明从未存在或未来不会存在。不做采购、归还预测或等待时间推断。
 
 ## 权限、确认与执行
 
-全部自然语言查询及手动分区查询均先返回 CONFIRM_SCOPE，未确认不读取业务对象。完整标准短语可在供应商失败时形成本地候选，但同样必须确认。
+全部自然语言查询及手动分区查询均先返回 CONFIRM_SCOPE，未确认不读取业务对象。合同内完整标准短语优先形成本地候选，不调用供应商，但同样必须确认。
 确认框展示对象、实际名称分组、具体时间、分类、地点、状态和本人范围，可取消或改条件。
 确认及翻页只提交服务器随机令牌；绑定用户、会话摘要、原始不可变计划、已解析时间和偏移量，5分钟失效、单次消费。翻页令牌不能用来首次确认，首次令牌不能跳过确认去翻页。
 新提问使同一会话旧确认与翻页令牌失效；迟到模型响应不能恢复旧计划；确认和翻页不再调用模型。
@@ -56,3 +60,9 @@
 业务组合测试用独立行谓词核对128组活动交叉条件和40组借用交叉条件，另测25条分页、取消与未取消、同名、配件、主体、过期、重放、跨午夜和只读。
 真实模型复查为可选工具，题集与代码摘要先固定，原始请求/响应/usage、原生 H2 返回集和失败单独保留。Key 只经非回显控制台交给内存中继，不写文件；不自动重试。
 模型仍可能漏条件或过度澄清，确认也不证明原意正确；本地分区搜索提供明确可控的替代入口，不声称任意自然语言完全理解。
+
+## 离线互审的边界
+
+互审不是产品查询的必要步骤，没有自动改写、否决或执行权。`AssistantCandidateReplay.java` 将保留回包送入实际解码器和 AssistantService，导出待确认计划或停止结果；mock 数据层必须零访问。审查同时看到原请求、原候选、实际投影与完整合同，不接收 oracle、原评分或返回行。
+
+`assistant_review_protocol.py` 校验合同引用及显式枚举主张，拒绝不存在的规则、虚构的枚举依据。引用有效仍不等于语义指控成立；未识别的错误引用、漏报和误报都保留人工复核。PASS 允许空 note，UNCERTAIN 必须说明不确定原因。原失败报警、有效诊断、合格候选误报和协议失败分开计数。
