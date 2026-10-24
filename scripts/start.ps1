@@ -3,7 +3,11 @@ $ErrorActionPreference = 'Stop'
 $qingyeDirectory = Split-Path -Parent $PSScriptRoot
 $qingyeLocalConfig = Join-Path $qingyeDirectory 'local.ps1'
 if (Test-Path -LiteralPath $qingyeLocalConfig) { . $qingyeLocalConfig }
-if ($RealWechat) { $env:QINGYE_DEMO = 'false' } else { $env:QINGYE_DEMO = 'true' }
+if ($RealWechat) {
+    $env:QINGYE_DEMO = 'false'
+} elseif ([string]::IsNullOrEmpty($env:QINGYE_DEMO)) {
+    $env:QINGYE_DEMO = 'true'
+}
 $env:QINGYE_REDIS = $Redis.IsPresent.ToString().ToLowerInvariant()
 $env:QINGYE_MQ = $Mq.IsPresent.ToString().ToLowerInvariant()
 Push-Location (Join-Path $qingyeDirectory 'backend')
