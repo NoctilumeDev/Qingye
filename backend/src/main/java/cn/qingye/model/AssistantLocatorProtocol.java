@@ -1,21 +1,14 @@
 package cn.qingye.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 
-/** Wire vocabulary only; does not change the business capabilities or infer user intent. */
+/** Wire vocabulary only; does not change business capabilities or infer user intent. */
 public final class AssistantLocatorProtocol {
-    private static final JsonNode SPEC=load();
+    private static final Map<String,Object> SPEC=AssistantContractData.LOCATOR;
     public static final List<String> FIELDS=list("fields"), SELECTION_FIELDS=list("selectionFields");
     public static final Set<String> CLARIFICATIONS=Set.copyOf(list("clarificationReasons")),REJECTIONS=Set.copyOf(list("rejectionReasons"));
-    public static final int MAX_SELECTIONS=SPEC.path("maxSelections").asInt(),MAX_SEARCH=SPEC.path("maxSearchLength").asInt(),MAX_SOURCE=SPEC.path("maxSourceLength").asInt();
+    public static final int MAX_SELECTIONS=(Integer)SPEC.get("maxSelections"),MAX_SEARCH=(Integer)SPEC.get("maxSearchLength"),MAX_SOURCE=(Integer)SPEC.get("maxSourceLength");
     private AssistantLocatorProtocol(){}
-    private static JsonNode load(){
-        try(var input=AssistantLocatorProtocol.class.getResourceAsStream("/assistant-locator-protocol.json")){
-            return new ObjectMapper().readTree(input);
-        }catch(java.io.IOException e){throw new ExceptionInInitializerError(e);}
-    }
-    private static List<String> list(String key){var result=new ArrayList<String>();SPEC.path(key).forEach(v->result.add(v.asText()));return List.copyOf(result);}
-    public static JsonNode describe(){return SPEC.deepCopy();}
+    @SuppressWarnings("unchecked") private static List<String> list(String key){return (List<String>)SPEC.get(key);}
+    public static Map<String,Object> describe(){return Collections.unmodifiableMap(SPEC);}
 }

@@ -31,8 +31,8 @@ def main():
     allowed = native | component_names
     for file in CLIENT.rglob("*.wxml"):
         source = file.read_text(encoding="utf-8")
-        if "pages" in file.parts:
-            assert not re.search(r"<\s*button\b", source), f"Page action must use qy-action or a semantic view: {file}"
+        if "pages" in file.parts and re.search(r"<\s*button\b", source):
+            raise RuntimeError(f"Page action must use qy-action or a semantic view: {file}")
         wrapped = '<root xmlns:wx="urn:wechat">' + source + '</root>'
         wrapped = re.sub(r'\{\{(.*?)\}\}', lambda m: '{{' + html.escape(html.unescape(m.group(1)), quote=False) + '}}', wrapped, flags=re.S)
         # Native WXML permits boolean attributes; turn them into XML equivalents for structural checks.

@@ -4,7 +4,9 @@ import java.util.*;
 
 /** Structural completeness only: this cannot prove coverage of a natural-language request. */
 public final class AssistantQualification {
-    public record MissingCondition(int queryIndex,String field,String label,List<String> choices) {}
+    public record MissingCondition(int queryIndex,String field,String label,List<String> choices) {
+        public MissingCondition { choices=List.copyOf(choices); }
+    }
     private AssistantQualification() {}
 
     /** Preserve supported values exactly; a null is never filled with ANY or a guessed object. */

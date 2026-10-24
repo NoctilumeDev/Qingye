@@ -4,29 +4,16 @@ import java.util.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** One capability source for validation, prompt metadata and generated mini-program selectors. */
 public final class AssistantContract {
-    private static final Map<String,Object> SPEC=load();
+    private static final Map<String,Object> SPEC=AssistantContractData.BUSINESS;
     public static final String VERSION=(String)SPEC.get("version");
     public static final int MAX_QUERIES=(Integer)SPEC.get("maxQueries"), MAX_CLARIFICATIONS=(Integer)SPEC.get("maxClarifications");
     public static final List<String> INTENTS=list("intents"),TIMES=list("times"),CATEGORIES=list("categories");
     public static final List<String> REGISTRATION_STATES=states("MY_REGISTRATIONS"),LOAN_STATES=states("MY_LOANS");
     public static final Set<String> CLARIFICATIONS=Set.copyOf(list("clarifications"));
     private AssistantContract() {}
-    @SuppressWarnings("unchecked") private static Map<String,Object> load() {
-        try(var input=AssistantContract.class.getResourceAsStream("/assistant-contract.json")) {
-            var spec=new ObjectMapper().readValue(input,new TypeReference<Map<String,Object>>(){});
-            if(!Objects.equals(spec.get("maxQueries"),4)||!Objects.equals(spec.get("maxClarifications"),5))throw new IllegalStateException("Unsupported protocol limits");
-            return (Map<String,Object>)freeze(spec);
-        }catch(java.io.IOException e){throw new ExceptionInInitializerError(e);}
-    }
-    private static Object freeze(Object value) {
-        if(value instanceof Map<?,?> m){var copy=new LinkedHashMap<String,Object>();m.forEach((k,v)->copy.put(k.toString(),freeze(v)));return Collections.unmodifiableMap(copy);}
-        if(value instanceof List<?> l)return l.stream().map(AssistantContract::freeze).toList();return value;
-    }
     @SuppressWarnings("unchecked") private static List<String> list(String key){return (List<String>)SPEC.get(key);}
     @SuppressWarnings("unchecked") public static List<String> states(String intent){return ((Map<String,List<String>>)SPEC.get("states")).getOrDefault(intent,List.of("ANY"));}
     @SuppressWarnings("unchecked") public static List<String> times(String intent){return ((Map<String,List<String>>)SPEC.get("timeOptionsByIntent")).getOrDefault(intent,TIMES);}
@@ -73,7 +60,6 @@ public final class AssistantContract {
                     String label=value;var matches=options.entrySet().stream().filter(e->e.getValue().contains(label)).map(Map.Entry::getKey).toList();
                     if(matches.size()!=1)return DirectoryCompilation.failed(DirectoryFailure.UNSUPPORTED_SELECTION);value=matches.get(0);
                 }
-                var allowed=options.getOrDefault(value,List.of());
                 // A model quotes the user's phrase, not a server-owned canonical label.
                 // Accept a phrase only when it contains a cue for this finite value and
                 // no cue for a competing value. Default-valued selections are inert and
@@ -105,5 +91,5 @@ public final class AssistantContract {
     }
     public static Object locatorSelections(){return SPEC.get("explicitSelections");}
     @SuppressWarnings("unchecked") public static Map<String,String> clarificationQuestions(){return (Map<String,String>)SPEC.get("clarificationQuestions");}
-    public static Map<String,Object> describe(){return SPEC;}
+    public static Map<String,Object> describe(){return Collections.unmodifiableMap(SPEC);}
 }

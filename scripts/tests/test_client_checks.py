@@ -59,6 +59,13 @@ class ClientCheckProcessTest(unittest.TestCase):
                 self.assertIn("Unsupported native tag", result.stderr)
                 self.assertNotIn("checks passed", result.stdout)
 
+    def test_direct_page_button_blocks_in_both_python_modes(self):
+        for optimized in (False, True):
+            with self.subTest(optimized=optimized):
+                result = self.check_fixture(optimized=optimized, tag="button")
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("Page action must use qy-action", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

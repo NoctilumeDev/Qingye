@@ -73,7 +73,7 @@ public class AssistantService {
             if(compiled.accepted())return preview(actor,session,requestId,compiled.query(),"BUSINESS_DIRECTORY");
             return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","BUSINESS_CONTRACT_"+compiled.failure().name());
         }
-        String questionKey=hint.question()!=null?hint.question():located?"HARD_CONDITION":"MULTIPLE_REQUESTS".equals(hint.reason())?"REQUEST_CHOICE":"BUSINESS_OBJECT";
+        String questionKey=hint.question()!=null?hint.question():"MULTIPLE_REQUESTS".equals(hint.reason())?"REQUEST_CHOICE":"BUSINESS_OBJECT";
         String question=AssistantContract.clarificationQuestions().get(questionKey);
         String candidate;
         try{candidate=JSON.writeValueAsString(Arrays.asList(hint.action(),hint.intent(),hint.search(),hint.reason(),hint.selections()));}
@@ -82,7 +82,7 @@ public class AssistantService {
         boolean repeated=false;
         for(int i=0;i<questions.size();i++)if(questions.get(i).equals(question)&&candidates.get(i).equals(candidate)){repeated=true;break;}
         if(replies>0&&("NOT_UNDERSTOOD".equals(hint.reason())||repeated))return paused("NO_CLARIFICATION_PROGRESS",turns,replies,question);
-        var result=new LinkedHashMap<>(stopped("CLARIFY",located?"MISSING_INFO":hint.reason(),"MODEL_LOCATOR"));
+        var result=new LinkedHashMap<>(stopped("CLARIFY",hint.reason(),"MODEL_LOCATOR"));
         result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));
         result.put("question",question);
         if(replies<AssistantContract.MAX_CLARIFICATIONS) {

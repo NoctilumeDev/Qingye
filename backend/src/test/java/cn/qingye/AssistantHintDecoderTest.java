@@ -43,7 +43,7 @@ class AssistantHintDecoderTest {
             .isInstanceOfSatisfying(ProtocolViolation.class,e->assertThat(e.category()).isEqualTo(Failure.TRUNCATED_OUTPUT));
     }
     @Test void generatedPromptExamplesAreAcceptedByTheRealDecoderWithoutExtraFields()throws Exception{
-        var spec=AssistantLocatorProtocol.describe();var instruction=cn.qingye.integration.LlmPlanner.instruction(java.time.Clock.systemUTC());
+        var spec=json.valueToTree(AssistantLocatorProtocol.describe());var instruction=cn.qingye.integration.LlmPlanner.instruction(java.time.Clock.systemUTC());
         assertThat(instruction).contains(json.writeValueAsString(spec));
         for(var example:spec.path("examples")){
             var candidate=AssistantHintDecoder.decodeContent(json,json.writeValueAsString(example));
@@ -52,6 +52,6 @@ class AssistantHintDecoderTest {
         // Exported metadata is a copy; a consumer cannot modify the running protocol.
         ((com.fasterxml.jackson.databind.node.ObjectNode)spec).put("maxSelections",500);
         assertThat(AssistantLocatorProtocol.MAX_SELECTIONS).isEqualTo(4);
-        assertThat(AssistantLocatorProtocol.describe().path("maxSelections").asInt()).isEqualTo(4);
+        assertThat(AssistantLocatorProtocol.describe().get("maxSelections")).isEqualTo(4);
     }
 }
