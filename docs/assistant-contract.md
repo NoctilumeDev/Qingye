@@ -66,3 +66,5 @@ LOCATE 必须通过真实解码、目录编译、计划资格校验，才能生�
 互审不是产品查询的必要步骤，没有自动改写、否决或执行权。`AssistantCandidateReplay.java` 将保留回包送入实际解码器和 AssistantService，导出待确认计划或停止结果；mock 数据层必须零访问。审查同时看到原请求、原候选、实际投影与完整合同，不接收 oracle、原评分或返回行。
 
 `assistant_review_protocol.py` 校验合同引用及显式枚举主张，拒绝不存在的规则、虚构的枚举依据。引用有效仍不等于语义指控成立；未识别的错误引用、漏报和误报都保留人工复核。PASS 允许空 note，UNCERTAIN 必须说明不确定原因。原失败报警、有效诊断、合格候选误报和协议失败分开计数。
+
+本次依赖适用性复核：`bb5b5ce` 的 LlmPlanner 差异仅将出站提示词元数据展开，入站解码、未类型化 Map、mapper 配置及 DTO 类型未变。风险账册中引用该文件的 11 项条件性 NOT_APPLICABLE 保持；没有引入 DataInput、数值强制转换、多态、view、identity、XML、InetAddress 或 Path 绑定。更新逻辑源码摘要并保留原判断，不豁免依赖扫描、不新增通用安全结论。首个 CI 因输入摘要变化停止，属于要求重新审阅该引用的门禁，不应跳过。

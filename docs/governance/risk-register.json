@@ -646,6 +646,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -728,6 +734,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -810,6 +822,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -892,6 +910,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -974,6 +998,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -1056,6 +1086,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -1136,6 +1172,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -1218,6 +1260,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -1300,6 +1348,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -1382,6 +1436,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
@@ -1464,6 +1524,12 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      },
+      "handoff_review": {
+        "revision": "bb5b5ce9ff616bd8ab9a078310c55104a324324f",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/assistant-contract.md",
+        "scope": "The LlmPlanner change only serializes resolved constant contract metadata into the outbound prompt. Its input decoder, untyped transport Map, mapper configuration and finite DTO types are unchanged. No DataInput, numeric coercion, polymorphic typing, views, identity, XML, InetAddress or Path binding added. Retained preconditions remain absent; not a new general vulnerability verdict."
       }
     },
     {
