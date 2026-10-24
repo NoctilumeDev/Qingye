@@ -24,7 +24,9 @@ function guard() {
   if (!wx.getStorageSync('qingye-token')) { wx.reLaunch({ url: '/pages/login/index' }); return false }
   return true
 }
-function confirm(content, editable = false) {
-  return new Promise(resolve => wx.showModal({ ...modalColors, title: '青野', content, editable, placeholderText: '可以填写审核意见', success: res => resolve(res.confirm ? (res.content || true) : false), fail: () => resolve(false) }))
+function confirm(content, editable = false, labels = {}) {
+  return new Promise(resolve => wx.showModal({ ...modalColors, title: labels.title || '青野', content, editable,
+    placeholderText: labels.placeholderText || '可以填写审核意见', confirmText: labels.confirmText || '确定', cancelText: labels.cancelText || '取消',
+    success: res => resolve(res.confirm ? (res.content || true) : false), fail: () => resolve(false) }))
 }
 module.exports = { request, guard, confirm }

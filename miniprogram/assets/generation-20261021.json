@@ -1,0 +1,27 @@
+{
+  "tool": "built-in imagegen",
+  "date": "2026-10-21",
+  "processing": "Mechanical resize and JPEG quality 86 only",
+  "assets": [
+    {
+      "file": "campus/activity-music-v2.jpg",
+      "prompt": "Generate one 4:3 landscape photograph for Qingye, a cheerful Chinese university campus clubs mini program. Young adult university students quietly rehearsing acoustic music by the campus lawn under a shady tree, one guitar and small portable speaker, fresh sky blue, green grass and warm white sunlight, candid editorial photography with a subtle painterly softness. Clean natural composition, principal subjects centered so square thumbnail cropping works. No readable text, letters, logos, watermark, UI or collage. This is one separate campus activity cover."
+    },
+    {
+      "file": "campus/activity-craft-v2.jpg",
+      "prompt": "Generate one 4:3 landscape photograph for Qingye, Chinese university campus club activities. Close-up of adult college students hands creating cyanotype leaf prints at a bright campus art workshop, blue botanical paper, small brushes, natural green plants, warm-white table and soft window light. Fresh green and sky-blue color atmosphere, realistic editorial photography with subtle painterly softness. Center composition for square thumbnail crop. No text, letters, logos, watermarks, UI, or collage. One independent activity cover."
+    },
+    {
+      "file": "campus/equipment-badminton-v2.jpg",
+      "prompt": "Generate one 4:3 landscape clean studio product photograph for a Chinese university equipment borrowing application. Two unbranded badminton rackets with one shuttlecock arranged neatly, all objects fully visible and centered, light warm gray-white seamless background, soft realistic shadows, restrained professional product photography. No hands, readable writing, brand marks, logos, numbers, watermark, UI or collage."
+    },
+    {
+      "file": "campus/equipment-microphone-v2.jpg",
+      "prompt": "Generate one 4:3 landscape clean studio product photograph for a Chinese university equipment borrowing app. One unbranded handheld wireless microphone and its small compact receiver together, full objects visible, centered three-quarter composition, matte charcoal materials against light warm gray-white seamless background with soft shadow. No readable text, numbers, logos, watermarks, UI or collage."
+    },
+    {
+      "file": "campus/equipment-speaker-v2.jpg",
+      "prompt": "Generate one 4:3 landscape clean studio product photograph for a Chinese university equipment borrowing app. One compact portable battery-powered event speaker with integrated carry handle, front three-quarter view, matte dark charcoal mesh, full object centered and visible, warm gray-white seamless background, soft realistic shadow. No readable text, numbers, brand marks, logos, watermark, UI or collage."
+    }
+  ]
+}

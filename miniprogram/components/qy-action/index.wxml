@@ -1,0 +1,12 @@
+<view
+  class="action action--{{variant}} action--{{size}} {{disabled || loading ? 'action--disabled' : ''}}"
+  bindtap="activate"
+  hover-class="{{disabled || loading ? 'action--disabled' : 'action--pressed'}}"
+  hover-stay-time="80"
+  aria-role="button"
+  aria-label="{{label}}"
+  aria-disabled="{{disabled || loading}}"
+>
+  <view wx:if="{{loading}}" class="action-spinner" aria-hidden="true" />
+  <view class="action-content"><slot /></view>
+</view>

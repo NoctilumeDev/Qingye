@@ -12,12 +12,12 @@ function activity(item) {
   return { ...item, categoryName: style[0], cover: item.poster || defaultCover, defaultCover, tone: style[2], phase, displayTime: format(item.startTime), slots: Math.max(0, item.capacity - item.registeredCount) }
 }
 function equipment(item) {
-  const kind = /相机/.test(item.name) ? 'camera' : /三脚/.test(item.name) ? 'tripod' : /投影/.test(item.name) ? 'projector' : /开发板/.test(item.name) ? 'board' : null
-  const defaultImage = kind ? '/assets/campus/equipment-' + kind + '-v1.jpg' : '/assets/icons/box-3-line-muted.png'
+  const kind = /^(相机|单反相机)$/.test(item.name) ? 'camera-v1' : /^(三脚架|轻便三脚架)$/.test(item.name) ? 'tripod-v1' : /^(投影仪|便携投影仪)$/.test(item.name) ? 'projector-v1' : /开发板/.test(item.name) ? 'board-v1' : /羽毛球拍/.test(item.name) ? 'badminton-v2' : /话筒/.test(item.name) ? 'microphone-v2' : /音箱/.test(item.name) ? 'speaker-v2' : null
+  const defaultImage = kind ? '/assets/campus/equipment-' + kind + '.jpg' : '/assets/icons/box-3-line-muted.png'
   return { ...item, available: Math.max(0, item.totalQuantity - item.borrowedQuantity), displayImage: item.image || defaultImage, defaultImage }
 }
 function club(item) {
-  const scene = /摄影|拍照/.test(item.name) ? 'activity-photo-v1' : /运动|篮球|足球|跑步/.test(item.name) ? 'activity-sport-v1' : /创作|科技|编程|开发/.test(item.name) ? 'activity-tech-v1' : 'campus-friends-v1'
+  const scene = /音乐/.test(item.name) ? 'activity-music-v2' : /手作/.test(item.name) ? 'activity-craft-v2' : /摄影|拍照/.test(item.name) ? 'activity-photo-v1' : /运动|篮球|足球|跑步|羽毛球/.test(item.name) ? 'activity-sport-v1' : /创作|科技|编程|开发/.test(item.name) ? 'activity-tech-v1' : 'campus-friends-v1'
   return { ...item, cover: '/assets/campus/' + scene + '.jpg' }
 }
 function format(value) { return value ? String(value).replace('T', ' ').slice(5, 16) : '' }

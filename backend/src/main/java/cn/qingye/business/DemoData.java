@@ -32,10 +32,26 @@ public class DemoData implements ApplicationRunner {
         activity(coding,photo,admin,"把你的奇思妙想做出来","一起做一个小网页、一张海报，或者分享最近的灵感。欢迎带着半成品来。","TECH","创客教室 203",now.plusDays(4).withHour(19).withMinute(0),16);
         activity(basketball,sport,admin,"草坪上的校园志愿日","给校园公共空间做一次小整理，用一个下午换一个更舒服的角落。","VOLUNTEER","图书馆前草坪",now.plusDays(5).withHour(14).withMinute(0),30);
         long demoActivity=activity(photography,photo,admin,"今天的追光准备会","用于演示器材申请、审批、领取与归还的活动。","ART","社团器材室",now.plusHours(2),10);
-        long camera=equipment("单反相机","摄影","用于活动记录和校园外拍，配套电池与存储卡。",5);
-        equipment("轻便三脚架","摄影","让相机稳稳站住，也让灵感自由发生。",8);
-        equipment("便携投影仪","展示","社团分享会与活动展示的好搭档。",3);
+        long camera=equipment("单反相机","摄影","用于活动记录和校园外拍，配套电池与存储卡。",5,"相机");
+        equipment("轻便三脚架","摄影","让相机稳稳站住，也让灵感自由发生。",8,"三脚架");
+        equipment("便携投影仪","展示","社团分享会与活动展示的好搭档。",3,"投影仪");
         equipment("开发板套件","科技","从点亮一颗灯开始，把想法变成作品。",20);
+        long music=club("风铃音乐社","在草坪和晚风里，分享一首喜欢的歌。","blue",admin,photo);
+        long craft=club("漫游手作社","用纸张、植物和双手，记录校园的四季。","orange",admin,photo);
+        long badminton=club("羽动羽毛球社","轻松挥拍，友好对练，新手也能找到搭档。","green",admin,sport);
+        long garden=club("青苗自然社","认识身边的植物，一起照顾校园的小小花园。","green",admin,sport);
+        long musicEvent=activity(music,photo,admin,"草坪不插电音乐会","带一首喜欢的歌来，听听校园里的原创和翻唱。演示活动。","ART","东操场草坪",now.plusDays(1).withHour(17).withMinute(30),28);
+        long craftEvent=activity(craft,photo,admin,"植物蓝晒工作坊","把拾来的叶子留下蓝色剪影，材料现场提供。演示活动。","ART","创意工坊 102",now.plusDays(2).withHour(14).withMinute(0),12);
+        activity(badminton,sport,admin,"羽毛球友好对练","不分水平，自由换搭档；请穿运动鞋。进行中演示活动。","SPORT","体育馆羽毛球区",now.minusMinutes(30),20);
+        activity(garden,sport,admin,"香草角认养计划","认识薄荷与迷迭香，为校园花园做一次整理。往期演示活动。","VOLUNTEER","图书馆前花园",now.minusDays(2).withHour(15).withMinute(0),16);
+        sql.update("UPDATE activity SET poster=? WHERE id=?","/assets/campus/activity-music-v2.jpg",musicEvent);
+        sql.update("UPDATE activity SET poster=? WHERE id=?","/assets/campus/activity-craft-v2.jpg",craftEvent);
+        long rackets=equipment("羽毛球拍","运动","成套借用，请同时检查球拍和拍线。",10);
+        long microphone=equipment("无线话筒","音频","用于社团分享与小型演出，含接收器。",4);
+        long speaker=equipment("便携音箱","音频","适合草坪音乐和社团小型活动。",2);
+        equipment("相机充电器","摄影","相机电池的配套充电器，不是相机。",6);
+        for(var item:new Object[][]{{rackets,"badminton"},{microphone,"microphone"},{speaker,"speaker"}})
+            sql.update("UPDATE equipment SET image=? WHERE id=?","/assets/campus/equipment-"+item[1]+"-v2.jpg",item[0]);
         sql.insert("INSERT INTO loan(activity_id,applicant_id,equipment_id,quantity,planned_start,planned_end,reason,request_key,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",demoActivity,photo,camera,2,now,now.plusHours(4),"准备活动拍摄","demo-ready-to-pickup","APPROVED",admin,now);
     }
     private void renameBuiltInUsers() {
@@ -54,7 +70,12 @@ public class DemoData implements ApplicationRunner {
         return id;
     }
     private long equipment(String name,String category,String description,int quantity) {
-        return sql.insert("INSERT INTO equipment(name,category,description,total_quantity) VALUES (?,?,?,?)",name,category,description,quantity);
+        return equipment(name,category,description,quantity,new String[0]);
+    }
+    private long equipment(String name,String category,String description,int quantity,String... aliases) {
+        long id=sql.insert("INSERT INTO equipment(name,category,description,total_quantity) VALUES (?,?,?,?)",name,category,description,quantity);
+        for(String alias:aliases)sql.update("INSERT INTO equipment_alias(equipment_id,alias) VALUES (?,?)",id,alias);
+        return id;
     }
     private long activity(long club,long creator,long admin,String title,String description,String category,String location,LocalDateTime start,int capacity) {
         return sql.insert("INSERT INTO activity(club_id,created_by,title,description,category,location,start_time,end_time,signup_deadline,capacity,status,reviewed_by,reviewed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",club,creator,title,description,category,location,start,start.plusHours(2),start.minusHours(1),capacity,"PUBLISHED",admin,LocalDateTime.now(clock));

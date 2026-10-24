@@ -24,9 +24,16 @@ def main():
                 raise RuntimeError(f"Missing native page file: {page + suffix}")
     for file in CLIENT.rglob("*.js"):
         subprocess.run(["node", "--check", str(file)], check=True, capture_output=True)
-    allowed = {"view", "text", "image", "scroll-view", "input", "textarea", "button", "picker", "switch", "checkbox", "block", "activity-card"}
+    native = {"view", "text", "image", "scroll-view", "input", "textarea", "button", "picker", "switch", "checkbox", "block", "slot"}
+    component_names = set(app.get("usingComponents", {}))
+    for file in CLIENT.rglob("*.json"):
+        component_names.update(json.loads(file.read_text(encoding="utf-8")).get("usingComponents", {}))
+    allowed = native | component_names
     for file in CLIENT.rglob("*.wxml"):
-        wrapped = '<root xmlns:wx="urn:wechat">' + file.read_text(encoding="utf-8") + '</root>'
+        source = file.read_text(encoding="utf-8")
+        if "pages" in file.parts and re.search(r"<\s*button\b", source):
+            raise RuntimeError(f"Page action must use qy-action or a semantic view: {file}")
+        wrapped = '<root xmlns:wx="urn:wechat">' + source + '</root>'
         wrapped = re.sub(r'\{\{(.*?)\}\}', lambda m: '{{' + html.escape(html.unescape(m.group(1)), quote=False) + '}}', wrapped, flags=re.S)
         # Native WXML permits boolean attributes; turn them into XML equivalents for structural checks.
         for attr in ("selectable", "scroll-x"):

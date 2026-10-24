@@ -19,7 +19,7 @@
   <view class="campus-footer"><image src="/assets/campus/campus-friends-v1.jpg" mode="aspectFill" /></view>
   <view id="my-activities" class="section"><text class="section-title">我的活动</text><text class="muted">每一次参与，都算数</text></view>
   <activity-card class="activity-entry" wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
-  <view wx:if="{{!items.length}}" class="empty">你的校园故事还没开始。<view>去发现页，挑一个喜欢的活动吧。</view><button class="secondary small gap" bindtap="discover">去发现活动</button></view>
+  <view wx:if="{{!items.length}}" class="empty">你的校园故事还没开始。<view>去发现页，挑一个喜欢的活动吧。</view><view class="gap"><qy-action variant="secondary" size="compact" bindactivate="discover">去发现活动</qy-action></view></view>
 </view>
 <view wx:if="{{renameVisible}}" class="profile-edit-mask" catchtap="closeRename" catchtouchmove="keepRenameOpen">
   <view class="profile-edit-dialog" style="transform:translateY(-{{renameKeyboardHeight / 2}}px)" catchtap="keepRenameOpen" aria-role="dialog" aria-label="修改称呼">
@@ -29,6 +29,6 @@
     <input class="edit-input" value="{{renameName}}" maxlength="40" placeholder="填写你的称呼" placeholder-style="color:#65767d" bindinput="renameInput" bindfocus="renameFocus" bindblur="renameBlur" bindconfirm="saveRename" bindkeyboardheightchange="renameKeyboard" adjust-position="{{false}}" confirm-type="done" cursor-spacing="36" disabled="{{renameBusy}}" aria-label="昵称" />
     <view class="edit-identity"><text>校园身份</text><text class="badge">{{renameIdentity}}</text></view>
     <view wx:if="{{renameError}}" class="edit-error" aria-role="alert">{{renameError}}</view>
-    <view class="edit-actions"><button class="secondary" bindtap="closeRename" disabled="{{renameBusy}}">取消</button><button class="primary" bindtap="saveRename" loading="{{renameBusy}}" disabled="{{renameBusy}}">保存称呼</button></view>
+    <view class="edit-actions"><qy-action variant="secondary" bindactivate="closeRename" disabled="{{renameBusy}}">取消</qy-action><qy-action variant="primary" bindactivate="saveRename" loading="{{renameBusy}}" disabled="{{renameBusy}}">保存称呼</qy-action></view>
   </view>
 </view>

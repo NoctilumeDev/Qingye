@@ -9,19 +9,8 @@ page {
   font-size:28rpx;
 }
 
-view,text,input,textarea,button {
+view,text,input,textarea {
   box-sizing:border-box;
-}
-
-button {
-  margin:0;
-  font-size:27rpx;
-  line-height:1.4;
-  border-radius:22rpx;
-}
-
-button::after {
-  border:0;
 }
 
 .page {
@@ -113,41 +102,6 @@ button::after {
 .badge.red {
   background:#fff0ed;
   color:#a44734;
-}
-
-/* Override the v2 default 184px width without changing the rounded button style. */
-page button.primary {
-  width:100%;
-  margin:0;
-  border-radius:22rpx;
-  background:var(--green);
-  color:#fff;
-  padding:24rpx 30rpx;
-  font-weight:650;
-}
-
-page button.secondary {
-  width:100%;
-  margin:0;
-  border-radius:22rpx;
-  background:#fff;
-  color:var(--green);
-  border:1rpx solid #dce7e8;
-  padding:22rpx 28rpx;
-}
-
-page button.small {
-  width:auto;
-  margin:0;
-  border-radius:22rpx;
-  display:inline-block;
-  padding:14rpx 22rpx;
-  font-size:24rpx;
-}
-
-.danger {
-  background:#ffe8e0;
-  color:#a65340;
 }
 
 .actions {

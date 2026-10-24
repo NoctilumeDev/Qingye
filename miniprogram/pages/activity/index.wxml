@@ -18,8 +18,8 @@
     </view>
     <text class="description" selectable="true">{{item.description}}</text>
     <view wx:if="{{item.canManage}}" class="actions">
-      <button class="secondary small" bindtap="participants">查看报名名单</button>
-      <button wx:if="{{item.status === 'PENDING' || item.status === 'REJECTED'}}" class="secondary small" bindtap="edit">调整活动</button>
+      <qy-action variant="secondary" size="compact" bindactivate="participants">查看报名名单</qy-action>
+      <qy-action wx:if="{{item.status === 'PENDING' || item.status === 'REJECTED'}}" variant="secondary" size="compact" bindactivate="edit">调整活动</qy-action>
     </view>
     <view wx:if="{{participants}}" class="card gap">
       <view class="section-title">报名名单</view>
@@ -33,11 +33,11 @@
       <block wx:if="{{registrationText}}">
         <view class="row">
           <text class="badge">{{registrationText}}</text>
-          <button wx:if="{{canCancel}}" class="secondary small" loading="{{busy}}" bindtap="cancel">取消报名</button>
+          <qy-action wx:if="{{canCancel}}" variant="secondary" size="compact" loading="{{busy}}" bindactivate="cancel">取消报名</qy-action>
         </view>
         <view class="footnote">{{registrationText === '候补中' ? '有人取消时，会按报名顺序递补并通知你。' : '已经为你记下这次活动，到时见。'}}</view>
       </block>
-      <button wx:elif="{{canRegister}}" class="primary" loading="{{busy}}" bindtap="register">{{item.slots ? '我要报名，一起去！' : '加入候补，等一个名额'}}</button>
+      <qy-action wx:elif="{{canRegister}}" variant="primary" loading="{{busy}}" bindactivate="register">{{item.slots ? '我要报名，一起去！' : '加入候补，等一个名额'}}</qy-action>
       <view wx:else="" class="muted">{{item.phase}}，当前不能报名。</view>
     </view>
   </view>

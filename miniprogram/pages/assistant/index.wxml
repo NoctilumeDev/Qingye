@@ -1,26 +1,84 @@
 <view class="page">
   <view class="assistant-hero">
     <view class="assistant-brand"><image src="/assets/icons/sparkling-fill-green.png" /><text class="eyebrow">ASK QINGYE</text></view>
-    <view class="title">校园里的事，随口问问。</view>
-    <view class="subtitle">查活动、查报名、查器材。<view>回答依据当前校园记录。</view></view>
+    <view class="title">想找活动、器材，问青野。</view>
+    <view class="subtitle">说出你想找什么。意思明确就直接查，还缺必要条件时，我会先问清楚。</view>
   </view>
-  <view class="section"><text class="section-title">可以这样问</text></view>
-  <view class="suggestions">
-    <view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion"><text>{{item}}</text><image src="/assets/icons/arrow-right-up-line-green.png" /></view>
+
+  <view class="ask-card">
+    <view class="field"><textarea class="textarea ask-input" value="{{question}}" focus="{{correcting}}" maxlength="300" disabled="{{busy}}" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：明天摄影社活动在哪里？" placeholder-style="color:#8a989c" /></view>
+    <view id="assistant-query"><qy-action variant="primary" loading="{{busy}}" disabled="{{busy}}" bindactivate="ask">{{busy ? '正在帮你找…' : '问问青野'}}</qy-action></view>
+    <view class="ask-note">只查询公开活动、器材库存和你自己的记录，不会代你报名或修改数据。</view>
   </view>
-  <view class="field"><textarea class="textarea" value="{{question}}" focus="{{correcting}}" maxlength="300" disabled="{{busy}}" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" placeholder="例如：这周末有什么摄影活动？" placeholder-style="color:#65767d" /></view>
-  <button id="assistant-query" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="ask">{{busy ? '正在查找校园记录…' : '帮我查查'}}</button>
-  <view wx:if="{{answer}}" class="card answer">
-    <view wx:if="{{interpretation}}" class="understanding">
-      <text class="understanding-title">{{interpretation}}</text>
-      <text wx:if="{{status === 'QUERY'}}" class="understanding-note">有时会听岔，理解不对可以改一下。</text>
-      <button class="correct" bindtap="correct" disabled="{{busy}}">改一下</button>
+
+  <view class="section"><text class="section-title">试试这样问</text></view>
+  <view class="suggestions"><view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion"><text>{{item}}</text><image src="/assets/icons/arrow-right-up-line-green.png" /></view></view>
+
+  <view class="section"><text class="section-title">也可以自己查</text></view>
+  <view class="directory-grid">
+    <view wx:for="{{objects}}" wx:key="*this" class="directory-tile {{busy ? 'is-disabled' : ''}}" data-index="{{index}}" bindtap="openDirectory" hover-class="directory-tile-pressed" aria-role="button" aria-disabled="{{busy}}"><text>{{item}}</text><text class="directory-action">选择条件</text></view>
+  </view>
+
+  <view wx:if="{{recoveryMessage}}" class="notice-card warning">
+    <view class="notice-title">这次没有完成</view><text>{{recoveryMessage}}</text><view class="notice-action"><qy-action variant="secondary" bindactivate="restart" disabled="{{busy}}">重新核对</qy-action></view>
+  </view>
+
+  <view wx:if="{{statusTitle}}" class="notice-card {{statusTone}}">
+    <view class="notice-title">{{statusTitle}}</view>
+    <view class="notice-hint">{{statusHint}}</view>
+    <view wx:if="{{interpretation}}" class="query-summary"><text class="query-summary-label">本次理解</text><text>{{interpretation}}</text><view class="correct {{busy ? 'is-disabled' : ''}}" bindtap="correct" hover-class="correct-pressed" aria-role="button" aria-disabled="{{busy}}">调整条件</view></view>
+    <text wx:if="{{showAnswerText && answer}}" class="answer-text" selectable="true">{{answer}}</text>
+  </view>
+
+  <view wx:if="{{clarificationToken}}" class="card clarification-card">
+    <view class="section-title">补充一下就好</view>
+    <view wx:if="{{clarificationRound}}" class="muted">已进行第 {{clarificationRound}} 次补充，本轮最多 {{maxClarifications}} 次。</view>
+    <text class="question-text">{{followupQuestion || '请告诉我需要调整的条件。'}}</text>
+    <view wx:for="{{draftSummaries}}" wx:key="_key" class="saved-condition">已保留：{{item.text}}</view>
+    <view wx:for="{{missingConditions}}" wx:key="_key" class="muted">第 {{item.queryIndex}} 项还缺：{{item.label}}</view>
+    <view wx:if="{{clarificationToken}}" class="clarification-action"><qy-action variant="secondary" bindactivate="promptClarification" disabled="{{busy}}">在弹窗中补充</qy-action></view>
+    <textarea class="textarea reply-input" value="{{replyText}}" maxlength="300" bindinput="replyInput" disabled="{{busy}}" placeholder="也可以在这里补充" />
+    <qy-action variant="primary" bindactivate="reply" loading="{{busy}}" disabled="{{busy}}">继续</qy-action>
+  </view>
+  <view wx:if="{{retryToken}}" class="retry-button"><qy-action variant="secondary" bindactivate="retry" disabled="{{busy}}">重新理解这句话</qy-action></view>
+
+  <view class="facet-toggle {{busy ? 'is-disabled' : ''}}" bindtap="toggleFacets" hover-class="facet-toggle-pressed" aria-role="button" aria-disabled="{{busy}}">{{facetOpen ? '收起查询条件' : '自己选择查询条件'}}</view>
+  <view wx:if="{{facetOpen}}" class="card facets">
+    <view class="section-title">选择查询条件</view><view class="muted">名称可以留空，表示查看这一类中的全部记录。一次最多添加四项独立查询。</view>
+    <picker range="{{objects}}" value="{{objectIndex < 0 ? 0 : objectIndex}}" data-field="objectIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">查什么：{{objectIndex < 0 ? '请选择' : objects[objectIndex]}}</view></picker>
+    <picker range="{{times}}" value="{{timeIndex < 0 ? 0 : timeIndex}}" data-field="timeIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">时间：{{timeIndex < 0 ? '请选择' : times[timeIndex]}}</view></picker>
+    <picker wx:if="{{timeKeys[timeIndex] === 'DATE'}}" mode="date" value="{{date}}" data-field="date" bindchange="facetField" disabled="{{busy}}"><view class="facet-choice">日期：{{date || '请选择'}}</view></picker>
+    <view class="muted">{{objectIndex === 3 ? '日期按计划借用时段查询。' : objectIndex === 1 ? '可查看当前库存或具体时段的预约可用量。' : '日期按活动举办时间查询。'}}</view>
+    <input class="facet-choice" value="{{entity}}" maxlength="80" data-field="entity" bindinput="facetField" disabled="{{busy}}" placeholder="{{objectIndex === 1 || objectIndex === 3 ? '器材名称，留空查全部' : '活动名称或社团名称，留空查全部'}}" />
+    <view wx:if="{{entityPending}}" class="facet-action"><qy-action variant="secondary" bindactivate="chooseAllEntities" disabled="{{busy}}">不限定名称</qy-action></view>
+    <picker wx:if="{{objectIndex === 0 || objectIndex === 2}}" range="{{categories}}" value="{{categoryIndex}}" data-field="categoryIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">分类：{{categories[categoryIndex]}}</view></picker>
+    <input wx:if="{{objectIndex === 0 || objectIndex === 2}}" class="facet-choice" value="{{location}}" maxlength="100" data-field="location" bindinput="facetField" disabled="{{busy}}" placeholder="地点，留空不限" />
+    <picker wx:if="{{objectIndex === 2 || objectIndex === 3 || stateIndex < 0}}" range="{{states}}" value="{{stateIndex < 0 ? 0 : stateIndex}}" data-field="stateIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">状态：{{stateIndex < 0 ? '请选择' : states[stateIndex]}}</view></picker>
+    <view class="facet-action"><qy-action variant="primary" bindactivate="searchFacets" disabled="{{busy}}">{{editingIndex >= 0 ? '保存并核对' : hasPendingQueries ? '补全后核对' : '核对查询范围'}}</qy-action></view>
+    <view class="facet-action"><qy-action variant="secondary" bindactivate="addFacet" disabled="{{busy}}">{{editingIndex >= 0 ? '保存这一项' : '再加一项查询'}}</qy-action></view>
+    <view wx:for="{{queuedQueries}}" wx:key="_key" class="queued-card"><text>第 {{index + 1}} 项：{{queuedSummaries[index]}}</text><view class="queued-actions"><qy-action variant="neutral" size="compact" data-index="{{index}}" bindactivate="editQueued" disabled="{{busy}}">修改</qy-action><qy-action variant="neutral" size="compact" data-index="{{index}}" bindactivate="removeQueued" disabled="{{busy}}">移除</qy-action></view></view>
+    <view wx:if="{{queuedQueries.length}}" class="facet-action"><qy-action variant="primary" bindactivate="previewQueued" disabled="{{busy}}">核对 {{queuedQueries.length}} 项查询</qy-action></view>
+  </view>
+
+  <view wx:for="{{sections}}" wx:for-item="section" wx:for-index="sectionIndex" wx:key="key" class="card results-card">
+    <view wx:if="{{sections.length > 1}}" class="section-title">第 {{sectionIndex + 1}} 项查询</view>
+    <text wx:if="{{sections.length > 1 && section.status !== 'QUERY'}}" class="section-answer" selectable="true">{{section.answer}}</text>
+    <qy-action wx:if="{{section.status === 'CONFIRM_SCOPE' && section.confirmationToken}}" variant="primary" data-index="{{sectionIndex}}" loading="{{busy}}" disabled="{{busy}}" bindactivate="confirmScope">确认并查询</qy-action>
+    <view wx:if="{{section.status === 'QUERY' && section.items.length === 0}}" class="empty-result"><view>没有匹配记录</view><text>换个名称、时间或条件再试试。</text></view>
+    <view wx:if="{{section.status === 'QUERY' && section.items.length}}" class="result-count">本页 {{section.items.length}} 条{{section.hasMore ? '，还有更多' : '，已到本次结果末页'}}</view>
+    <view wx:if="{{section.selectionRequired}}" class="candidate-note">找到多个候选，请根据名称、时间和地点选择。</view>
+    <view wx:for="{{section.warnings}}" wx:key="*this" class="result-warning">{{item}}</view>
+    <view wx:for="{{section.items}}" wx:for-item="item" wx:key="id" class="result detail-card {{section.intent === 'ACTIVITIES' || section.intent === 'MY_REGISTRATIONS' ? 'navigable' : ''}}" data-index="{{sectionIndex}}" data-id="{{item.id}}" bindtap="open">
+      <view class="detail-head"><text>{{item.displayName}}</text><text class="detail-id">#{{item.id}}</text></view>
+      <view wx:if="{{item.startLabel}}">时间：{{item.startLabel}} — {{item.endLabel}}</view><view wx:if="{{item.location}}">地点：{{item.location}}</view><view wx:if="{{item.clubName}}">社团：{{item.clubName}}</view>
+      <view wx:if="{{item.activityTitle}}">关联活动：{{item.activityTitle}}</view><view wx:if="{{item.stateLabel}}">状态：{{item.stateLabel}}</view><view wx:if="{{section.intent === 'MY_LOANS'}}">数量：{{item.quantity}}</view>
+      <view wx:if="{{section.intent === 'EQUIPMENT'}}">库存：共 {{item.totalQuantity}}，已借出 {{item.borrowedQuantity}}；{{item.enabled ? '启用' : '已停用'}}</view>
+      <view wx:if="{{item.availability}}">所选时段可用：{{item.availability.availableQuantity}}（按当前预约）</view>
+      <view wx:if="{{section.intent === 'EQUIPMENT'}}" class="muted">暂无器材存放地点信息，请联系管理人员。</view>
+      <text wx:if="{{item.description}}" class="detail-description" selectable="true">{{item.description}}</text>
     </view>
-    <text selectable="true">{{answer}}</text>
-    <button wx:if="{{status === 'CONFIRM_SCOPE' && confirmationToken}}" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="confirmScope">按这个范围继续查询</button>
-    <view wx:for="{{items}}" wx:key="id" class="result {{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS' ? 'navigable' : ''}}" data-id="{{item.id}}" bindtap="open"><text>{{item.displayName}}</text><image wx:if="{{intent === 'ACTIVITIES' || intent === 'MY_REGISTRATIONS'}}" src="/assets/icons/arrow-right-s-line-muted.png" /></view>
-    <view class="corrections"><view wx:for="{{corrections}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion">{{item}}</view></view>
+    <qy-action wx:if="{{section.hasMore && section.nextToken}}" variant="secondary" data-index="{{sectionIndex}}" bindactivate="more" loading="{{busy}}" disabled="{{busy}}">继续加载</qy-action>
   </view>
-  <view class="footnote">查询不会替你报名、审批或借用器材。这些操作请在对应页面确认。</view>
+  <view class="footnote">青野只提供查询。报名、审批、借用和修改仍需在对应页面完成。</view>
   <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
 </view>

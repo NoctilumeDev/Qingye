@@ -43,7 +43,7 @@ class AuthorityRevocationTest {
         String url=System.getenv("QINGYE_TEST_URL");
         if(url!=null && !url.matches("jdbc:mysql://[^/]+/qingye_test(?:\\?.*)?"))
             throw new IllegalStateException("Test database must be qingye_test");
-        for(String table:List.of("message_task","notification","loan","registration","activity","club_member","club","equipment","app_user"))
+        for(String table:List.of("message_task","notification","loan","registration","activity","club_member","club","equipment_alias","equipment","app_user"))
             sql.update("DELETE FROM "+table);
         admin=sql.insert("INSERT INTO app_user(openid,name,admin) VALUES ('demo:admin','admin',TRUE)");
         manager=sql.insert("INSERT INTO app_user(openid,name) VALUES ('demo:manager','manager')");

@@ -25,3 +25,17 @@
 图标来自 [Remix Icon v4.6.0](https://github.com/Remix-Design/RemixIcon/tree/v4.6.0)，该版本使用 Apache 2.0，完整许可证见 `icons/LICENSE.txt`。从该版本官方字体机械导出为 64 × 64 透明 PNG，按界面语义着色，保留原始轮廓；运行时不引入图标字体或组件依赖。
 
 普通界面使用平台系统字体。参考字体方向为 [Noto Sans CJK / 思源黑体](https://github.com/notofonts/noto-cjk)，当前不打包中文字库，以保持原生小程序体积和启动速度。
+
+## 2026-10-21 新增配图
+
+使用内置 imagegen，每张独立生成；无文字、品牌、UI 或拼贴。原图保留，项目仅机械缩小与 JPEG 86 编码，没有脚本改画面。
+
+| 文件 | 消费者 | 提示内容 |
+| --- | --- | --- |
+| campus/activity-music-v2.jpg | 草坪音乐会海报、音乐社团封面 | 大学校园草坪树荫下成年大学生木吉他排练，蓝天绿草暖白光，自然摄影，中心可方裁切，无字 |
+| campus/activity-craft-v2.jpg | 植物蓝晒海报、手作社封面 | 明亮校园工作坊，学生双手制作蓝色植物印画，叶子、画笔、柔和窗光，无字 |
+| campus/equipment-badminton-v2.jpg | 羽毛球拍目录/默认图 | 两支无品牌羽毛球拍与羽毛球，浅灰白背景柔影，完整居中产品摄影 |
+| campus/equipment-microphone-v2.jpg | 无线话筒目录/默认图 | 黑色无线话筒与紧凑接收器，浅灰白背景柔影，无字 |
+| campus/equipment-speaker-v2.jpg | 便携音箱目录/默认图 | 有提手的便携黑色音箱，浅灰白背景柔影，无字 |
+
+活动图宽960px，器材图宽400px。相机充电器不再因名称含“相机”而配成相机图片。示例图片不证明真实校园发生了相应活动。

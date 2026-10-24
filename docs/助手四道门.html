@@ -165,19 +165,19 @@
 
       <section class="flow" aria-label="四道门">
         <article class="gate">
-          <header class="gate-label"><span class="gate-number">1</span><h2>业务边界初筛</h2><p>先判断请求是否属于允许处理的业务查询范围。</p></header>
+          <header class="gate-label"><span class="gate-number">1</span><h2>业务边界初筛</h2><p>先核验登录和输入；未知语义不等于域外，初筛不代替最终授权。</p></header>
           <div class="gate-body split-2">
-            <section class="card stop"><span class="status">非 A</span><h3>拒绝或声明不支持</h3><p>域外、无关、越权或非查询请求，不进入后续业务链。</p></section>
-            <section class="card good"><span class="status">A</span><h3>进入查询判定</h3><p>只有允许处理的业务查询，才进入第二道门。</p></section>
+            <section class="card stop"><span class="status">明确不允许 / 无效输入</span><h3>拒绝或声明不支持</h3><p>未认证或无效输入先停止；语义越界由后续判定，不能仅因名称陌生而拒绝。</p></section>
+            <section class="card good"><span class="status">通过初筛</span><h3>进入查询判定</h3><p>确定入口直接处理；自然语言送辅助判定，初筛放行不等于已授权执行。</p></section>
           </div>
         </article>
 
         <article class="gate">
           <header class="gate-label"><span class="gate-number">2</span><h2><span>查询意图判定</span><span>与补全</span></h2><p>本地确定优先；模型只辅助解释，不替系统拥有业务事实。</p></header>
           <div class="gate-body split-3">
-            <section class="card good"><span class="status">确定 A</span><h3>结构化入口已确定</h3><p>固定菜单、链接、表单和预设参数可直接形成查询计划。</p></section>
-            <section class="card warn"><span class="status">不确定 A → 补全 → 确定 A / 仍不确定</span><h3>补全，而不是猜测</h3><p>先用固定选项或表单；配置模型时可辅助理解，必要时向用户追问。</p></section>
-            <section class="card unknown"><span class="status">补全后仍不确定</span><h3>保留“不知道”</h3><p>无法理解或结构不完整时，不伪造确定性，返回结构化选择。</p></section>
+            <section class="card good"><span class="status">确定 A</span><h3>结构化入口已确定</h3><p>已有表单、结构化选择和有限完整入口直接形成计划，无需调用模型。</p></section>
+            <section class="card warn"><span class="status">不确定 A → 补全 → 确定 A / 仍不确定</span><h3>补全，而不是猜测</h3><p>自然语言由模型辅助定位；必要时定向追问，最多五次，可用结构化选择补全。</p></section>
+            <section class="card unknown"><span class="status">补全后仍不确定</span><h3>保留“不知道”</h3><p>无进展或五次后仍不清楚则暂停；模型故障与未知分开，已有查询入口继续可用。</p></section>
           </div>
         </article>
 
@@ -185,12 +185,12 @@
           <header class="gate-label"><span class="gate-number">3</span><h2><span>统一只读计划</span><span>与授权校验</span></h2><p>本地入口、模型澄清和用户选择，最终都进入同一合同。</p></header>
           <div class="gate-body">
             <div class="contract">
-              <section class="json"><strong>统一生成只读 JSON</strong><p>来源可以不同，执行合同必须一致。</p><p><code>intent · target · scope · filters · allowExpand</code></p></section>
+              <section class="json"><strong>统一生成只读 JSON</strong><p>来源可以不同，执行合同必须一致。</p><p><code>模型：action · intent · search · reason · selections · question</code></p><p>服务器按合同编译为 QueryPlan；JSON 合法不等于语义理解正确。</p></section>
               <section class="checks" aria-label="授权校验内容"><div class="check">身份</div><div class="check">权限</div><div class="check">业务规则</div><div class="check">字段白名单</div></section>
             </div>
             <div class="results">
               <div class="result good"><strong>合法且确定</strong><br>进入固定查询。</div>
-              <div class="result stop"><strong>危险、敏感或越权</strong><br>初筛通过仍须校验，不合规不执行。</div>
+              <div class="result stop"><strong>越权、写入或非法协议</strong><br>初筛通过仍须校验，不合规不执行。</div>
               <div class="result unknown"><strong>结构不完整</strong><br>返回结构化选择，补全后重试。</div>
             </div>
           </div>
@@ -199,15 +199,15 @@
         <article class="gate">
           <header class="gate-label"><span class="gate-number">4</span><h2><span>固定查询执行</span><span>与结果放行</span></h2><p>不重新解释语义，不偷偷改题，只执行已经通过校验的计划。</p></header>
           <div class="gate-body gate-body--execution split-2">
-            <section class="card good"><span class="status">固定执行</span><h3>按业务格子执行只读查询</h3><p>能够执行则展示实际结果；能力不足则返回明确边界或重新澄清。</p></section>
-            <section class="large-set"><strong>大集合查询原则</strong><div class="formula">允许扩大范围 = 目标不变 ∧ 权限不变 ∧ 硬条件不变</div><p>可以放宽查找范围，不能替换查找目标、绕过权限或丢失硬条件。</p></section>
+            <section class="card good"><span class="status">固定执行</span><h3>按业务格子执行只读查询</h3><p>范围确认后执行同一计划，展示数据库事实及分页；不重新调用模型改写。</p></section>
+            <section class="large-set"><strong>大集合查询原则</strong><div class="formula">允许扩大范围 = 目标不变 ∧ 权限不变 ∧ 硬条件不变</div><p>仅使用已有目录和相关候选；没有通用 allowExpand 开关，未知条件不自动扩大。</p></section>
           </div>
         </article>
       </section>
 
       <figcaption class="foot" id="diagram-note">
         <strong>无模型时仍然成立</strong>
-        <p>确定入口直接使用；不确定入口通过固定选项或表单补全。只有模糊自然语言且配置模型时，模型才辅助提出候选计划。</p>
+        <p>确定入口直接使用；不确定请求可由用户结构化补全。模型仅辅助自然语言；没有模型不代表业务不可用。</p>
         <p>模型不代替业务；模型只让模糊语言更容易进入已有业务格子。</p>
       </figcaption>
     </figure>

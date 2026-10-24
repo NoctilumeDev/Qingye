@@ -1,0 +1,17 @@
+{
+  "fields": ["action", "intent", "search", "reason", "selections", "question"],
+  "selectionFields": ["field", "value", "source"],
+  "maxSelections": 4,
+  "maxSearchLength": 60,
+  "maxSourceLength": 100,
+  "clarificationReasons": ["MISSING_INFO", "UNKNOWN_ENTITY", "NOT_UNDERSTOOD", "UNSUPPORTED_FILTER", "MULTIPLE_REQUESTS"],
+  "rejectionReasons": ["OUTSIDE_DOMAIN", "PRIVATE_DATA", "WRITE_OPERATION", "IDENTITY_CLAIM", "UNSUPPORTED_CAPABILITY"],
+  "examples": [
+    {"action":"LOCATE","intent":"ACTIVITIES","search":null,"reason":null,"selections":[],"question":null},
+    {"action":"LOCATE","intent":"EQUIPMENT","search":"相机","reason":null,"selections":[],"question":null},
+    {"action":"LOCATE","intent":"MY_LOANS","search":"相机","reason":null,"selections":[{"field":"TIME","value":"TOMORROW","source":"明天"},{"field":"STATE","value":"CANCELLED","source":"已取消"}],"question":null},
+    {"action":"LOCATE","intent":"ACTIVITIES","search":null,"reason":null,"selections":[{"field":"DATE","value":"2026-10-22","source":"2026年10月22日"}],"question":null},
+    {"action":"CLARIFY","intent":null,"search":null,"reason":"MISSING_INFO","selections":[],"question":"BUSINESS_OBJECT"},
+    {"action":"REJECT","intent":null,"search":null,"reason":"WRITE_OPERATION","selections":[],"question":null}
+  ]
+}

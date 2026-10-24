@@ -1,14 +1,14 @@
 package cn.qingye.business;
 import cn.qingye.db.*;
 import cn.qingye.integration.LlmPlanner;
+import cn.qingye.integration.AssistantHintDecoder.ProtocolViolation;
 import cn.qingye.model.*;
 import org.springframework.stereotype.Service;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.text.Normalizer;
 import java.util.concurrent.*;
-import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static cn.qingye.db.Rows.*;
 
 @Service
@@ -19,12 +19,7 @@ public class AssistantService {
     private final LlmPlanner planner;
     private final Clock clock;
     private final AssistantConfirmations confirmations;
-    private static final DateTimeFormatter DISPLAY_TIME=DateTimeFormatter.ofPattern("MM-dd HH:mm");
-    private static final Pattern RESTRICTED=Pattern.compile("密码|密碼|密钥|密鑰|口令|凭据|token|password|systemprompt|系统提示词|忽略.{0,12}(规则|指令|权限)|(?:无视|绕过|不顾).{0,12}(规则|权限|限制)|(?:我是|作为).{0,12}(最高权限|最高管理员|超级管理员|创始人|开发者)|(?:执行|运行).{0,8}SQL|(?:DROP|TRUNCATE|DELETE|ALTER|INSERT|UPDATE)(?:TABLE|DATABASE|FROM|INTO)|(?:清空|删除|重置).{0,12}(数据库|所有数据|全部数据|数据表)",Pattern.CASE_INSENSITIVE);
-    private static final Pattern WRITE=Pattern.compile("^(?:取消报名|取消预约|报名|加入|退出|领取|归还|创建|发布|修改|删除|清空|批准|审批)(?!人数|名额|截止|时间|条件|规则|流程|状态|情况|结果|记录|了|过|方式)|(?:帮我|替我|给我|请|我要|直接|立即|马上|现在就)(?:把|将)?(?:这个|这场|该|所有|全部)?(?:活动|社团|器材|预约|记录|数据库)?(?:报名|取消|加入|退出|领取|归还|创建|发布|修改|删除|清空|批准|审批)");
-    private static final Pattern PERSONAL=Pattern.compile("报名|候补|参加|参与|借用|借过|借了|借出|归还|记录|名单|个人信息");
-    private static final Pattern OTHER_PERSON=Pattern.compile("别人|他人|其他人|其他同学|其他用户|其他负责人|管理员的|他的|她的|谁|名单");
-    private static final Pattern CREATIVE_REQUEST=Pattern.compile("^(?:请|帮我|给我|麻烦|为我|帮忙|我想)*(?:写|创作|生成|编|讲|看)(?:一首|一篇|一段|一个|几首|几篇).{0,30}(?:诗(?:歌)?|故事|小说|笑话|歌词)[。.!！?？]*$");
+    private static final ObjectMapper JSON=new ObjectMapper();
     private final Set<Long> planning=ConcurrentHashMap.newKeySet();
     private final Semaphore modelSlots=new Semaphore(4);
     public AssistantService(ActivityStore activities,LoanStore loans,LoanService loanService,LlmPlanner planner,Clock clock) {
@@ -40,101 +35,194 @@ public class AssistantService {
     }
     public Map<String,Object> ask(Actor actor,String question,String session) {
         String requestId=confirmations.begin(actor.id(),session);
-        // Gate 1: local scope, before any network call.
-        question=Normalizer.normalize(question,Normalizer.Form.NFKC).replaceAll("\\p{Cf}","").strip();
-        String compact=question.replaceAll("\\s","");
-        if (RESTRICTED.matcher(compact).find()) return stopped("REJECT","IDENTITY_CLAIM","LOCAL");
-        if (WRITE.matcher(compact).find()) return stopped("REJECT","WRITE_OPERATION","LOCAL");
-        if (CREATIVE_REQUEST.matcher(compact).matches()) return stopped("REJECT","OUTSIDE_DOMAIN","LOCAL");
-        if (!Pattern.compile("活动|社团|报名|候补|器材|相机|摄像机|摄像头|手机|三脚架|投影|篮球|音乐|摄影|编程|志愿|借用|归还").matcher(question).find()) return stopped("REJECT","OUTSIDE_DOMAIN","LOCAL");
-        // Obvious whole-input authority denials are not semantic query-type guesses.
-        if (PERSONAL.matcher(compact).find() && OTHER_PERSON.matcher(compact).find())
-            return stopped("REJECT","PRIVATE_DATA","LOCAL");
-        var remote=plan(actor.id(),question);
-        // Fallback owns a few complete standard messages, never open-language interpretation.
-        var shortcut=AssistantShortcuts.match(question);
-        var decision=remote.or(()->shortcut);
-        if (decision.isEmpty()) return stopped("CLARIFY","MODEL_UNAVAILABLE","LOCAL");
-        var plan=decision.get();
-        String mode=remote.isPresent()?"MODEL_PLAN":"LOCAL";
-        // Gate 2: capability qualification, not a second reading of the Chinese sentence.
-        if (!valid(plan)) return stopped("CLARIFY","PLAN_INVALID",mode);
-        if (!plan.action().equals("QUERY")) return stopped(plan.action(),plan.reason(),mode);
-        if (plan.intent().startsWith("MY_") && !shortcut.filter(plan::equals).isPresent()) {
-            var issued=confirmations.issue(actor.id(),session,requestId,plan,mode);
-            if (issued.isEmpty()) return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE",mode);
-            boolean loans=plan.intent().equals("MY_LOANS");
-            return Map.of("status","CONFIRM_SCOPE","intent",plan.intent(),"items",List.of(),"mode",mode,
-                "answer",loans?"查询范围是当前账号的全部借用记录，最多展示10条。不会按器材、日期或状态筛选。":"查询范围是当前账号未取消的报名记录，最多展示10条。不接受额外的活动名称、日期或状态筛选。",
-                "interpretation",loans?"我理解你要查询：我的全部借用记录":"我理解你要查询：我的未取消报名记录",
-                "confirmationToken",issued.get().token(),"confirmationExpiresAt",issued.get().expiresAt().toString(),"corrections",corrections());
+        question=normalize(question);
+        if(question.isEmpty()||question.length()>300)return stopped("SYSTEM_ERROR","INVALID_REQUEST","LOCAL");
+        var command=AssistantContract.entryCommand(question);
+        if(command.isPresent())return preview(actor,session,requestId,command.get(),"BUSINESS_ENTRY");
+        return interpret(actor,session,requestId,List.of(question),List.of(),List.of(),0);
+    }
+    private static String normalize(String text){return text==null?"":Normalizer.normalize(text,Normalizer.Form.NFKC).replaceAll("\\p{Cf}","").strip();}
+    public Map<String,Object> clarify(Actor actor,String token,String answer,String session) {
+        answer=normalize(answer);
+        if(answer.isEmpty()||answer.length()>300)return stopped("SYSTEM_ERROR","INVALID_REQUEST","LOCAL");
+        var dialogue=confirmations.reply(actor.id(),session,token,false);
+        if(dialogue.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
+        var d=dialogue.get();var turns=new ArrayList<>(d.turns());turns.add(answer);
+        return interpret(actor,session,d.requestId(),turns,d.questions(),d.candidates(),d.replies()+1);
+    }
+    public Map<String,Object> retry(Actor actor,String token,String session) {
+        var dialogue=confirmations.reply(actor.id(),session,token,true);
+        if(dialogue.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
+        var d=dialogue.get();return interpret(actor,session,d.requestId(),d.turns(),d.questions(),d.candidates(),d.replies());
+    }
+    private Map<String,Object> interpret(Actor actor,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies) {
+        String input=turns.get(0);
+        if(turns.size()>1)try {input=JSON.writeValueAsString(Map.of("originalRequest",turns.get(0),"clarificationAnswers",turns.subList(1,turns.size()),"clarificationQuestions",questions));}
+        catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
+        final Optional<AssistantHint> remote;
+        try{remote=locate(actor.id(),input);}
+        catch(ProtocolViolation failure){return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL",failure.category().name());}
+        if(remote.isEmpty())return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"MODEL_UNAVAILABLE",null);
+        var hint=remote.get();
+        if(!hint.valid())return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","INVALID_HINT_VALUE");
+        if(hint.action().equals("CLARIFY")&&"UNSUPPORTED_FILTER".equals(hint.reason()))return stopped("UNSUPPORTED",hint.reason(),"MODEL_LOCATOR");
+        if(hint.action().equals("REJECT"))return stopped("UNSUPPORTED_CAPABILITY".equals(hint.reason())?"UNSUPPORTED":"REJECT",hint.reason(),"MODEL_LOCATOR");
+        boolean located=hint.action().equals("LOCATE");
+        if(located){
+            var compiled=AssistantContract.directoryQuery(hint,String.join("\n",turns));
+            if(compiled.accepted())return preview(actor,session,requestId,compiled.query(),"BUSINESS_DIRECTORY");
+            return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","BUSINESS_CONTRACT_"+compiled.failure().name());
         }
-        return execute(actor,plan,mode);
+        String questionKey=hint.question()!=null?hint.question():"MULTIPLE_REQUESTS".equals(hint.reason())?"REQUEST_CHOICE":"BUSINESS_OBJECT";
+        String question=AssistantContract.clarificationQuestions().get(questionKey);
+        String candidate;
+        try{candidate=JSON.writeValueAsString(Arrays.asList(hint.action(),hint.intent(),hint.search(),hint.reason(),hint.selections()));}
+        catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
+        if(replies>=AssistantContract.MAX_CLARIFICATIONS)return paused("CLARIFICATION_LIMIT",turns,replies,question);
+        boolean repeated=false;
+        for(int i=0;i<questions.size();i++)if(questions.get(i).equals(question)&&candidates.get(i).equals(candidate)){repeated=true;break;}
+        if(replies>0&&("NOT_UNDERSTOOD".equals(hint.reason())||repeated))return paused("NO_CLARIFICATION_PROGRESS",turns,replies,question);
+        var result=new LinkedHashMap<>(stopped("CLARIFY",hint.reason(),"MODEL_LOCATOR"));
+        result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));
+        result.put("question",question);
+        if(replies<AssistantContract.MAX_CLARIFICATIONS) {
+            var nextQuestions=new ArrayList<>(questions);nextQuestions.add(question);
+            var nextCandidates=new ArrayList<>(candidates);nextCandidates.add(candidate);
+            var issued=confirmations.clarify(actor.id(),session,requestId,turns,nextQuestions,nextCandidates,replies,false);
+            if(issued.isEmpty())return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE","LOCAL");
+            result.put("clarificationToken",issued.get().token());
+        }
+        result.put("clarificationRound",replies+1);
+        result.put("clarificationsAnswered",replies);result.put("maxClarifications",AssistantContract.MAX_CLARIFICATIONS);
+        // Unresolved suggestions cannot issue execution consent or expose business rows.
+        return result;
     }
+    private Map<String,Object> parsingFailed(Actor actor,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,String reason,String category){
+        var result=new LinkedHashMap<>(stopped("SYSTEM_ERROR",reason,category==null?"LOCAL":"MODEL_LOCATOR"));
+        result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));result.put("clarificationsAnswered",replies);
+        if(category!=null)result.put("protocolFailure",category);
+        confirmations.clarify(actor.id(),session,requestId,turns,questions,candidates,replies,true).ifPresent(i->result.put("retryToken",i.token()));
+        return result;
+    }
+    private Map<String,Object> paused(String reason,List<String> turns,int replies,String unresolved) {
+        var result=new LinkedHashMap<>(stopped("CLARIFICATION_PAUSED",reason,"MODEL_LOCATOR"));
+        result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));
+        result.put("unresolvedQuestion",unresolved);result.put("clarificationsAnswered",replies);result.put("maxClarifications",AssistantContract.MAX_CLARIFICATIONS);
+        result.put("answer",result.get("answer")+"\n仍待明确："+unresolved);
+        return result;
+    }
+    private String followupQuestion(QueryPlan p) {
+        var missing=AssistantQualification.missing(p);
+        return "请在业务表单补全："+String.join("；",missing.stream().map(m->"第 "+m.queryIndex()+" 项 "+m.label()).toList())+"。尚未查询，已有明确条件保留。";
+    }
+    /** Explicit local facets remain usable when the model is unavailable or uncertain. */
+    public Map<String,Object> query(Actor actor,QueryPlan plan,String session) {
+        String requestId=confirmations.begin(actor.id(),session);
+        var incomplete=AssistantQualification.incompleteDraft(plan);
+        if(incomplete.isPresent()) {
+            var draft=incomplete.get();var response=new LinkedHashMap<>(stopped("CLARIFY",draft.reason(),"FACETS"));
+            response.put("draft",draft);response.put("missingConditions",AssistantQualification.missing(draft));response.put("question",followupQuestion(draft));
+            response.put("decisionStage","COMPLETE_CONDITIONS");return response;
+        }
+        if (plan==null || !plan.valid() || !"QUERY".equals(plan.action())) return stopped("CLARIFY","PLAN_INVALID","FACETS");
+        if(plan.batch()) {
+            for(var q:plan.queries())if(!timeSupported(q))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","FACETS");
+            return Map.of("status","CONFIRM_SCOPE","intent","BATCH","items",List.of(),"sections",plan.queries().stream().map(q->preview(actor,session,requestId,q,"FACETS")).toList(),"answer","请逐项核对并确认这些独立查询。","plan",plan,"contractVersion",AssistantContract.VERSION);
+        }
+        return preview(actor,session,requestId,plan,"FACETS");
+    }
+    private Map<String,Object> preview(Actor actor,String session,String requestId,QueryPlan plan,String mode) {
+        var period=AssistantTime.resolve(plan,clock);
+        if(!timeSupported(plan))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER",mode);
+        var issued=confirmations.issue(actor.id(),session,requestId,plan,period,mode,0);
+        if (issued.isEmpty()) return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE",mode);
+        return Map.ofEntries(Map.entry("status","CONFIRM_SCOPE"),Map.entry("intent",plan.intent()),Map.entry("items",List.of()),Map.entry("mode",mode),
+            Map.entry("answer",scope(plan,period)+"\n每页10条，可继续加载。未查业务记录；请核对条件后确认，不对就修改。"),
+            Map.entry("interpretation","待确认的查询范围（不是对原意正确性的保证）"),Map.entry("plan",plan),
+            Map.entry("confirmationToken",issued.get().token()),Map.entry("confirmationExpiresAt",issued.get().expiresAt().toString()),Map.entry("contractVersion",AssistantContract.VERSION));
+    }
+    private boolean timeSupported(QueryPlan plan){var p=AssistantTime.resolve(plan,clock);return !plan.intent().equals("EQUIPMENT")||p.end()==null||p.end().isAfter(p.anchor())&&!p.end().isAfter(p.anchor().plusYears(1));}
     public Map<String,Object> confirm(Actor actor,String token,String session) {
-        var offer=confirmations.consume(actor.id(),session,token);
+        var offer=confirmations.consume(actor.id(),session,token,false);
         if (offer.isEmpty()) return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
-        // Execute the already displayed plan; never re-plan after consent.
-        return execute(actor,offer.get().plan(),offer.get().mode());
+        return execute(actor,offer.get(),session);
     }
-    private Map<String,Object> execute(Actor actor,QueryPlan plan,String mode) {
-        var period=AssistantTime.resolve(plan.timeOption(),clock);
+    public Map<String,Object> more(Actor actor,String token,String session) {
+        var offer=confirmations.consume(actor.id(),session,token,true);
+        if (offer.isEmpty()) return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
+        return execute(actor,offer.get(),session);
+    }
+    private Map<String,Object> execute(Actor actor,AssistantConfirmations.Offer offer,String session) {
+        var plan=offer.plan();var period=offer.period();String mode=offer.mode();int offset=offer.offset();
         List<Map<String,Object>> rows;
-        // Gate 3: fixed parameterized queries; identity comes exclusively from the session.
+        // Gate 4 closes the selected capability with fixed SQL and the session-bound consent.
         switch(plan.intent()) {
-            case "ACTIVITIES" -> {
-                if (plan.entity()!=null) {
-                    var matching=activities.list(actor,"public",null,plan.entity(),0,null,null).stream()
-                        .filter(row->text(row,"title").equals(plan.entity())).toList();
-                    if (matching.size()!=1) return stopped("CLARIFY","UNKNOWN_ENTITY",mode);
-                }
-                rows=activities.list(actor,"public",plan.category(),plan.entity(),0,period.start(),period.end());
-                if (plan.entity()!=null) rows=rows.stream().filter(row->text(row,"title").equals(plan.entity())).toList();
-            }
-            case "MY_REGISTRATIONS" -> rows=activities.list(actor,"mine",null,null,0,null,null);
-            case "MY_LOANS" -> rows=loans.mine(actor.id());
+            case "ACTIVITIES", "MY_REGISTRATIONS" -> rows=activities.assistant(actor,plan,period.start(),period.end(),period.anchor(),offset);
+            case "MY_LOANS" -> rows=loans.assistantMine(actor.id(),plan,period.start(),period.end(),period.anchor(),offset);
             case "EQUIPMENT" -> {
-                var catalog=loans.equipment();
-                if (plan.entity().equals("ALL")) rows=catalog.stream().limit(10).toList();
-                else {
-                    rows=catalog.stream().filter(row->text(row,"name").equals(plan.entity())).toList();
-                    if (rows.size()!=1) return stopped("CLARIFY","UNKNOWN_ENTITY",mode);
-                }
+                rows=loans.assistantEquipment(plan.entity(),offset);
                 // Do not mutate shared cache maps when adding availability.
-                rows=rows.stream().map(row->new LinkedHashMap<>(row)).map(row->(Map<String,Object>)row).toList();
+                rows=rows.stream().limit(11).map(row->new LinkedHashMap<>(row)).map(row->(Map<String,Object>)row).toList();
                 if (period.start()!=null)
-                    for(var row:rows) row.put("availability",loanService.availability(id(row,"id"),period.start(),period.end()));
+                    for(var row:rows.stream().limit(10).toList()) row.put("availability",loanService.availability(id(row,"id"),period.start(),period.end()));
             }
             default -> throw Problem.bad("不支持的查询意图");
         }
-        // Gate 4: render DB facts locally, never let the model invent an answer.
+        // Presentation uses only authorized DB fields, never model-generated facts.
+        boolean hasMore=rows.size()>10;
         rows=rows.stream().limit(10).map(r->visible(r,plan.intent())).toList();
-        String label=switch(plan.intent()) { case "MY_REGISTRATIONS" -> "你的报名记录"; case "MY_LOANS" -> "你的借用记录"; case "EQUIPMENT" -> "器材记录"; default -> "公开活动"; };
-        String answer=rows.isEmpty()?emptyAnswer(plan.intent()):label+"，展示 "+rows.size()+" 条（最多 10 条）：\n"+String.join("\n",rows.stream().map(this::fact).toList());
-        String interpretation="我按「"+label+" · "+(plan.entity()==null?(plan.intent().startsWith("MY_")?"当前登录用户":"公开范围"):plan.entity().equals("ALL")?"全部器材":plan.entity())
-            +" · "+period.label()+(plan.category()==null?"":" · "+categoryLabel(plan.category()))+"」帮你查了。";
-        return Map.of("answer",answer,"items",rows,"status","QUERY","intent",plan.intent(),"mode",mode,
-            "interpretation",interpretation,"corrections",corrections());
+        String answer=rows.isEmpty()?"当前已确认条件下没有匹配记录；不代表从未有过或将来不会有。":"本页展示第 "+(offset+1)+"–"+(offset+rows.size())+" 条。"+(hasMore?"还有记录，请继续加载。":"按本次读取的当前状态已到末页。");
+        var warnings=new ArrayList<String>();
+        boolean candidates=plan.entity()!=null && !"ALL".equals(plan.entity()) && (hasMore || rows.size()>1 || offset>0);
+        if(candidates) answer+="匹配到多个候选，请按编号、名称、日期和地点区分；未自动选择第一条。";
+        if(plan.intent().equals("EQUIPMENT") && period.start()!=null) {String warning="时段可用量按当前预约计算，不保证届时可借。";answer+=warning;warnings.add(warning);}
+        if(hasMore||offset>0){String warning="分页不固定业务快照，期间如有新增、取消或改期，结果可能变化；需要完整核对时请重新查询。";answer+=warning;warnings.add(warning);}
+        String next=hasMore?confirmations.issue(actor.id(),session,offer.requestId(),plan,period,mode,offset+10).map(AssistantConfirmations.Issued::token).orElse(""):"";
+        if(hasMore && next.isEmpty()) {String warning="下一页凭据已失效，请重新查询并确认范围。";answer+=warning;warnings.add(warning);}
+        var result=new LinkedHashMap<String,Object>();
+        result.put("answer",answer);result.put("items",rows);result.put("status","QUERY");result.put("intent",plan.intent());result.put("mode",mode);
+        result.put("interpretation",scope(plan,period));result.put("plan",plan);
+        result.put("hasMore",hasMore);result.put("nextToken",next);result.put("offset",offset);result.put("selectionRequired",candidates);result.put("warnings",List.copyOf(warnings));
+        result.put("contractVersion",AssistantContract.VERSION);
+        return result;
     }
-    private Optional<QueryPlan> plan(long user,String question) {
+    private Optional<AssistantHint> locate(long user,String question) {
         if (!modelSlots.tryAcquire()) return Optional.empty();
         if (!planning.add(user)) { modelSlots.release(); return Optional.empty(); }
-        try { return planner.plan(question); }
+        try { return planner.locate(question); }
+        catch(ProtocolViolation invalid){throw invalid;}
+        catch(RuntimeException unavailable){return Optional.empty();}
         finally { planning.remove(user);modelSlots.release(); }
     }
     private Map<String,Object> visible(Map<String,Object> row,String intent) {
         var fields=switch(intent) {
-            case "MY_LOANS" -> List.of("id","equipmentName","quantity","status");
-            case "EQUIPMENT" -> List.of("id","name","totalQuantity","borrowedQuantity","enabled","availability");
-            default -> List.of("id","title","startTime","endTime","location","category");
+            case "MY_LOANS" -> List.of("id","equipmentName","activityTitle","quantity","status","plannedStart","plannedEnd");
+            case "EQUIPMENT" -> List.of("id","name","category","description","totalQuantity","borrowedQuantity","enabled","availability");
+            default -> List.of("id","title","description","startTime","endTime","signupDeadline","location","category","clubName","status","registrationStatus");
         };
         var result=new LinkedHashMap<String,Object>();
         for(String field:fields) if(row.containsKey(field)) result.put(field,row.get(field));
         return result;
     }
-    public boolean valid(QueryPlan p) {
-        return p!=null && p.valid();
+    private String scope(QueryPlan p,AssistantTime period) {
+        String object=switch(p.intent()) {
+            case "MY_REGISTRATIONS" -> "我的报名（仅当前登录用户，含现已停用社团的本人记录）";
+            case "MY_LOANS" -> "我的借用记录（仅当前登录用户）";
+            case "EQUIPMENT" -> "器材目录与库存（含停用器材，停用不代表可借）";
+            default -> "公开活动（仅已发布、社团启用）";
+        };
+        String name=p.entity()==null?"全部对象":p.entity().equals("ALL")?"全部器材":p.intent().equals("ACTIVITIES") || p.intent().equals("MY_REGISTRATIONS")?"活动标题或社团名称包含「"+p.entity()+"」":"器材名称或业务别名为「"+p.entity()+"」（不做模糊扩词）";
+        String time=period.label();
+        if(period.start()!=null) time+="；时段 ["+period.start()+", "+period.end()+")";
+        if(!p.intent().equals("EQUIPMENT")) time+="；按"+(p.intent().equals("MY_LOANS")?"计划借用":"活动")+"起止时间匹配（非创建、报名或归还日期）";
+        return object+"\n"+name+"\n上海时间："+time+"\n状态："+statusLabel(p.status())+(p.intent().startsWith("MY_") && p.status().equals("ANY")?"（包含已取消）":"")
+            +(p.category()==null?"":"\n分类："+categoryLabel(p.category()))+(p.location()==null?"":"\n地点精确为："+p.location());
     }
+    private String statusLabel(String status) { return switch(status) {
+        case "ANY" -> "全部";case "NON_CANCELLED" -> "未取消";
+        case "REGISTERED" -> "已报名";case "WAITLISTED" -> "候补";
+        default -> loanStatus(status);
+    }; }
     private Map<String,Object> stopped(String status,String reason,String mode) {
         String answer=switch(reason) {
             case "OUTSIDE_DOMAIN" -> "目前支持中文查询校园活动、报名和器材借用，不处理其他话题。";
@@ -142,37 +230,28 @@ public class AssistantService {
             case "WRITE_OPERATION" -> "助手只负责查询；报名、审批、发布或修改请到对应页面操作。";
             case "IDENTITY_CLAIM" -> "不提供凭据、不接受权限冒充或系统指令；身份以当前登录会话为准。";
             case "UNSUPPORTED_CAPABILITY" -> "这项操作不属于助手的查询能力，请到对应业务页面查看。";
-            case "INVALID_PROTOCOL" -> "模型计划超出了助手允许的能力或参数，已拒绝执行。请使用明确的查询入口。";
-            case "UNKNOWN_ENTITY" -> "没有找到唯一对应的对象，请确认器材名称或活动完整标题。";
-            case "MULTIPLE_REQUESTS" -> "检测到多个请求，请一次查询一个对象。";
-            case "UNSUPPORTED_FILTER" -> "这项查询不支持所需筛选条件，请调整条件，不会自动忽略它们。";
+            case "INVALID_PROTOCOL" -> "模型输出未符合查询协议，本次未查询；已保留原请求和补充，可以重试解析或直接选择业务条件。";
+            case "UNKNOWN_ENTITY" -> "对象不确定，请在下方分区中选择查询对象并填写条件。不会改查全部。";
+            case "MULTIPLE_REQUESTS" -> "请说明这些查询是否相互独立；最多支持四项独立查询，不支持关联推断。";
+            case "UNSUPPORTED_FILTER" -> "当前能力不能完整表达这些条件或缺少相应事实字段，未查询，也不会忽略条件。可以修改条件，或明确选择支持的部分；这不等于原需求已完成。";
             case "CONFIRMATION_EXPIRED" -> "查询范围确认已过期、已使用或会话已变化，请重新提问并核对范围。";
             case "CONFIRMATION_UNAVAILABLE" -> "暂时无法建立范围确认，请重新提问，或使用明确的本人记录入口。";
+            case "MODEL_UNAVAILABLE" -> "模型辅助定位暂不可用；业务目录、表单和固定查询仍可使用。这不是你没说清楚。";
+            case "PLAN_INVALID", "INVALID_REQUEST" -> "本次查询请求或解析结果无效，请重新发起或手选分区。";
+            case "NOT_UNDERSTOOD" -> "经过澄清，我仍未能确定你的意思。本轮停止自动解析，请换种说法或手选分区。";
+            case "CLARIFICATION_LIMIT" -> "本轮已完成五次澄清，仍有必要条件未确定，已暂停自动追问，尚未查询。你可以自主重新提问或直接选择业务条件；这不表示请求被拒绝或能力不支持。";
+            case "NO_CLARIFICATION_PROGRESS" -> "本轮澄清暂未取得进一步进展，已暂停自动追问，尚未查询。你可以自主重新提问或直接选择业务条件。";
+            case "MISSING_TIME" -> "请补充查询时间；前面的对象和条件会保留。";
+            case "DATE_MEANING" -> "日期含义尚不明确，请先说明按哪种业务时间查询。";
             default -> "本次无法确定唯一查询，请换个说法，或选择下方明确的查询入口。";
         };
+        String interpretation=switch(status){case "CLARIFY"->"需要补充或澄清";case "CLARIFICATION_PAUSED"->"本轮澄清已暂停，尚未查询";case "UNSUPPORTED"->"理解了需求，但当前能力不支持";case "NOT_UNDERSTOOD"->"本轮仍无法理解，已停止";case "SYSTEM_ERROR"->"系统暂时无法完成解析";default->"请求不允许执行";};
         return Map.of("answer",answer,"items",List.of(),"status",status,"intent","","reason",reason,"mode",mode,
-            "interpretation",status.equals("CLARIFY")?(reason.equals("UNSUPPORTED_FILTER")?"当前能力不支持所需筛选":"尚未确定查询计划"):"请求不允许执行","corrections",corrections());
+            "interpretation",interpretation,"contractVersion",AssistantContract.VERSION);
     }
-    private List<String> corrections() { return List.of("查相机","我的借用记录","我的报名","这周末有什么活动？"); }
     private String categoryLabel(String category) { return switch(category) {
         case "SPORT" -> "运动"; case "ART" -> "艺术"; case "TECH" -> "科技"; case "VOLUNTEER" -> "志愿"; default -> "其他";
     }; }
-    private String fact(Map<String,Object> row) {
-        if(row.containsKey("equipmentName")) return text(row,"equipmentName")+" ×"+integer(row,"quantity")+"，"+loanStatus(text(row,"status"));
-        if(row.containsKey("title")) return text(row,"title")+"，"+time(row,"startTime").format(DISPLAY_TIME)+"，地点："+text(row,"location");
-        String availability="当前实物可用 "+Math.max(0,integer(row,"totalQuantity")-integer(row,"borrowedQuantity"));
-        if (row.get("availability") instanceof Map<?,?> window)
-            availability+="，所选时段可用 "+window.get("availableQuantity");
-        return text(row,"name")+"，总量 "+integer(row,"totalQuantity")+"，"+availability;
-    }
-    private String emptyAnswer(String intent) {
-        return switch(intent) {
-            case "MY_REGISTRATIONS" -> "你还没有报名活动，去发现页挑一场喜欢的吧。";
-            case "MY_LOANS" -> "你还没有器材借用记录。";
-            case "EQUIPMENT" -> "暂时没有找到符合条件的器材，换个关键词试试。";
-            default -> "暂时没有找到符合条件的活动，换个关键词再试试。";
-        };
-    }
     private String loanStatus(String status) {
         return switch(status) {
             case "PENDING" -> "待审核";

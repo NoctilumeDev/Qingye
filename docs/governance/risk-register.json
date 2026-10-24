@@ -595,14 +595,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -613,8 +613,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "All explicit inputs are Strings; MVC uses servlet InputStream conversion. No DataInput parser or custom converter is shipped. This is not a claim about all JSON parser bugs.",
@@ -625,7 +640,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-7hhh-6rmp-j9qf"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-p6pp-m3f8-5c89",
@@ -656,14 +677,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -674,8 +695,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "Exact 2.21.4 source calls the regex from floating, Number and BigDecimal deserializers. Forms use bounded integer/long, String and LocalDateTime types; Map/List/tree keep strings as strings. No affected coercion call is shipped.",
@@ -686,7 +722,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-p6pp-m3f8-5c89"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-5gvw-p9qm-jgwh",
@@ -717,14 +759,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -735,8 +777,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "Closed request DTOs have neither annotation; authentication and authorization are explicit application code, not this view gate.",
@@ -747,7 +804,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-5gvw-p9qm-jgwh"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-5jmj-h7xm-6q6v",
@@ -778,14 +841,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -796,8 +859,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "DTOs do not define these property annotations or use ignored-property gates. Alternate case-insensitive flags alone do not create the required annotated property.",
@@ -808,7 +886,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-5jmj-h7xm-6q6v"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-cxp5-3px4-pw24",
@@ -839,14 +923,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -857,8 +941,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "Closed DTOs have no identity annotations; untyped Map/List parse data directly without identity object-ID resolution.",
@@ -869,7 +968,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-cxp5-3px4-pw24"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-gx83-3vf8-gh7j",
@@ -900,14 +1005,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -918,8 +1023,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "No polymorphic DTO/default typing/mixins are shipped; Boot mapper and explicit parsing targets do not activate the affected type gate.",
@@ -930,7 +1050,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-gx83-3vf8-gh7j"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-mhm7-754m-9p8w",
@@ -959,14 +1085,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -977,8 +1103,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "Neither annotation nor active-view reader exists in shipped DTO/controller/parser paths.",
@@ -989,7 +1130,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-mhm7-754m-9p8w"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-q4xh-88c3-wmh7",
@@ -1020,14 +1167,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -1038,8 +1185,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "Request times are java.time.LocalDateTime, not XML types; other parsing is untyped JSON or String-only QueryPlan.",
@@ -1050,7 +1212,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-q4xh-88c3-wmh7"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-vvgp-rfg2-7rr6",
@@ -1081,14 +1249,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -1099,8 +1267,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "DTOs and explicit parser targets contain no InetAddress; polymorphic typing is not enabled.",
@@ -1111,7 +1294,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-vvgp-rfg2-7rr6"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-wjgm-6hv5-3cvf",
@@ -1142,14 +1331,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -1160,8 +1349,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "No Path-typed input or polymorphic binding in shipped parser paths; untyped Maps keep URI strings inert.",
@@ -1172,7 +1376,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-wjgm-6hv5-3cvf"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-wv8q-qhhj-9h54",
@@ -1203,14 +1413,14 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Forms.java",
-          "lines": "6-35",
-          "detail": "Closed request records: String, int/long, boolean, LocalDateTime, List<Long>; no polymorphic, view, identity or ignored-property annotations."
+          "lines": "6-42",
+          "detail": "Closed DTOs include bounded AssistantQueries with fixed AssistantQuery records; strings, integers, booleans and LocalDateTime; no polymorphic/view/identity/ignored-property configuration."
         },
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
-          "lines": "19-30",
-          "detail": "External response parsed from String into untyped Map."
+          "lines": "19-31",
+          "detail": "Bounded-time transport returns String parsed to untyped Map; no DataInput or polymorphic type activation."
         },
         {
           "label": "source evidence",
@@ -1221,8 +1431,23 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
-          "lines": "55-64",
-          "detail": "String tree parser then finite String-only QueryPlan record."
+          "lines": "27-52",
+          "detail": "Transport envelope remains untyped Map; strict String tree/finite-record decoding is delegated to AssistantHintDecoder outside the transport catch."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "integration parsing target",
+          "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+          "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
         }
       ],
       "rationale": "No JsonTypeInfo/defaultImpl/default typing or custom modules in current app; fixed DTOs and untyped Map/List/tree do not perform named-type fallback.",
@@ -1233,7 +1458,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-wv8q-qhhj-9h54"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-qv9r-c865-cp47",
@@ -1463,8 +1694,8 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Api.java",
-          "lines": "11-205",
-          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+          "lines": "11-231",
+          "detail": "REST data responses including fixed assistant query/clarify/confirm/more routes; no SSE fragment or XSLT view return."
         },
         {
           "label": "source evidence",
@@ -1493,7 +1724,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-j9f9-w8pj-32f8"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-pc63-qcmh-9cmg",
@@ -1527,8 +1764,8 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Api.java",
-          "lines": "11-205",
-          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+          "lines": "11-231",
+          "detail": "REST data responses including fixed assistant query/clarify/confirm/more routes; no SSE fragment or XSLT view return."
         },
         {
           "label": "source evidence",
@@ -1557,7 +1794,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-pc63-qcmh-9cmg"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-9xv2-5v5q-p794",
@@ -1589,8 +1832,8 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Api.java",
-          "lines": "11-205",
-          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+          "lines": "11-231",
+          "detail": "REST data responses including fixed assistant query/clarify/confirm/more routes; no SSE fragment or XSLT view return."
         },
         {
           "label": "source evidence",
@@ -1625,7 +1868,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-9xv2-5v5q-p794"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-gcx9-497g-6cp6",
@@ -1657,8 +1906,8 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Api.java",
-          "lines": "11-205",
-          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+          "lines": "11-231",
+          "detail": "REST data responses including fixed assistant query/clarify/confirm/more routes; no SSE fragment or XSLT view return."
         },
         {
           "label": "source evidence",
@@ -1693,7 +1942,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-gcx9-497g-6cp6"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     },
     {
       "id": "GHSA-h3x4-894j-xpx5",
@@ -1725,8 +1980,8 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/api/Api.java",
-          "lines": "11-205",
-          "detail": "Sole product controller is RestController; mapped handlers return data, no SSE fragment or XSLT view results."
+          "lines": "11-231",
+          "detail": "REST data responses including fixed assistant query/clarify/confirm/more routes; no SSE fragment or XSLT view return."
         },
         {
           "label": "source evidence",
@@ -1761,7 +2016,13 @@
       "risk_accepted": false,
       "references": [
         "https://github.com/advisories/GHSA-h3x4-894j-xpx5"
-      ]
+      ],
+      "integration_review": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "status_unchanged": "NOT_APPLICABLE",
+        "evidence": "docs/four-gate-integration.md",
+        "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
+      }
     }
   ],
   "static_findings": [
@@ -2353,15 +2614,24 @@
         "repository": "NoctilumeDev/Qingye",
         "role": "repository-maintainer"
       },
-      "status": "UNRESOLVED",
+      "status": "REMEDIATED",
       "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
       "evidence": [
         "backend/src/main/java/cn/qingye/integration/LlmPlanner.java:71"
       ],
       "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.LlmPlanner.plan(String)",
-      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
-      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
-      "risk_accepted": false
+      "rationale": "Original candidate retained. The old plan method and its flagged catch sites are removed by the port; locate separates transport failures from strict protocol decoding. Fresh full production analysis no longer reports either historical occurrence. This closes these locations, not a general semantic or security guarantee.",
+      "next_action": "Reject recurrence in the existing static gate; retain protocol and transport failure regression controls.",
+      "risk_accepted": false,
+      "resolution": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "evidence": [
+          "docs/four-gate-integration.md",
+          "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "backend/src/test/java/cn/qingye/IntegrationBoundaryTest.java",
+          "backend/src/test/java/cn/qingye/AssistantHintDecoderTest.java"
+        ]
+      }
     },
     {
       "id": "spotbugs-028",
@@ -2375,15 +2645,24 @@
         "repository": "NoctilumeDev/Qingye",
         "role": "repository-maintainer"
       },
-      "status": "UNRESOLVED",
+      "status": "REMEDIATED",
       "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
       "evidence": [
         "backend/src/main/java/cn/qingye/integration/LlmPlanner.java:27"
       ],
       "summary": "Exception is caught when Exception is not thrown in cn.qingye.integration.LlmPlanner.plan(String)",
-      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
-      "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
-      "risk_accepted": false
+      "rationale": "Original candidate retained. The old plan method and its flagged catch sites are removed by the port; locate separates transport failures from strict protocol decoding. Fresh full production analysis no longer reports either historical occurrence. This closes these locations, not a general semantic or security guarantee.",
+      "next_action": "Reject recurrence in the existing static gate; retain protocol and transport failure regression controls.",
+      "risk_accepted": false,
+      "resolution": {
+        "revision": "2b1061bc8c8beea434e438ad13432c4d98abd687",
+        "evidence": [
+          "docs/four-gate-integration.md",
+          "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "backend/src/test/java/cn/qingye/IntegrationBoundaryTest.java",
+          "backend/src/test/java/cn/qingye/AssistantHintDecoderTest.java"
+        ]
+      }
     },
     {
       "id": "spotbugs-029",
@@ -2608,4 +2887,3 @@
     }
   ]
 }
-
