@@ -61,3 +61,8 @@
 新路由仍返回数据而非 SSE/XSLT 视图；新表单是有限 String 与定型记录列表；外部返回仍按 String 解码。
 严格模型解析已移到 `AssistantHintDecoder`，目标为 String 与有限 Selection 列表，未引入多态、类型 ID、视图、忽略字段、InetAddress、Path、XML 或浮点/BigDecimal 类型绑定。
 复核沿用账册中各公告的既有前提，更新具体源码证据和引用哈希，不改变原有 NOT_APPLICABLE / UNRESOLVED 状态，不声明全面依赖安全。
+
+按来源分支的 85 个路径逐个核对：73 项内容/删除状态保持一致；11 项因上述治理、不可变值或文档适配而有解释过的差异；1 张旧架构图由独立仓同主题 HTML 生成的当前 PNG 替代，消费者已更新。前端业务文件与源分支一致，未遗漏整组页面。
+
+本地最终复验曾错误地并行启动共享 `backend/target` 的 H2 clean 与依赖扫描，导致 clean 删除失败及扫描配置缺失。
+这是本次检查编排失败，保留 `h2-final.log` / `dependencies-final.log`，随后按 H2 → 静态 → 依赖顺序串行重跑，不计作产品通过或产品缺陷。
