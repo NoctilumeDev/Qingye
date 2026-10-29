@@ -215,6 +215,7 @@ class DependencyGateTest(unittest.TestCase):
         self.retire_fixture()
         retirement = self.policy["retired_components"]["fixture:lib@1"]
         original = copy.deepcopy(retirement)
+        prior = self.commit_policy("retain reviewed original upgrade")
         (self.root / "backend/pom.xml").write_text("fixture v2; sibling upgraded\n", encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-qm", "review sibling dependency upgrade")
@@ -228,10 +229,16 @@ class DependencyGateTest(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises((ValueError, subprocess.CalledProcessError)):
                 self.validate()
         retirement["manifest_review_revision"] = reviewed
+        for value in (None, "", "f" * 40, original["historical_revision"], reviewed):
+            retirement["prior_policy_revision"] = value
+            with self.subTest(prior=value), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                self.validate()
+        retirement["prior_policy_revision"] = prior
         self.assertEqual(self.validate(), {"UNRESOLVED": 1})
-        self.assertEqual({k: v for k, v in retirement.items() if k != "manifest_review_revision"}, original)
+        self.assertEqual({k: v for k, v in retirement.items()
+                          if k not in {"manifest_review_revision", "prior_policy_revision"}}, original)
         # Squash delivery can retain a reviewed source commit off the main ancestry.
-        self.git("checkout", "-qb", "squashed-later", original["historical_revision"])
+        self.git("checkout", "-qb", "squashed-later", prior)
         (self.root / "backend/pom.xml").write_text("fixture v2; sibling upgraded\n", encoding="utf-8")
         (self.root / "docs/reconciliation.md").write_text("fixture evidence\n", encoding="utf-8")
         self.git("add", ".")
@@ -244,6 +251,50 @@ class DependencyGateTest(unittest.TestCase):
         (self.root / "docs/reconciliation.md").write_text("tampered", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "evidence content changed"):
             self.validate()
+
+    def commit_policy(self, message):
+        (self.root / "docs/governance/dependency-policy.json").write_text(
+            json.dumps(self.policy), encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", message)
+        return self.git("rev-parse", "HEAD").strip()
+
+    def test_review_after_squashed_original_upgrade(self):
+        self.retire_fixture()
+        retirement = self.policy["retired_components"]["fixture:lib@1"]
+        self.git("checkout", "-qb", "original-squashed", retirement["historical_revision"])
+        (self.root / "backend/pom.xml").write_text("fixture v2\n", encoding="utf-8")
+        (self.root / "docs/reconciliation.md").write_text("fixture evidence\n", encoding="utf-8")
+        prior = self.commit_policy("squashed original upgrade with policy")
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
+        (self.root / "backend/pom.xml").write_text("fixture v2; sibling upgraded\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", "later sibling upgrade")
+        retirement["manifest_review_revision"] = self.git("rev-parse", "HEAD").strip()
+        retirement["prior_policy_revision"] = prior
+        self.policy["applicability_inputs"]["backend/pom.xml"] = hashlib.sha256(
+            b"fixture v2; sibling upgraded\n").hexdigest()
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
+
+    def test_later_review_cannot_relabel_an_unrelated_commit_as_original_upgrade(self):
+        self.retire_fixture()
+        retirement = self.policy["retired_components"]["fixture:lib@1"]
+        original = retirement["change_revision"]
+        prior = self.commit_policy("retain original policy")
+        self.git("checkout", "-qb", "unrelated-source", retirement["historical_revision"])
+        (self.root / "backend/pom.xml").write_text("fixture; comment only\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", "unrelated comment")
+        unrelated = self.git("rev-parse", "HEAD").strip()
+        self.git("checkout", "-q", prior)
+        self.git("merge", "-s", "ours", "--no-ff", "-qm", "retain unrelated branch", unrelated)
+        retirement["change_revision"] = unrelated
+        retirement["manifest_review_revision"] = self.git("rev-parse", "HEAD").strip()
+        retirement["prior_policy_revision"] = prior
+        with self.assertRaisesRegex(ValueError, "original retirement"):
+            self.validate()
+        retirement["change_revision"] = original
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
 
     def test_duplicate_json_keys_and_missing_reports_fail(self):
         path = self.root / "report.json"

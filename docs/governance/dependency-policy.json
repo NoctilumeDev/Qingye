@@ -815,7 +815,8 @@
         "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java": "2b95082be8b083fb4925d8c9969d5dc4d4fbdc3308368fb5527ac2fd21cdaee9"
       },
       "contract": "qingye-rabbitmq-client/v1",
-      "manifest_review_revision": "579181ebc099b8c69c5959b2e0f127d5fd2580e3"
+      "manifest_review_revision": "579181ebc099b8c69c5959b2e0f127d5fd2580e3",
+      "prior_policy_revision": "cb8c8a0cdcf1afbee9c73a63da74f71348edc84e"
     },
     "org.apache.tomcat.embed:tomcat-embed-core@10.1.55": {
       "contract": "qingye-tomcat-authority/v1",
@@ -830,7 +831,7 @@
       },
       "evidence": {
         "backend/src/test/java/cn/qingye/TomcatAuthorityBoundaryTest.java": "6a7ce90d61e9e240c1a3444abf8faefa076e685106e2b035af5f1406f2877886",
-        "docs/governance/tomcat-maintenance-20261029.md": "b67135370c6fe878b3a8b9fa5fa018335def821dac0f2d6edfe5b68c65409369"
+        "docs/governance/tomcat-maintenance-20261029.md": "c183c93d65f8b4e7570a346ccd1f1498956f9c1fa9eaa73bdd57ebbbb8851ddf"
       }
     }
   }
