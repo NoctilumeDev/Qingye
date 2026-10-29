@@ -37,6 +37,8 @@ jobs:
       - name: Guard negatives also work under Python optimization
         run: python -O -B -m unittest discover -s scripts/tests
       - run: python -B scripts/check.py client
+      - name: Optional feedback module state and interface tests
+        run: python -B -m unittest discover -s tools/feedback-learning -v
 
   h2:
     name: Qingye · H2

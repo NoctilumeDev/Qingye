@@ -8,7 +8,11 @@ import java.util.*;
 
 /** Short-lived, session-bound consent to exactly one immutable plan. No database or model access. */
 final class AssistantConfirmations {
-    record Offer(long user,String sessionHash,String requestId,QueryPlan plan,AssistantTime period,String mode,int offset,Instant expiresAt) {}
+    record Context(List<String> turns,List<String> questions) {
+        Context { turns=List.copyOf(turns);questions=List.copyOf(questions); }
+    }
+    record Offer(long user,String sessionHash,String requestId,QueryPlan plan,AssistantTime period,String mode,int offset,Instant expiresAt,Context context) {}
+    record Feedback(Offer offer,String snapshot) {}
     record Issued(String token,Instant expiresAt) {}
     record Dialogue(long user,String sessionHash,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,boolean retry,LocalDate day,Instant expiresAt) {}
     private record Owner(long user,String sessionHash) {}
@@ -17,12 +21,17 @@ final class AssistantConfirmations {
     private final Map<String,Offer> offers=new HashMap<>();
     private final Map<Owner,Request> requests=new HashMap<>();
     private final Map<String,Dialogue> dialogues=new HashMap<>();
+    private final Map<String,Context> contexts=new HashMap<>();
+    private final Map<String,Feedback> feedback=new HashMap<>();
     AssistantConfirmations(Clock clock) { this.clock=clock; }
 
     private void purgeExpired() {
         offers.values().removeIf(offer->!clock.instant().isBefore(offer.expiresAt()));
         requests.values().removeIf(request->!clock.instant().isBefore(request.expiresAt()));
         dialogues.values().removeIf(d->!clock.instant().isBefore(d.expiresAt()));
+        feedback.values().removeIf(f->!clock.instant().isBefore(f.offer().expiresAt()));
+        var active=requests.values().stream().map(Request::id).collect(java.util.stream.Collectors.toSet());
+        contexts.keySet().retainAll(active);
     }
     synchronized String begin(long user,String session) {
         purgeExpired();
@@ -30,10 +39,33 @@ final class AssistantConfirmations {
         var owner=new Owner(user,hash(session));
         offers.values().removeIf(offer->offer.user()==user && offer.sessionHash().equals(owner.sessionHash()));
         dialogues.values().removeIf(d->d.user()==user&&d.sessionHash().equals(owner.sessionHash()));
+        feedback.values().removeIf(f->f.offer().user()==user&&f.offer().sessionHash().equals(owner.sessionHash()));
+        var previous=requests.get(owner);
+        if(previous!=null)contexts.remove(previous.id());
         if (requests.size()>=512 && !requests.containsKey(owner)) return null;
         var request=new Request(UUID.randomUUID().toString(),clock.instant().plusSeconds(300));
         requests.put(owner,request);
         return request.id();
+    }
+    synchronized void remember(long user,String session,String requestId,List<String> turns,List<String> questions) {
+        if(session==null||requestId==null)return;
+        var current=requests.get(new Owner(user,hash(session)));
+        if(current!=null&&current.id().equals(requestId))contexts.put(requestId,new Context(turns,questions));
+    }
+    synchronized String result(Offer offer,String snapshot) {
+        purgeExpired();
+        var current=requests.get(new Owner(offer.user(),offer.sessionHash()));
+        if(current==null||!current.id().equals(offer.requestId())||feedback.size()>=512)return "";
+        // One current feedback receipt per selected plan; loading another page replaces it.
+        feedback.values().removeIf(f->f.offer().requestId().equals(offer.requestId())&&f.offer().plan().equals(offer.plan()));
+        String token=UUID.randomUUID().toString();feedback.put(token,new Feedback(offer,snapshot));return token;
+    }
+    synchronized Optional<Feedback> feedback(long user,String session,String token) {
+        purgeExpired();
+        var f=feedback.get(token);
+        if(f==null||session==null||f.offer().user()!=user||!f.offer().sessionHash().equals(hash(session)))return Optional.empty();
+        feedback.remove(token);
+        return Optional.of(f);
     }
     synchronized Optional<Issued> clarify(long user,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,boolean retry) {
         purgeExpired();
@@ -65,7 +97,7 @@ final class AssistantConfirmations {
         if (offers.size()>=512) return Optional.empty();
         String token=UUID.randomUUID().toString();
         Instant expires=current.expiresAt();
-        offers.put(token,new Offer(user,owner.sessionHash(),requestId,plan,period,mode,offset,expires));
+        offers.put(token,new Offer(user,owner.sessionHash(),requestId,plan,period,mode,offset,expires,contexts.get(requestId)));
         return Optional.of(new Issued(token,expires));
     }
     synchronized Optional<Offer> consume(long user,String session,String token,boolean more) {

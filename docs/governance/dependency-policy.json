@@ -782,15 +782,15 @@
   "applicability_inputs": {
     "backend/pom.xml": "6755d2309414c211bbacc726ec62e4f2ae9ed0be474df6d43011da8990c9fd21",
     "backend/src/main/java/cn/qingye/QingyeApplication.java": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
-    "backend/src/main/java/cn/qingye/api/Api.java": "cb03c587fab093838b7af9193949a7e60ea4e78ae8daceef5eb913476835577f",
+    "backend/src/main/java/cn/qingye/api/Api.java": "bfbfd961070fb5a05fdb84c2a227a8b725474e44d9019cb72dd819d272c795fe",
     "backend/src/main/java/cn/qingye/api/AuthFilter.java": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
     "backend/src/main/java/cn/qingye/api/Errors.java": "45cc6dcd06f91cc3e36573606e53c7ae977c653b7013867915cad9763fb1bdb7",
-    "backend/src/main/java/cn/qingye/api/Forms.java": "847549af6bf4561717a72c72025dd14ab4d8a441c6d2a35aa4ae32d88b09cbdc",
+    "backend/src/main/java/cn/qingye/api/Forms.java": "3d721783f89969ed7f7476c77c75dac0e142e0c5d7006cad7d176852227530f9",
     "backend/src/main/java/cn/qingye/integration/ExternalHttp.java": "a302696b2b605b1295a304d12c5d5dff17caafce5ca505c50d66f2b6ab2eb20e",
     "backend/src/main/java/cn/qingye/integration/LlmPlanner.java": "47a6da2c2c000fc340253ec4abc6e6c7778cecea9bda92bf2e5d6bb48c47d805",
     "backend/src/main/java/cn/qingye/integration/QueryCache.java": "1ad48b0901a2470229e65d8b7b72dc9752f2a700b437bae87f4c631e532d0808",
     "backend/src/main/java/cn/qingye/integration/RabbitBridge.java": "3b66989beb9af1b203c6796654d78a261250ec5ec06d90cbfda23090ef9c7df3",
-    "backend/src/main/resources/application.yml": "7e9534a7003f39b53aa14b54ef65784139682654fe666dd38ee9ef3aead0b4d0",
+    "backend/src/main/resources/application.yml": "50fa313c52eef26c948bf5dc7aaaf397e437100095134aaf70dd7f9de46e887b",
     "backend/src/main/java/cn/qingye/model/AssistantHint.java": "bf5efc267144afc6862ce3fd0320ea3a2061a1b8eb6d4a8b51ebb1189e0ac578",
     "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java": "6a519a7794559ab6a6157216ba914b181cff4ff2298a3602c0f632755faf03a9",
     "backend/src/main/java/cn/qingye/model/QueryPlan.java": "928cf58bcbc8eedbc70dd3636830ee96d0e5ab4e0e8599afb55ae2e5de12715c"

@@ -10,3 +10,4 @@ backend/target/
 coverage/
 playwright-report/
 test-results/
+tools/feedback-learning/*.sqlite*

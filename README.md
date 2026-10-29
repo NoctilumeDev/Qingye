@@ -80,6 +80,8 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 ## 工程维护与复验
 
+查询完成后可以点击“还没找到”，补充需求并重新核对查询范围。误点后退出不提交反馈。独立的 [Python 反馈经验模块](tools/feedback-learning/README.md) 默认关闭：提交后为 PENDING，维护者核实为 APPROVED 才可作为该用户后续查询的参考；REJECTED 和未决反馈不学习。模块不改变四道门或业务数据，服务不可用时仍可查询。
+
 RabbitMQ 客户端的有界升级、旧新版对照及公告迁移边界见[第二轮维护记录](docs/governance/rabbitmq-maintenance-20261023.md)；历史不适用和未知记录不包装成升级成果。
 
 青野现由本仓库独立维护。源码从 `dome/qingye` 的精确坐标提炼，来源、历史关系与权威切换见 [ORIGIN.md](ORIGIN.md)。[独立 CI](.github/workflows/ci.yml)在当前仓库运行，不以浏览器演示构建代替后端验收。

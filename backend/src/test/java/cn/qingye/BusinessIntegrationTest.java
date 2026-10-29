@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties= {
+    "qingye.feedback-url=",
     "qingye.demo-enabled=true","qingye.worker-enabled=false","qingye.redis-enabled=false","qingye.mq-enabled=false","qingye.wx-appid=","qingye.wx-secret=","qingye.llm-url=","spring.datasource.url=${QINGYE_TEST_URL:jdbc:h2:mem:qingye;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1}","spring.datasource.username=${QINGYE_TEST_USER:sa}","spring.datasource.password=${QINGYE_TEST_PASSWORD:}"
 })
 @AutoConfigureMockMvc
@@ -479,6 +480,30 @@ class BusinessIntegrationTest {
             mvc.perform(post("/api/assistant/confirm").contentType("application/json").content(body)).andExpect(status().isUnauthorized());
             mvc.perform(post("/api/assistant/confirm").header("Authorization",session).contentType("application/json").content("{\"token\":\"invalid\"}")).andExpect(status().isBadRequest());
         } finally { org.springframework.test.util.ReflectionTestUtils.setField(assistant,"planner",original); }
+    }
+    @Test void feedbackHttpReentersAuthenticatedReadOnlyFlowWithNewConsent() throws Exception {
+        long own=loanStore.create(activityA,student.id(),equipment,1,NOW.plusHours(2),NOW.plusHours(3),"private",UUID.randomUUID().toString());
+        loanStore.create(activityA,other.id(),equipment,1,NOW.plusHours(2),NOW.plusHours(3),"other private",UUID.randomUUID().toString());
+        String session="Bearer "+auth.demo(student.id()).get("token");
+        var preview=assistant.ask(student,"我的借用",session);
+        var result=assistant.confirm(student,preview.get("confirmationToken").toString(),session);
+        byte[] body=json.writeValueAsBytes(new Forms.AssistantFeedback(result.get("feedbackToken").toString(),"改查李四的记录"));
+        mvc.perform(post("/api/assistant/feedback").contentType("application/json").content(body)).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/assistant/feedback").header("Authorization",session).contentType("application/json").content("{\"token\":\"bad\",\"correction\":\" \"}")).andExpect(status().isBadRequest());
+        var model=mock(LlmPlanner.class);
+        when(model.locate(anyString())).thenReturn(Optional.of(AssistantHint.locate("MY_LOANS",null)));
+        Object original=org.springframework.test.util.ReflectionTestUtils.getField(assistant,"planner");
+        try {
+            org.springframework.test.util.ReflectionTestUtils.setField(assistant,"planner",model);
+            var response=mvc.perform(post("/api/assistant/feedback").header("Authorization",session).contentType("application/json").content(body)).andExpect(status().isOk()).andReturn().getResponse();
+            var next=json.readTree(response.getContentAsString(java.nio.charset.StandardCharsets.UTF_8)).path("data");
+            assertThat(next.path("status").asText()).isEqualTo("CONFIRM_SCOPE");
+            assertThat(next.path("items").size()).isZero();
+            // Even this deliberately wrong model classification can only read the authenticated owner.
+            var confirmed=assistant.confirm(student,next.path("confirmationToken").asText(),session);
+            @SuppressWarnings("unchecked") var items=(List<Map<String,Object>>)confirmed.get("items");
+            assertThat(items).hasSize(1);assertThat(id(items.get(0),"id")).isEqualTo(own);
+        } finally {org.springframework.test.util.ReflectionTestUtils.setField(assistant,"planner",original);}
     }
     @Test void httpAuthenticationValidationAndClubAuthorizationAreEnforced() throws Exception {
         mvc.perform(get("/api/me")).andExpect(status().isUnauthorized());

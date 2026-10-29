@@ -69,6 +69,16 @@ PR #6 当时**没有**接入持续完整依赖扫描，账册校验不能代替�
 
 ## 变更记录
 
+- 2026-10-29 反馈接口绑定复核：`2d78c65` 的 [CI 40844634280](https://github.com/NoctilumeDev/Qingye/actions/runs/40844634280)
+  在 181 项 H2 测试通过后，因 `Api.java` 引用版本改变被依赖门禁拦截。
+  复核 `Api.java`、`Forms.java`、`application.yml` 后更新这三个文件的规范化源码散列。
+  新反馈 DTO 只有令牌与有界修正文本；控制器继续返回普通 JSON 并使用认证主体，
+  没有增加 DataInput、浮点强制转换、视图/身份注解、多态类型、XML、Path 或 InetAddress 输入。
+  `AssistantLearning` 仅复制现有 mapper，并将服务端保存的 JSON 解析为 Map；本机服务响应仍走既有有界 HTTP 接收器。
+  配置只增加可选反馈服务 URL/密钥，没有开启 SSE、XSLT、容器 FORM/DIGEST、安全约束或 HTTP/2/TLS/SNI。
+  涉及的 11 项 Jackson、2 项 Spring MVC、3 项原 Tomcat 条目仍为 `NOT_APPLICABLE`；新增 SNI 条目仍为 `UNRESOLVED`。
+  没有变更处置状态、依赖版本或检查器，不以此记录证明新增功能没有其他风险。
+
 - 2026-10-29：核对 `8abb9e4` 解析出的 Tomcat 10.1.55 新公告
   [GHSA-f525-44xv-f2qj](https://github.com/advisories/GHSA-f525-44xv-f2qj)。
   GitHub/OSV 评级为 Critical，[Apache 原公告](https://tomcat.apache.org/security-10.html)评级为 Moderate，均保留。

@@ -202,6 +202,9 @@ public class Api {
     @PostMapping("/assistant/clarify") Object clarifyAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantClarification input) {
         return data(assistant.clarify(actor,input.token(),input.answer(),session));
     }
+    @PostMapping("/assistant/feedback") Object feedbackAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantFeedback input) {
+        return data(assistant.feedback(actor,input.token(),input.correction(),session));
+    }
     @PostMapping("/assistant/retry") Object retryAssistant(@RequestAttribute Actor actor,@RequestHeader("Authorization") String session,@Valid @RequestBody Forms.AssistantConfirmation input) {
         return data(assistant.retry(actor,input.token(),session));
     }
