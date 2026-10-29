@@ -12,12 +12,56 @@ function page(name, request, wx = {}, confirmation = async () => true) {
   vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/keyboard.js'), 'utf8'), layout)
   vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
     Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = (values, callback) => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value }; if (callback) callback() } },
-    require(module) { return module.includes('assistant-contract') ? require(path.join(client,'utils/assistant-contract.js')) : module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('keyboard') ? layout.module.exports : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
+    require(module) { return module.includes('assistant-feedback-copy') ? require(path.join(client,'utils/assistant-feedback-copy.js')) : module.includes('assistant-contract') ? require(path.join(client,'utils/assistant-contract.js')) : module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('keyboard') ? layout.module.exports : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
     getApp: () => app, wx: native, setTimeout, clearTimeout, Date
   })
   return instance
 }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
+const feedbackEvent = index => ({ currentTarget: { dataset: { index } } })
+const feedbackResult = { status: 'QUERY', intent: 'EQUIPMENT', items: [{ id: 1, name: '相机' }], feedbackToken: 'result-receipt' }
+test('negative click, cancellation and leaving do not submit feedback or trigger a query', async () => {
+  const calls = [], assistant = page('assistant', async (...args) => { calls.push(args); return {} })
+  assistant.accept(feedbackResult); assistant.missed(feedbackEvent(0))
+  assert.equal(assistant.data.feedbackIndex, 0)
+  assistant.cancelFeedback(); assert.equal(assistant.data.feedbackIndex, -1)
+  assistant.missed(feedbackEvent(0)); assistant.feedbackInput({ detail: { value: '我点错了' } }); assistant.onHide()
+  assert.equal(assistant.data.feedbackIndex, -1); assert.equal(assistant.data.feedbackText, '')
+  assistant.found(feedbackEvent(0)); assert.equal(assistant.data.sections[0].feedbackDone, true)
+  assert.equal(calls.length, 0)
+})
+test('continuation sends only the bound receipt and correction, prevents double submission and awaits new consent', async () => {
+  const calls = [], pending = deferred(), assistant = page('assistant', (...args) => { calls.push(args); return pending.promise })
+  assistant.accept(feedbackResult); assistant.missed(feedbackEvent(0)); assistant.feedbackInput({ detail: { value: '要投影仪' } })
+  const send = assistant.continueFeedback(); await assistant.continueFeedback()
+  assert.equal(calls.length, 1); assert.equal(calls[0][0], '/assistant/feedback')
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[0][2])), { token: 'result-receipt', correction: '要投影仪' })
+  assert.equal(calls[0][3].timeout, 20000); assert.equal(assistant.data.items[0].name, '相机')
+  pending.resolve({ status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', items: [], confirmationToken: 'new-consent', feedbackState: 'PENDING' }); await send
+  assert.equal(assistant.data.status, 'CONFIRM_SCOPE'); assert.equal(calls.length, 1)
+  assert.match(assistant.data.feedbackNote, /核实/)
+})
+test('feedback transport failure preserves displayed facts and never retries a consumed receipt', async () => {
+  const assistant = page('assistant', async () => { throw Error('offline') })
+  assistant.accept(feedbackResult); assistant.missed(feedbackEvent(0)); assistant.feedbackInput({ detail: { value: '时间不对' } })
+  await assistant.continueFeedback()
+  assert.equal(assistant.data.items[0].name, '相机'); assert.equal(assistant.data.sections[0].feedbackToken, '')
+  assert.equal(assistant.data.busy, false); assert.match(assistant.data.feedbackNote, /没能完成/)
+})
+test('late feedback responses cannot replace another page state and account switch clears private results', async () => {
+  let token = 'account-one'; const pending = deferred()
+  const assistant = page('assistant', () => pending.promise, { getStorageSync: () => token })
+  assistant.onLoad(); assistant.accept(feedbackResult); assistant.missed(feedbackEvent(0)); assistant.feedbackInput({ detail: { value: '没找到' } })
+  const send = assistant.continueFeedback(); assistant.onHide(); token = 'account-two'; assistant.onShow()
+  pending.resolve({ status: 'QUERY', items: [{ id: 99 }], feedbackState: 'PENDING' }); await send
+  assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.sections.length, 0); assert.equal(assistant.data.feedbackNote, '')
+})
+test('batch feedback is bound to the chosen completed section and is absent from previews', () => {
+  const assistant = page('assistant', async () => ({}))
+  assistant.accept({ status: 'CONFIRM_SCOPE', intent: 'BATCH', sections: [feedbackResult, { status: 'CONFIRM_SCOPE', items: [] }] })
+  assistant.missed(feedbackEvent(1)); assert.equal(assistant.data.feedbackIndex, -1)
+  assistant.missed(feedbackEvent(0)); assert.equal(assistant.data.feedbackIndex, 0)
+})
 test('model requests have a bounded longer client deadline while fixed queries keep the ordinary deadline', async () => {
   const calls = []
   const assistant = page('assistant', async (url, method, body, options) => { calls.push({ url, options }); return { status: 'UNKNOWN', items: [] } })

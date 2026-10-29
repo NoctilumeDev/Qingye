@@ -129,3 +129,10 @@
 .muted { font-size:24rpx; color:#65767d; line-height:1.7; margin:12rpx 0; }
 .correct { display:inline-flex; align-items:center; min-height:64rpx; margin:12rpx 0 0; padding:0 18rpx; line-height:2; border-radius:16rpx; font-size:23rpx; color:#187553; background:#fff; }
 .footnote { margin-top:26rpx; text-align:center; }
+.query-feedback { margin-top:28rpx; padding-top:24rpx; border-top:1rpx solid #e1ece6; color:#31594b; font-size:26rpx; line-height:1.7; }
+.feedback-title { font-weight:600; }
+.feedback-actions { display:flex; flex-wrap:wrap; gap:16rpx; margin-top:18rpx; }
+.feedback-actions qy-action { flex:1; min-width:180rpx; }
+.feedback-editor { margin-top:24rpx; }
+.feedback-input { display:block; width:100%; box-sizing:border-box; height:160rpx; margin-top:14rpx; padding:18rpx; border:1rpx solid #dce7e1; border-radius:16rpx; background:#f7faf8; color:#243b37; font-size:28rpx; }
+.feedback-note { margin:20rpx 0; color:#53655e; font-size:24rpx; line-height:1.7; }

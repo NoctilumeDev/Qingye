@@ -78,7 +78,21 @@
       <text wx:if="{{item.description}}" class="detail-description" selectable="true">{{item.description}}</text>
     </view>
     <qy-action wx:if="{{section.hasMore && section.nextToken}}" variant="secondary" data-index="{{sectionIndex}}" bindactivate="more" loading="{{busy}}" disabled="{{busy}}">继续加载</qy-action>
+    <view wx:if="{{section.status === 'QUERY' && section.feedbackToken}}" class="query-feedback">
+      <text wx:if="{{section.feedbackDone}}">{{feedbackCopy.thanks}}</text>
+      <block wx:else>
+        <view class="feedback-title">{{feedbackCopy.title}}</view>
+        <view class="feedback-actions"><qy-action variant="secondary" size="compact" data-index="{{sectionIndex}}" disabled="{{busy}}" bindactivate="found">{{feedbackCopy.found}}</qy-action><qy-action variant="neutral" size="compact" data-index="{{sectionIndex}}" disabled="{{busy}}" bindactivate="missed">{{feedbackCopy.missed}}</qy-action></view>
+      </block>
+      <view wx:if="{{feedbackIndex === sectionIndex}}" class="feedback-editor">
+        <view>{{feedbackCopy.question}}</view>
+        <textarea class="feedback-input" maxlength="300" value="{{feedbackText}}" placeholder="{{feedbackCopy.placeholder}}" bindinput="feedbackInput" disabled="{{busy}}" />
+        <view class="muted">{{feedbackCopy.note}}</view>
+        <view class="feedback-actions"><qy-action variant="primary" disabled="{{busy}}" loading="{{busy}}" bindactivate="continueFeedback">{{feedbackCopy.proceed}}</qy-action><qy-action variant="neutral" disabled="{{busy}}" bindactivate="cancelFeedback">{{feedbackCopy.cancel}}</qy-action></view>
+      </view>
+    </view>
   </view>
+  <view wx:if="{{feedbackNote}}" class="feedback-note">{{feedbackNote}}</view>
   <view class="footnote">青野只提供查询。报名、审批、借用和修改仍需在对应页面完成。</view>
   <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
 </view>

@@ -1,20 +1,31 @@
 const { request, guard, confirm } = require('../../utils/request')
 const { keyboard } = require('../../utils/keyboard')
 const contract = require('../../utils/assistant-contract')
-const emptyTokens = { confirmationToken: '', nextToken: '', clarificationToken: '', retryToken: '' }
+const feedbackCopy = require('../../utils/assistant-feedback-copy')
+const emptyFeedback = { feedbackIndex: -1, feedbackText: '', feedbackNote: '' }
+const emptyTokens = { confirmationToken: '', nextToken: '', clarificationToken: '', retryToken: '', feedbackToken: '' }
 const emptyPresentation = { statusTitle: '', statusHint: '', statusTone: 'neutral', showAnswerText: false }
 Page({
-  data: { question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens,
+  data: { question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens, ...emptyFeedback, feedbackCopy,
     ...emptyPresentation, hasMore: false, facetOpen: false, objects: contract.intentLabels, objectIndex: 0, times: contract.timeLabels, timeKeys: contract.times, timeIndex: 0,
     categories: ['全部分类', ...contract.categoryLabels], categoryIndex: 0, states: ['全部状态'], stateIndex: 0,
     entity: '', location: '', date: '', suggestions: contract.entryCommands.map(c => c.label),
     items: [], sections: [], queuedQueries: [], queuedSummaries: [], hasPendingQueries: false, draftSummaries: [], missingConditions: [], facetPending: [], completionDraft: null, entityPending: false, editingIndex: -1, followupQuestion: '', clarificationRound: 0, maxClarifications: contract.maxClarifications, replyText: '', recoveryMessage: '', keyboardHeight: 0 },
-  onLoad() { if (guard()) this.keyboardLayout = keyboard(this, 'keyboardHeight') },
+  onLoad() { if (guard()) this.keyboardLayout = keyboard(this, 'keyboardHeight'); this.pageSession = wx.getStorageSync ? wx.getStorageSync('qingye-token') : '' },
+  onShow() {
+    const session = wx.getStorageSync ? wx.getStorageSync('qingye-token') : ''
+    if (this.pageSession != null && session !== this.pageSession) {
+      this.onHide(); this.lastPreviewRequest = null; this.syncQueue([])
+      this.setData({ ...emptyTokens, ...emptyFeedback, ...emptyPresentation, question: '', answer: '', items: [], sections: [], status: '', intent: '', interpretation: '', entity: '', location: '', date: '', replyText: '', followupQuestion: '', facetOpen: false, completionDraft: null, draftSummaries: [], missingConditions: [], facetPending: [], entityPending: false, recoveryMessage: '' })
+    }
+    this.pageSession = session
+  },
   input(e) { if (!this.data.busy) { this.lastPreviewRequest = null; this.setData({ question: e.detail.value, ...emptyTokens, ...emptyPresentation, sections: [], items: [], answer: '', interpretation: '', intent: '', status: '', hasMore: false, recoveryMessage: '' }) } },
   replyInput(e) { if (!this.data.busy) this.setData({ replyText: e.detail.value }) },
   focusQuestion(e) { this.keyboardLayout.focus('#assistant-query', 16, '', e && e.detail) },
   blurQuestion() { this.keyboardLayout.blur() }, keyboardChange(e) { this.keyboardLayout.change(e) },
   onHide() {
+    this.setData({ ...emptyFeedback })
     this.queryGeneration = (this.queryGeneration || 0) + 1
     if (this.data.busy) this.setData({ ...emptyTokens, sections: this.data.sections.map(s => ({ ...s, ...emptyTokens })), busy: false, recoveryMessage: '页面离开时请求尚未完成，请重新核对查询范围后继续。' })
     if (this.keyboardLayout) this.keyboardLayout.reset()
@@ -22,6 +33,37 @@ Page({
   onUnload() { this.onHide(); this.setData({ ...emptyTokens, sections: [] }) },
   suggestion(e) { if (this.data.busy) return; this.setData({ question: e.currentTarget.dataset.question }); return this.ask() },
   invalidate() { this.setData({ ...emptyTokens, sections: this.data.sections.map(s => ({ ...s, ...emptyTokens })), recoveryMessage: '' }) },
+  found(e) {
+    if (this.data.busy) return
+    const index = Number(e.currentTarget.dataset.index), sections = this.data.sections.slice()
+    if (!sections[index] || sections[index].status !== 'QUERY') return
+    sections[index] = { ...sections[index], feedbackDone: true }
+    this.setData({ sections, ...emptyFeedback })
+  },
+  missed(e) {
+    if (this.data.busy) return
+    const index = Number(e.currentTarget.dataset.index), section = this.data.sections[index]
+    if (section && section.status === 'QUERY' && section.feedbackToken) this.setData({ feedbackIndex: index, feedbackText: '', feedbackNote: '' })
+  },
+  feedbackInput(e) { if (!this.data.busy) this.setData({ feedbackText: e.detail.value }) },
+  cancelFeedback() { if (!this.data.busy) this.setData({ ...emptyFeedback }) },
+  async continueFeedback() {
+    const section = this.data.sections[this.data.feedbackIndex]
+    if (this.data.busy || !section || !section.feedbackToken) return
+    const correction = this.data.feedbackText.trim()
+    if (!correction) return wx.showToast({ title: feedbackCopy.missing, icon: 'none' })
+    const token = section.feedbackToken, generation = this.queryGeneration = (this.queryGeneration || 0) + 1
+    this.setData({ busy: true, feedbackNote: '' })
+    try {
+      const result = await request('/assistant/feedback', 'POST', { token, correction }, { timeout: 20000 })
+      if (generation !== this.queryGeneration) return
+      this.lastPreviewRequest = null; this.syncQueue([]); this.accept(result)
+      this.setData({ ...emptyFeedback, busy: false, feedbackNote: feedbackCopy.states[result.feedbackState] || '' })
+      if (result.status === 'CLARIFY' && result.clarificationToken) await this.promptClarification(generation)
+    } catch (e) {
+      if (generation === this.queryGeneration) { this.invalidate(); this.setData({ feedbackIndex: -1, feedbackNote: feedbackCopy.failed }) }
+    } finally { if (generation === this.queryGeneration) this.setData({ busy: false }) }
+  },
   correct() {
     if (this.data.busy) return
     this.invalidate()
@@ -193,6 +235,7 @@ Page({
     if (['CLARIFY', 'CLARIFICATION_PAUSED', 'UNSUPPORTED', 'SYSTEM_ERROR'].includes(result.status)) this.setData({ facetOpen: true })
   },
   async load(url, body) {
+    this.setData({ ...emptyFeedback })
     const generation = this.queryGeneration = (this.queryGeneration || 0) + 1
     if (url === '/assistant/query' || url === '/assistant/queries') this.lastPreviewRequest = { url, body }
     this.setData({ busy: true, answer: '', items: [], sections: [], intent: '', interpretation: '', status: '', ...emptyTokens, ...emptyPresentation, hasMore: false, recoveryMessage: '' })

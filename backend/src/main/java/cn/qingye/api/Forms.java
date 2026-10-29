@@ -29,6 +29,7 @@ public final class Forms {
     public record AssistantConfirmation(@NotBlank @Pattern(regexp="[a-fA-F0-9-]{36}") String token) {
     }
     public record AssistantClarification(@NotBlank @Pattern(regexp="[a-fA-F0-9-]{36}") String token,@NotBlank @Size(max=300) String answer) {}
+    public record AssistantFeedback(@NotBlank @Pattern(regexp="[a-fA-F0-9-]{36}") String token,@NotBlank @Size(max=300) String correction) {}
     public record AssistantQueries(@NotEmpty @Size(min=2,max=4) List<@NotNull @Valid AssistantQuery> queries) {
         public AssistantQueries {
             queries=queries==null?null:java.util.Collections.unmodifiableList(new java.util.ArrayList<>(queries));

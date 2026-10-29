@@ -36,3 +36,5 @@ qingye:
   llm-url: ${QINGYE_LLM_URL:}
   llm-key: ${QINGYE_LLM_KEY:}
   llm-model: ${QINGYE_LLM_MODEL:}
+  feedback-url: ${QINGYE_FEEDBACK_URL:}
+  feedback-key: ${QINGYE_FEEDBACK_KEY:}
