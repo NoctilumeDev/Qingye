@@ -22,6 +22,17 @@ public final class AssistantContract {
         return times(intent).stream().map(key->overrides.getOrDefault(key,labels.get(TIMES.indexOf(key)))).toList();
     }
     public static List<String> intentLabels(){return list("intentLabels");}
+    /** Publish effective options, including inherited values, rather than the storage override table. */
+    public static Map<String,Object> locatorView(){
+        var timesByIntent=new LinkedHashMap<String,List<String>>();
+        var labelsByIntent=new LinkedHashMap<String,List<String>>();
+        for(String intent:INTENTS){timesByIntent.put(intent,times(intent));labelsByIntent.put(intent,timeLabels(intent));}
+        return Map.of("intents",INTENTS,"labels",intentLabels(),"explicitSelections",locatorSelections(),
+            "querySemantics",SPEC.get("querySemantics"),"states",SPEC.get("states"),
+            "timeOptionsByIntent",Collections.unmodifiableMap(timesByIntent),
+            "timeLabelsByIntent",Collections.unmodifiableMap(labelsByIntent),"categories",CATEGORIES,
+            "maxClarifications",MAX_CLARIFICATIONS,"clarificationQuestions",clarificationQuestions());
+    }
     @SuppressWarnings("unchecked") public static List<String> requiredFields(String intent){return ((Map<String,List<String>>)SPEC.get("requiredFields")).getOrDefault(intent,List.of());}
     @SuppressWarnings("unchecked") public static List<String> stateLabels(String intent){var labels=(Map<String,String>)SPEC.get("stateLabels");return states(intent).stream().map(labels::get).toList();}
     @SuppressWarnings("unchecked") public static Optional<QueryPlan> entryCommand(String text){

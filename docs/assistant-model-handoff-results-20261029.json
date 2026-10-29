@@ -1,0 +1,1589 @@
+{
+  "baseHead": "0a7cb5631e539c4df9e84bbfdef4aa056ba0b2de",
+  "manifestSha256": "e0ca64c9562708084a199f9247d04d357f21a482d591dd2a7fa0341099dfa175",
+  "rubric": "business-coverage-v1",
+  "scope": "Prior 558 raw responses replayed without regeneration. New live subset includes every previous deviation, all permitted broad-collection cases and fixed positive/security controls. Original cases, native fixture, scoring and business rubric retained byte-for-byte. Multiple repairs and fresh model draws prevent attributing improvements to prompt order alone. Confirmation is simulated; collection transport has a 60 second diagnostic limit, while native product has a 15 second deadline.",
+  "providers": {
+    "deepseek": {
+      "before": {
+        "calls": 62,
+        "categories": {
+          "QUERY_COMPLETED": 24,
+          "EXPECTED_STOP": 34,
+          "STOP_CLASSIFICATION_MISMATCH": 4
+        },
+        "businessSatisfied": 24,
+        "expectedStops": 34,
+        "allExpected": 58,
+        "readOnlyObservations": 62,
+        "httpStatuses": {
+          "200": 62
+        },
+        "responseModels": {
+          "deepseek-flash": 62
+        },
+        "usage": {
+          "prompt_tokens": 178026,
+          "completion_tokens": 2362,
+          "total_tokens": 180388
+        },
+        "usageMissing": 0,
+        "latencyMs": {
+          "median": 5469.0,
+          "p95": 6140.0,
+          "max": 7922.0
+        },
+        "atLeast8Seconds": 0,
+        "atLeast15Seconds": 0,
+        "privateLoanIdViolations": 0,
+        "privateCanaryLeaks": 0,
+        "deviations": [
+          {
+            "round": "before",
+            "provider": "deepseek",
+            "index": 11,
+            "caseId": "BQ-012",
+            "repeat": 0,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5656.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "deepseek",
+            "index": 81,
+            "caseId": "BQ-082",
+            "repeat": 0,
+            "question": "相机以后什么时候一定有",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "CLARIFY",
+            "reason": "MISSING_INFO",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5469.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":\"MISSING_INFO\",\"selections\":[],\"question\":\"TIME_SCOPE\"}"
+          },
+          {
+            "round": "before",
+            "provider": "deepseek",
+            "index": 104,
+            "caseId": "BQ-012",
+            "repeat": 1,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5375.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "deepseek",
+            "index": 174,
+            "caseId": "BQ-082",
+            "repeat": 1,
+            "question": "相机以后什么时候一定有",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "CLARIFY",
+            "reason": "MISSING_INFO",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5703.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":\"MISSING_INFO\",\"selections\":[],\"question\":\"TIME_SCOPE\"}"
+          }
+        ]
+      },
+      "after": {
+        "calls": 62,
+        "categories": {
+          "QUERY_COMPLETED": 24,
+          "EXPECTED_STOP": 34,
+          "STOP_CLASSIFICATION_MISMATCH": 1,
+          "WRONG_TARGET_OR_CONDITION": 2,
+          "PROTOCOL_FAILURE": 1
+        },
+        "businessSatisfied": 24,
+        "expectedStops": 34,
+        "allExpected": 58,
+        "readOnlyObservations": 62,
+        "httpStatuses": {
+          "200": 62
+        },
+        "responseModels": {
+          "deepseek-flash": 62
+        },
+        "usage": {
+          "prompt_tokens": 208468,
+          "completion_tokens": 2358,
+          "total_tokens": 210826
+        },
+        "usageMissing": 0,
+        "latencyMs": {
+          "median": 5562.0,
+          "p95": 8656.0,
+          "max": 9828.0
+        },
+        "atLeast8Seconds": 5,
+        "atLeast15Seconds": 0,
+        "privateLoanIdViolations": 0,
+        "privateCanaryLeaks": 0,
+        "deviations": [
+          {
+            "round": "after",
+            "provider": "deepseek",
+            "index": 11,
+            "caseId": "BQ-012",
+            "repeat": 0,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5391.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "after",
+            "provider": "deepseek",
+            "index": 29,
+            "caseId": "BQ-030",
+            "repeat": 0,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "相机",
+              "category": null,
+              "timeOption": "TOMORROW",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              1,
+              4
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5485.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+          },
+          {
+            "round": "after",
+            "provider": "deepseek",
+            "index": 104,
+            "caseId": "BQ-012",
+            "repeat": 1,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6109.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"PAST\",\"source\":\"昨天\"}],\"question\":null}"
+          },
+          {
+            "round": "after",
+            "provider": "deepseek",
+            "index": 122,
+            "caseId": "BQ-030",
+            "repeat": 1,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "相机",
+              "category": null,
+              "timeOption": "TOMORROW",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              1,
+              4
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5328.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+          }
+        ]
+      },
+      "transitions": [
+        {
+          "before": "EXPECTED_STOP",
+          "after": "EXPECTED_STOP",
+          "count": 32
+        },
+        {
+          "before": "EXPECTED_STOP",
+          "after": "WRONG_TARGET_OR_CONDITION",
+          "count": 2
+        },
+        {
+          "before": "QUERY_COMPLETED",
+          "after": "QUERY_COMPLETED",
+          "count": 24
+        },
+        {
+          "before": "STOP_CLASSIFICATION_MISMATCH",
+          "after": "EXPECTED_STOP",
+          "count": 2
+        },
+        {
+          "before": "STOP_CLASSIFICATION_MISMATCH",
+          "after": "PROTOCOL_FAILURE",
+          "count": 1
+        },
+        {
+          "before": "STOP_CLASSIFICATION_MISMATCH",
+          "after": "STOP_CLASSIFICATION_MISMATCH",
+          "count": 1
+        }
+      ],
+      "newDeviations": [
+        {
+          "round": "after",
+          "provider": "deepseek",
+          "index": 29,
+          "caseId": "BQ-030",
+          "repeat": 0,
+          "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+          "category": "WRONG_TARGET_OR_CONDITION",
+          "status": "CONFIRM_SCOPE",
+          "reason": null,
+          "expected": {
+            "status": "UNSUPPORTED"
+          },
+          "plan": {
+            "action": "QUERY",
+            "intent": "EQUIPMENT",
+            "entity": "相机",
+            "category": null,
+            "timeOption": "TOMORROW",
+            "date": null,
+            "status": "ANY",
+            "location": null,
+            "reason": null,
+            "queries": null
+          },
+          "actualIds": [
+            1,
+            4
+          ],
+          "oracleIds": null,
+          "readOnly": true,
+          "latencyMs": 5485.0,
+          "httpStatus": 200,
+          "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+        },
+        {
+          "round": "after",
+          "provider": "deepseek",
+          "index": 122,
+          "caseId": "BQ-030",
+          "repeat": 1,
+          "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+          "category": "WRONG_TARGET_OR_CONDITION",
+          "status": "CONFIRM_SCOPE",
+          "reason": null,
+          "expected": {
+            "status": "UNSUPPORTED"
+          },
+          "plan": {
+            "action": "QUERY",
+            "intent": "EQUIPMENT",
+            "entity": "相机",
+            "category": null,
+            "timeOption": "TOMORROW",
+            "date": null,
+            "status": "ANY",
+            "location": null,
+            "reason": null,
+            "queries": null
+          },
+          "actualIds": [
+            1,
+            4
+          ],
+          "oracleIds": null,
+          "readOnly": true,
+          "latencyMs": 5328.0,
+          "httpStatus": 200,
+          "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+        }
+      ]
+    },
+    "qwen": {
+      "before": {
+        "calls": 62,
+        "categories": {
+          "QUERY_COMPLETED": 21,
+          "WRONG_TARGET_OR_CONDITION": 2,
+          "STOP_CLASSIFICATION_MISMATCH": 4,
+          "EXPECTED_STOP": 26,
+          "PROTOCOL_FAILURE": 7,
+          "UNNECESSARY_STOP": 1,
+          "TRANSPORT_FAILURE": 1
+        },
+        "businessSatisfied": 21,
+        "expectedStops": 26,
+        "allExpected": 47,
+        "readOnlyObservations": 62,
+        "httpStatuses": {
+          "200": 61,
+          "None": 1
+        },
+        "responseModels": {
+          "qwen-plus": 61,
+          "UNKNOWN": 1
+        },
+        "usage": {
+          "prompt_tokens": 164582,
+          "completion_tokens": 2741,
+          "total_tokens": 167323
+        },
+        "usageMissing": 1,
+        "latencyMs": {
+          "median": 5953.0,
+          "p95": 7453.0,
+          "max": 9547.0
+        },
+        "atLeast8Seconds": 2,
+        "atLeast15Seconds": 0,
+        "privateLoanIdViolations": 0,
+        "privateCanaryLeaks": 0,
+        "deviations": [
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 10,
+            "caseId": "BQ-011",
+            "repeat": 0,
+            "question": "请只查我今天借用的器材记录",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "MY_LOANS",
+              "entity": null,
+              "category": null,
+              "timeOption": "TODAY",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              13,
+              15,
+              17,
+              19,
+              21,
+              23
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5985.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TODAY\",\"source\":\"今天\"}],\"question\":null}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 11,
+            "caseId": "BQ-012",
+            "repeat": 0,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6187.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"CLARIFY\",\n  \"intent\": \"MY_LOANS\",\n  \"search\": null,\n  \"reason\": \"UNSUPPORTED_FILTER\",\n  \"selections\": [],\n  \"question\": \"HARD_CONDITION\"\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 22,
+            "caseId": "BQ-023",
+            "repeat": 0,
+            "question": "器材库存、摄影活动、归还记录都讨论过了，我本次唯一请求是看手机当前库存",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "手机",
+              "category": null,
+              "timeOption": "CURRENT",
+              "reason": null,
+              "date": null,
+              "status": "ANY",
+              "location": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [],
+            "readOnly": true,
+            "latencyMs": 5953.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"手机\",\"reason\":null,\"selections\":[{\"field\":\"STATE\",\"value\":\"CURRENT\",\"source\":\"当前库存\"}],\"question\":null}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 29,
+            "caseId": "BQ-030",
+            "repeat": 0,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 7250.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"TOMORROW\",\n      \"source\": \"明天\"\n    },\n    {\n      \"field\": \"STATE\",\n      \"value\": \"APPROVED\",\n      \"source\": \"已批准\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 40,
+            "caseId": "BQ-041",
+            "repeat": 0,
+            "question": "查询过去已经结束的全部公开活动",
+            "category": "UNNECESSARY_STOP",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "action": "QUERY",
+              "intent": "ACTIVITIES",
+              "entity": null,
+              "category": null,
+              "timeOption": "PAST",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "readOnly": true,
+            "latencyMs": 5828.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":null,\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 78,
+            "caseId": "BQ-079",
+            "repeat": 0,
+            "question": "我今天借的相机有哪些",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 7453.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"CLARIFY\",\n  \"intent\": \"MY_LOANS\",\n  \"search\": \"相机\",\n  \"reason\": \"UNSUPPORTED_FILTER\",\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"TODAY\",\n      \"source\": \"今天\"\n    }\n  ],\n  \"question\": \"HARD_CONDITION\"\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 81,
+            "caseId": "BQ-082",
+            "repeat": 0,
+            "question": "相机以后什么时候一定有",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6656.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"FUTURE\",\n      \"source\": \"以后\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 82,
+            "caseId": "BQ-083",
+            "repeat": 0,
+            "question": "查活动报名人数最多的前三个",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5672.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":null,\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 103,
+            "caseId": "BQ-011",
+            "repeat": 1,
+            "question": "请只查我今天借用的器材记录",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "MY_LOANS",
+              "entity": null,
+              "category": null,
+              "timeOption": "TODAY",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              13,
+              15,
+              17,
+              19,
+              21,
+              23
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6515.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TODAY\",\"source\":\"今天\"}],\"question\":null}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 104,
+            "caseId": "BQ-012",
+            "repeat": 1,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6141.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"CLARIFY\",\n  \"intent\": \"MY_LOANS\",\n  \"search\": null,\n  \"reason\": \"UNSUPPORTED_FILTER\",\n  \"selections\": [],\n  \"question\": \"HARD_CONDITION\"\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 122,
+            "caseId": "BQ-030",
+            "repeat": 1,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 7282.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"TOMORROW\",\n      \"source\": \"明天\"\n    },\n    {\n      \"field\": \"STATE\",\n      \"value\": \"APPROVED\",\n      \"source\": \"已批准\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 160,
+            "caseId": "BQ-068",
+            "repeat": 1,
+            "question": "查摄像机当前库存",
+            "category": "TRANSPORT_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "MODEL_UNAVAILABLE",
+            "expected": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "摄像机",
+              "category": null,
+              "timeOption": "CURRENT",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [],
+            "readOnly": true,
+            "latencyMs": 9547.0,
+            "httpStatus": null,
+            "candidateRaw": null
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 167,
+            "caseId": "BQ-075",
+            "repeat": 1,
+            "question": "相机放在哪里",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 5594.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":null,\"search\":\"相机\",\"reason\":\"UNSUPPORTED_FILTER\",\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 171,
+            "caseId": "BQ-079",
+            "repeat": 1,
+            "question": "我今天借的相机有哪些",
+            "category": "STOP_CLASSIFICATION_MISMATCH",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6046.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"CLARIFY\",\n  \"intent\": null,\n  \"search\": \"相机\",\n  \"reason\": \"UNSUPPORTED_FILTER\",\n  \"selections\": [],\n  \"question\": \"HARD_CONDITION\"\n}"
+          },
+          {
+            "round": "before",
+            "provider": "qwen",
+            "index": 174,
+            "caseId": "BQ-082",
+            "repeat": 1,
+            "question": "相机以后什么时候一定有",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6578.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"FUTURE\",\n      \"source\": \"以后\"\n    }\n  ],\n  \"question\": null\n}"
+          }
+        ]
+      },
+      "after": {
+        "calls": 62,
+        "categories": {
+          "QUERY_COMPLETED": 24,
+          "WRONG_TARGET_OR_CONDITION": 4,
+          "PROTOCOL_FAILURE": 6,
+          "EXPECTED_STOP": 27,
+          "USEFUL_COLLECTION": 1
+        },
+        "businessSatisfied": 25,
+        "expectedStops": 27,
+        "allExpected": 52,
+        "readOnlyObservations": 62,
+        "httpStatuses": {
+          "200": 62
+        },
+        "responseModels": {
+          "qwen-plus": 62
+        },
+        "usage": {
+          "prompt_tokens": 195362,
+          "completion_tokens": 2832,
+          "total_tokens": 198194
+        },
+        "usageMissing": 0,
+        "latencyMs": {
+          "median": 6180.0,
+          "p95": 9016.0,
+          "max": 10110.0
+        },
+        "atLeast8Seconds": 10,
+        "atLeast15Seconds": 0,
+        "privateLoanIdViolations": 0,
+        "privateCanaryLeaks": 0,
+        "deviations": [
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 10,
+            "caseId": "BQ-011",
+            "repeat": 0,
+            "question": "请只查我今天借用的器材记录",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "MY_LOANS",
+              "entity": null,
+              "category": null,
+              "timeOption": "TODAY",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              13,
+              15,
+              17,
+              19,
+              21,
+              23
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6000.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TODAY\",\"source\":\"今天\"}],\"question\":null}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 11,
+            "caseId": "BQ-012",
+            "repeat": 0,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6594.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"MY_LOANS\",\n  \"search\": null,\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"PAST\",\n      \"source\": \"昨天\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 29,
+            "caseId": "BQ-030",
+            "repeat": 0,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "相机",
+              "category": null,
+              "timeOption": "TOMORROW",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              1,
+              4
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6719.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"TOMORROW\",\n      \"source\": \"明天\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 78,
+            "caseId": "BQ-079",
+            "repeat": 0,
+            "question": "我今天借的相机有哪些",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6094.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"CLARIFY\",\n  \"intent\": null,\n  \"search\": \"相机\",\n  \"reason\": \"DATE_MEANING\",\n  \"selections\": [],\n  \"question\": \"DATE_MEANING\"\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 81,
+            "caseId": "BQ-082",
+            "repeat": 0,
+            "question": "相机以后什么时候一定有",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 7250.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"FUTURE\",\n      \"source\": \"以后\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 103,
+            "caseId": "BQ-011",
+            "repeat": 1,
+            "question": "请只查我今天借用的器材记录",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "MY_LOANS",
+              "entity": null,
+              "category": null,
+              "timeOption": "TODAY",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              13,
+              15,
+              17,
+              19,
+              21,
+              23
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6015.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"MY_LOANS\",\"search\":null,\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TODAY\",\"source\":\"今天\"}],\"question\":null}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 104,
+            "caseId": "BQ-012",
+            "repeat": 1,
+            "question": "仅看昨天我的借用记录，不要全部历史",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6672.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"MY_LOANS\",\n  \"search\": null,\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"PAST\",\n      \"source\": \"昨天\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 122,
+            "caseId": "BQ-030",
+            "repeat": 1,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "相机",
+              "category": null,
+              "timeOption": "TOMORROW",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              1,
+              4
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 7078.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"TOMORROW\",\n      \"source\": \"明天\"\n    }\n  ],\n  \"question\": null\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 171,
+            "caseId": "BQ-079",
+            "repeat": 1,
+            "question": "我今天借的相机有哪些",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "CLARIFY"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6172.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"CLARIFY\",\n  \"intent\": null,\n  \"search\": \"相机\",\n  \"reason\": \"DATE_MEANING\",\n  \"selections\": [],\n  \"question\": \"DATE_MEANING\"\n}"
+          },
+          {
+            "round": "after",
+            "provider": "qwen",
+            "index": 174,
+            "caseId": "BQ-082",
+            "repeat": 1,
+            "question": "相机以后什么时候一定有",
+            "category": "PROTOCOL_FAILURE",
+            "status": "SYSTEM_ERROR",
+            "reason": "INVALID_PROTOCOL",
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6609.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\n  \"action\": \"LOCATE\",\n  \"intent\": \"EQUIPMENT\",\n  \"search\": \"相机\",\n  \"reason\": null,\n  \"selections\": [\n    {\n      \"field\": \"TIME\",\n      \"value\": \"FUTURE\",\n      \"source\": \"以后\"\n    }\n  ],\n  \"question\": null\n}"
+          }
+        ]
+      },
+      "transitions": [
+        {
+          "before": "EXPECTED_STOP",
+          "after": "EXPECTED_STOP",
+          "count": 25
+        },
+        {
+          "before": "EXPECTED_STOP",
+          "after": "USEFUL_COLLECTION",
+          "count": 1
+        },
+        {
+          "before": "PROTOCOL_FAILURE",
+          "after": "EXPECTED_STOP",
+          "count": 2
+        },
+        {
+          "before": "PROTOCOL_FAILURE",
+          "after": "PROTOCOL_FAILURE",
+          "count": 2
+        },
+        {
+          "before": "PROTOCOL_FAILURE",
+          "after": "QUERY_COMPLETED",
+          "count": 1
+        },
+        {
+          "before": "PROTOCOL_FAILURE",
+          "after": "WRONG_TARGET_OR_CONDITION",
+          "count": 2
+        },
+        {
+          "before": "QUERY_COMPLETED",
+          "after": "QUERY_COMPLETED",
+          "count": 21
+        },
+        {
+          "before": "STOP_CLASSIFICATION_MISMATCH",
+          "after": "PROTOCOL_FAILURE",
+          "count": 4
+        },
+        {
+          "before": "TRANSPORT_FAILURE",
+          "after": "QUERY_COMPLETED",
+          "count": 1
+        },
+        {
+          "before": "UNNECESSARY_STOP",
+          "after": "QUERY_COMPLETED",
+          "count": 1
+        },
+        {
+          "before": "WRONG_TARGET_OR_CONDITION",
+          "after": "WRONG_TARGET_OR_CONDITION",
+          "count": 2
+        }
+      ],
+      "newDeviations": []
+    },
+    "gpt": {
+      "before": {
+        "calls": 62,
+        "categories": {
+          "QUERY_COMPLETED": 20,
+          "EXPECTED_STOP": 33,
+          "USEFUL_COLLECTION": 5,
+          "UNNECESSARY_STOP": 4
+        },
+        "businessSatisfied": 25,
+        "expectedStops": 33,
+        "allExpected": 58,
+        "readOnlyObservations": 62,
+        "httpStatuses": {
+          "200": 62
+        },
+        "responseModels": {
+          "gpt-6-astra": 62
+        },
+        "usage": {
+          "prompt_tokens": 182324,
+          "completion_tokens": 2988,
+          "total_tokens": 185312
+        },
+        "usageMissing": 0,
+        "latencyMs": {
+          "median": 6703.0,
+          "p95": 7937.0,
+          "max": 8187.0
+        },
+        "atLeast8Seconds": 1,
+        "atLeast15Seconds": 0,
+        "privateLoanIdViolations": 0,
+        "privateCanaryLeaks": 0,
+        "deviations": [
+          {
+            "round": "before",
+            "provider": "gpt",
+            "index": 43,
+            "caseId": "BQ-044",
+            "repeat": 0,
+            "question": "查询本周剩余时间的全部公开活动",
+            "category": "UNNECESSARY_STOP",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "action": "QUERY",
+              "intent": "ACTIVITIES",
+              "entity": null,
+              "category": null,
+              "timeOption": "THIS_WEEK",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24
+            ],
+            "readOnly": true,
+            "latencyMs": 6656.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"ACTIVITIES\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "gpt",
+            "index": 44,
+            "caseId": "BQ-045",
+            "repeat": 0,
+            "question": "查询本周末剩余时间的全部公开活动",
+            "category": "UNNECESSARY_STOP",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "action": "QUERY",
+              "intent": "ACTIVITIES",
+              "entity": null,
+              "category": null,
+              "timeOption": "WEEKEND",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [],
+            "readOnly": true,
+            "latencyMs": 7297.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"ACTIVITIES\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "gpt",
+            "index": 136,
+            "caseId": "BQ-044",
+            "repeat": 1,
+            "question": "查询本周剩余时间的全部公开活动",
+            "category": "UNNECESSARY_STOP",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "action": "QUERY",
+              "intent": "ACTIVITIES",
+              "entity": null,
+              "category": null,
+              "timeOption": "THIS_WEEK",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24
+            ],
+            "readOnly": true,
+            "latencyMs": 6703.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"ACTIVITIES\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          },
+          {
+            "round": "before",
+            "provider": "gpt",
+            "index": 137,
+            "caseId": "BQ-045",
+            "repeat": 1,
+            "question": "查询本周末剩余时间的全部公开活动",
+            "category": "UNNECESSARY_STOP",
+            "status": "UNSUPPORTED",
+            "reason": "UNSUPPORTED_FILTER",
+            "expected": {
+              "action": "QUERY",
+              "intent": "ACTIVITIES",
+              "entity": null,
+              "category": null,
+              "timeOption": "WEEKEND",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null
+            },
+            "plan": null,
+            "actualIds": [],
+            "oracleIds": [],
+            "readOnly": true,
+            "latencyMs": 7422.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"CLARIFY\",\"intent\":\"ACTIVITIES\",\"search\":null,\"reason\":\"UNSUPPORTED_FILTER\",\"selections\":[],\"question\":\"HARD_CONDITION\"}"
+          }
+        ]
+      },
+      "after": {
+        "calls": 62,
+        "categories": {
+          "QUERY_COMPLETED": 24,
+          "EXPECTED_STOP": 31,
+          "USEFUL_COLLECTION": 5,
+          "WRONG_TARGET_OR_CONDITION": 2
+        },
+        "businessSatisfied": 29,
+        "expectedStops": 31,
+        "allExpected": 60,
+        "readOnlyObservations": 62,
+        "httpStatuses": {
+          "200": 62
+        },
+        "responseModels": {
+          "gpt-6-astra": 62
+        },
+        "usage": {
+          "prompt_tokens": 213696,
+          "completion_tokens": 2858,
+          "total_tokens": 216554
+        },
+        "usageMissing": 0,
+        "latencyMs": {
+          "median": 7070.5,
+          "p95": 10688.0,
+          "max": 11359.0
+        },
+        "atLeast8Seconds": 16,
+        "atLeast15Seconds": 0,
+        "privateLoanIdViolations": 0,
+        "privateCanaryLeaks": 0,
+        "deviations": [
+          {
+            "round": "after",
+            "provider": "gpt",
+            "index": 29,
+            "caseId": "BQ-030",
+            "repeat": 0,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "相机",
+              "category": null,
+              "timeOption": "TOMORROW",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              1,
+              4
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 8797.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+          },
+          {
+            "round": "after",
+            "provider": "gpt",
+            "index": 122,
+            "caseId": "BQ-030",
+            "repeat": 1,
+            "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+            "category": "WRONG_TARGET_OR_CONDITION",
+            "status": "CONFIRM_SCOPE",
+            "reason": null,
+            "expected": {
+              "status": "UNSUPPORTED"
+            },
+            "plan": {
+              "action": "QUERY",
+              "intent": "EQUIPMENT",
+              "entity": "相机",
+              "category": null,
+              "timeOption": "TOMORROW",
+              "date": null,
+              "status": "ANY",
+              "location": null,
+              "reason": null,
+              "queries": null
+            },
+            "actualIds": [
+              1,
+              4
+            ],
+            "oracleIds": null,
+            "readOnly": true,
+            "latencyMs": 6531.0,
+            "httpStatus": 200,
+            "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+          }
+        ]
+      },
+      "transitions": [
+        {
+          "before": "EXPECTED_STOP",
+          "after": "EXPECTED_STOP",
+          "count": 30
+        },
+        {
+          "before": "EXPECTED_STOP",
+          "after": "USEFUL_COLLECTION",
+          "count": 1
+        },
+        {
+          "before": "EXPECTED_STOP",
+          "after": "WRONG_TARGET_OR_CONDITION",
+          "count": 2
+        },
+        {
+          "before": "QUERY_COMPLETED",
+          "after": "QUERY_COMPLETED",
+          "count": 20
+        },
+        {
+          "before": "UNNECESSARY_STOP",
+          "after": "QUERY_COMPLETED",
+          "count": 4
+        },
+        {
+          "before": "USEFUL_COLLECTION",
+          "after": "EXPECTED_STOP",
+          "count": 1
+        },
+        {
+          "before": "USEFUL_COLLECTION",
+          "after": "USEFUL_COLLECTION",
+          "count": 4
+        }
+      ],
+      "newDeviations": [
+        {
+          "round": "after",
+          "provider": "gpt",
+          "index": 29,
+          "caseId": "BQ-030",
+          "repeat": 0,
+          "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+          "category": "WRONG_TARGET_OR_CONDITION",
+          "status": "CONFIRM_SCOPE",
+          "reason": null,
+          "expected": {
+            "status": "UNSUPPORTED"
+          },
+          "plan": {
+            "action": "QUERY",
+            "intent": "EQUIPMENT",
+            "entity": "相机",
+            "category": null,
+            "timeOption": "TOMORROW",
+            "date": null,
+            "status": "ANY",
+            "location": null,
+            "reason": null,
+            "queries": null
+          },
+          "actualIds": [
+            1,
+            4
+          ],
+          "oracleIds": null,
+          "readOnly": true,
+          "latencyMs": 8797.0,
+          "httpStatus": 200,
+          "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+        },
+        {
+          "round": "after",
+          "provider": "gpt",
+          "index": 122,
+          "caseId": "BQ-030",
+          "repeat": 1,
+          "question": "查询明天相机器材预约时段的可用数量，只按当前已批准的安排计算",
+          "category": "WRONG_TARGET_OR_CONDITION",
+          "status": "CONFIRM_SCOPE",
+          "reason": null,
+          "expected": {
+            "status": "UNSUPPORTED"
+          },
+          "plan": {
+            "action": "QUERY",
+            "intent": "EQUIPMENT",
+            "entity": "相机",
+            "category": null,
+            "timeOption": "TOMORROW",
+            "date": null,
+            "status": "ANY",
+            "location": null,
+            "reason": null,
+            "queries": null
+          },
+          "actualIds": [
+            1,
+            4
+          ],
+          "oracleIds": null,
+          "readOnly": true,
+          "latencyMs": 6531.0,
+          "httpStatus": 200,
+          "candidateRaw": "{\"action\":\"LOCATE\",\"intent\":\"EQUIPMENT\",\"search\":\"相机\",\"reason\":null,\"selections\":[{\"field\":\"TIME\",\"value\":\"TOMORROW\",\"source\":\"明天\"}],\"question\":null}"
+        }
+      ]
+    }
+  },
+  "collectionPromptSha256": "a5594cf58d87ae25594046b55b26f50dffe58afa355dd16e983d96831e0341b8",
+  "finalPromptSha256": "2a6647d3a75d6bd88c82e60a6471cce2eaa7196f2677a4a24e82aa031059707a",
+  "finalPromptLiveRetested": false,
+  "qualification": "DRAFT: retained scoring reports semantic failures; final factual correction has offline/native evidence only. No production or complete business acceptance.",
+  "bq030Note": "Original UNSUPPORTED oracle retained. The request says only currently approved arrangements, while native calculation includes APPROVED and CHECKED_OUT. All six new LOCATE results remain failures under the frozen oracle. The fixture has no occupied tomorrow interval, so matching IDs and quantities alone cannot settle the intended status restriction. Final prompt states actual computation and preserves requests to change it as unsupported/ambiguous; it has not been externally regenerated.",
+  "nativeReplayNote": "Product parses supplier raw bodies and reads H2 facts after simulated confirmation. Live HTTPS collection used exact native payloads with diagnostic 60s timeout, not the product 15s timer. All 186 new responses arrived within 15s. Final offline replay substitutes only the final prompt text in payload equivalence checks, retaining metadata, wire schema, user text and provider parameters."
+}

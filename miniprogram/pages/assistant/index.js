@@ -196,7 +196,8 @@ Page({
     const generation = this.queryGeneration = (this.queryGeneration || 0) + 1
     if (url === '/assistant/query' || url === '/assistant/queries') this.lastPreviewRequest = { url, body }
     this.setData({ busy: true, answer: '', items: [], sections: [], intent: '', interpretation: '', status: '', ...emptyTokens, ...emptyPresentation, hasMore: false, recoveryMessage: '' })
-    try { const result = await request(url, 'POST', body); if (generation === this.queryGeneration) { this.accept(result); this.setData({ busy: false }); if (result.status === 'CLARIFY' && result.clarificationToken) await this.promptClarification(generation) } }
+    const timeout = ['/assistant', '/assistant/clarify', '/assistant/retry'].includes(url) ? 20000 : 10000
+    try { const result = await request(url, 'POST', body, { timeout }); if (generation === this.queryGeneration) { this.accept(result); this.setData({ busy: false }); if (result.status === 'CLARIFY' && result.clarificationToken) await this.promptClarification(generation) } }
     catch (e) { if (generation === this.queryGeneration) this.setData({ status: 'SYSTEM_ERROR', recoveryMessage: '本次请求未能完成，请重新发起或手选分区；不会假装已查完。' }) }
     finally { if (generation === this.queryGeneration) this.setData({ busy: false }) }
   },

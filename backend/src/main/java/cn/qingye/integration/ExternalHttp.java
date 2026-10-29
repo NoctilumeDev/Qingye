@@ -24,7 +24,10 @@ public class ExternalHttp {
         return send(HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(4)).GET().build());
     }
     public Map<?,?> post(URI uri,String key,Map<String,Object> body) throws Exception {
-        return send(HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(8)).header("Content-Type","application/json").header("Authorization","Bearer "+key).POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build());
+        return post(uri,key,body,Duration.ofSeconds(8));
+    }
+    public Map<?,?> post(URI uri,String key,Map<String,Object> body,Duration deadline) throws Exception {
+        return send(HttpRequest.newBuilder(uri).timeout(deadline).header("Content-Type","application/json").header("Authorization","Bearer "+key).POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body))).build());
     }
     private Map<?,?> send(HttpRequest request) throws Exception {
         var pending=client.sendAsync(request,info->new BoundedBody(HttpResponse.BodyHandlers.ofString().apply(info)));

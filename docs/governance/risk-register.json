@@ -2023,6 +2023,89 @@
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
       }
+    },
+    {
+      "id": "GHSA-f525-44xv-f2qj",
+      "component": "org.apache.tomcat.embed:tomcat-embed-core",
+      "version": "org.apache.tomcat.embed:tomcat-embed-core@10.1.55",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "UNRESOLVED",
+      "source_revision": "8abb9e402e7af4aa0e2b0bdb5a0fb6ade3b4e142",
+      "scanner_rating": {
+        "id": "GHSA-f525-44xv-f2qj",
+        "scannerSeverity": "CRITICAL",
+        "cvss": [
+          {
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            "type": "CVSS_V3"
+          }
+        ],
+        "modified": "2026-10-27T15:10:58.130507578Z",
+        "aliases": [
+          "BIT-tomcat-2026-65637",
+          "CVE-2026-65637"
+        ]
+      },
+      "upstream_rating": {
+        "source": "Apache Tomcat security-10",
+        "severity": "Moderate",
+        "url": "https://tomcat.apache.org/security-10.html"
+      },
+      "evidence": [
+        {
+          "label": "dependency",
+          "path": "backend/pom.xml",
+          "lines": "3-8",
+          "detail": "Spring Boot web starter resolves embedded Tomcat 10.1.55 in the fresh full dependency inventory."
+        },
+        {
+          "label": "configuration",
+          "path": "backend/src/main/resources/application.yml",
+          "lines": "1-3",
+          "detail": "Shipped port/address configuration contains no SSL, HTTP/2 or SNI configuration; this does not establish operator overrides."
+        },
+        {
+          "label": "application entrypoint",
+          "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+          "lines": "9-18",
+          "detail": "Boot application and Clock bean; no connector customizer."
+        },
+        {
+          "label": "startup",
+          "path": "scripts/start.ps1",
+          "lines": "4-19",
+          "detail": "Loads local operator configuration and launches an executable JAR; effective external Boot properties remain unverified."
+        },
+        {
+          "label": "policy",
+          "path": "SECURITY.md",
+          "lines": "23-28",
+          "detail": "Defaults and lack of reproduction alone do not waive supported alternate configuration risks."
+        },
+        {
+          "label": "reconciliation",
+          "path": "docs/governance/risk-register.md",
+          "detail": "2026-10-29 static triage; source, preconditions, ratings and unresolved deployment gap retained."
+        }
+      ],
+      "rationale": "Affected dependency is present. The upstream claim requires HTTP/2 and strict TLS SNI validation. Shipped source does not configure that path, but final operator/deployment settings are unknown. Static triage is needs_review, not a proven exploitable Qingye defect and not a waiver.",
+      "unknowns": [
+        "Effective HTTP/2/TLS/SNI connector configuration and whether a deployment relies on strict SNI validation have not been established.",
+        "No runtime connector or exploit verification performed."
+      ],
+      "next_action": "Before HTTP/2/TLS deployment, inspect effective connector settings or upgrade embedded Tomcat to an upstream fixed release and revalidate. Re-triage on dependency or connector configuration changes.",
+      "risk_accepted": false,
+      "references": [
+        "https://github.com/advisories/GHSA-f525-44xv-f2qj",
+        "https://tomcat.apache.org/security-10.html"
+      ],
+      "scan_evidence": {
+        "run": "https://github.com/NoctilumeDev/Qingye/actions/runs/40838839920",
+        "local_report_sha256": "85ddd08a2f0b06686e368a6e59c686ff36ca869df8351b4684a9e69d24bf4b26"
+      }
     }
   ],
   "static_findings": [
