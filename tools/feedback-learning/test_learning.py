@@ -1,4 +1,6 @@
+import http.client
 import json
+import select
 import tempfile
 import threading
 import unittest
@@ -90,11 +92,41 @@ class LearningTests(unittest.TestCase):
                 with self.assertRaises(urllib.error.HTTPError) as error:
                     call(path, {'id': result['id'], 'status': 'APPROVED'})
                 self.assertEqual(error.exception.code, 404)
+                error.exception.close()
             with self.assertRaises(urllib.error.HTTPError) as error:
                 call('/feedback', self.case(), 'incorrect')
             self.assertEqual(error.exception.code, 401)
+            error.exception.close()
             self.assertEqual(call('/experiences', dict(owner='a' * 64, contract='v5', question='今天借用相机')),
                              {'experiences': []})
+        finally:
+            server.shutdown(); server.server_close(); thread.join()
+
+    def test_denied_fragmented_posts_deliver_status_without_changing_feedback(self):
+        key = 'fixture-only-' * 4
+        server = HTTPServer(('127.0.0.1', 0), handler(self.store, key))
+        thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+        try:
+            wire = json.dumps(self.case()).encode()
+            for path, credential, status in (('/feedback', 'incorrect', 401),
+                                              ('/approve', key, 404)):
+                for _ in range(5):
+                    connection = http.client.HTTPConnection('127.0.0.1', server.server_port, timeout=3)
+                    try:
+                        connection.putrequest('POST', path)
+                        connection.putheader('Authorization', 'Bearer ' + credential)
+                        connection.putheader('Content-Length', str(len(wire)))
+                        connection.endheaders(wire[:1])
+                        # Headers and body can arrive separately. Let an early rejection reach
+                        # the socket before delivering the rest of this bounded request.
+                        select.select([connection.sock], [], [], .05)
+                        connection.send(wire[1:])
+                        response = connection.getresponse()
+                        self.assertEqual(response.status, status)
+                        response.read()
+                    finally:
+                        connection.close()
+            self.assertEqual(self.store.counts(), dict(PENDING=0, APPROVED=0, REJECTED=0))
         finally:
             server.shutdown(); server.server_close(); thread.join()
 
