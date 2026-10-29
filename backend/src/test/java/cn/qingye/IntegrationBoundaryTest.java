@@ -85,7 +85,7 @@ class IntegrationBoundaryTest {
         var executor=Executors.newSingleThreadExecutor();
         server.setExecutor(executor);
         server.createContext("/slow",exchange-> {
-            try { Thread.sleep(10000); }
+            try { Thread.sleep(22000); }
             catch(InterruptedException e) { Thread.currentThread().interrupt(); }
             finally { exchange.close(); }
         });
@@ -95,7 +95,7 @@ class IntegrationBoundaryTest {
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/slow","test-fixture","test-model");
             long started=System.nanoTime();
             assertThat(planner.locate("查相机器材")).isEmpty();
-            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(7),Duration.ofMillis(9500));
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(14),Duration.ofMillis(18500));
         }
         finally { server.stop(0);executor.shutdownNow(); }
     }
@@ -105,7 +105,7 @@ class IntegrationBoundaryTest {
         server.createContext("/stalled-body",exchange->{
             try {
                 exchange.getRequestBody().readAllBytes();exchange.sendResponseHeaders(200,0);
-                exchange.getResponseBody().write(' ');exchange.getResponseBody().flush();Thread.sleep(10000);
+                exchange.getResponseBody().write(' ');exchange.getResponseBody().flush();Thread.sleep(22000);
             } catch(Exception ignored) { }
             finally { exchange.close(); }
         });server.start();
@@ -113,7 +113,7 @@ class IntegrationBoundaryTest {
             var json=new ObjectMapper().findAndRegisterModules();
             var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/stalled-body","test-fixture","test-model");
             long started=System.nanoTime();assertThat(planner.locate("查相机")).isEmpty();
-            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(7),Duration.ofMillis(9500));
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(14),Duration.ofMillis(18500));
         } finally { server.stop(0);executor.shutdownNow(); }
     }
 }

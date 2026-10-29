@@ -4,7 +4,7 @@ function request(path, method = 'GET', data, options = {}) {
   const token = wx.getStorageSync('qingye-token') || ''
   return new Promise((resolve, reject) => {
     wx.request({
-      url: baseUrl + '/api' + path, method, data, timeout: 10000,
+      url: baseUrl + '/api' + path, method, data, timeout: options.timeout || 10000,
       header: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       success(res) {
         if (token !== (wx.getStorageSync('qingye-token') || '')) return reject(new Error('体验身份已切换'))

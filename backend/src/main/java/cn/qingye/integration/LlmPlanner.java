@@ -13,6 +13,7 @@ import java.util.*;
 
 @Component
 public class LlmPlanner {
+    private static final Duration MODEL_DEADLINE=Duration.ofSeconds(15);
     private final ExternalHttp http;
     private final ObjectMapper json;
     private final String url,key,model;
@@ -30,13 +31,18 @@ public class LlmPlanner {
         final String instruction;
         try { instruction=instruction(clock); }
         catch(java.io.IOException missingConfiguration){return Optional.empty();}
-        var body=new HashMap<String,Object>(Map.of("model",model,"temperature",0,"max_tokens",350,"response_format",Map.of("type","json_object"),"messages",List.of(Map.of("role","system","content",instruction),Map.of("role","user","content",question))));
+        var body=new HashMap<String,Object>(Map.of("model",model,"response_format",Map.of("type","json_object"),"messages",List.of(Map.of("role","system","content",instruction),Map.of("role","user","content",question))));
         // Provider-specific transport flags do not change the shared business contract.
+        if(model.equals("gpt-6-astra")||model.startsWith("gpt-6-astra-")){
+            body.put("max_completion_tokens",2048);
+            body.put("reasoning_effort","low");
+            body.put("store",false);
+        }else{body.put("temperature",0);body.put("max_tokens",350);}
         if (model.startsWith("deepseek-")) body.put("thinking",Map.of("type","disabled"));
         if (model.startsWith("qwen")) body.put("enable_thinking",false);
         final Map<?,?> response;
         try {
-            response=http.post(URI.create(url),key,body);
+            response=http.post(URI.create(url),key,body,MODEL_DEADLINE);
         }catch(com.fasterxml.jackson.core.JsonProcessingException malformedEnvelope){
             throw new AssistantHintDecoder.ProtocolViolation(AssistantHintDecoder.Failure.INVALID_RESPONSE_ENVELOPE);
         }catch(Exception transportFailure){return Optional.empty();}
@@ -48,7 +54,7 @@ public class LlmPlanner {
     }
     public static String instruction(Clock clock) throws java.io.IOException {
         return new ClassPathResource("assistant-planner.txt").getContentAsString(StandardCharsets.UTF_8)
-            +"\n已有业务目录与明确选项："+new ObjectMapper().writeValueAsString(Map.of("intents",AssistantContract.INTENTS,"labels",AssistantContract.intentLabels(),"explicitSelections",AssistantContract.locatorSelections(),"querySemantics",AssistantContract.describe().get("querySemantics"),"states",AssistantContract.describe().get("states"),"timeOptionsByIntent",AssistantContract.describe().get("timeOptionsByIntent"),"maxClarifications",AssistantContract.MAX_CLARIFICATIONS,"clarificationQuestions",AssistantContract.clarificationQuestions()))
+            +"\n已有业务目录与明确选项："+new ObjectMapper().writeValueAsString(AssistantContract.locatorView())
             +"\nwireProtocol（程序解析器同源的输出字段、上限、原因和完整示例；不是新增业务能力）："+new ObjectMapper().writeValueAsString(AssistantLocatorProtocol.describe());
     }
 }

@@ -97,7 +97,7 @@ class AssistantDialogueTest {
   var json=new ObjectMapper();var calls=new java.util.concurrent.atomic.AtomicInteger();var inputs=new ArrayList<String>();
   var invalid="{\"action\":\"LOCATE\",\"intent\":\"ACTIVITIES\",\"search\":\"新名称\",\"reason\":null,\"selections\":[],\"question\":null,\"search\":null}";
   var replies=List.of(json.writeValueAsString(AssistantHint.clarify(null,null)),invalid,json.writeValueAsString(AssistantHint.locate("ACTIVITIES","新名称")));
-  var transport=new ExternalHttp(json){@Override public Map<?,?> post(java.net.URI uri,String key,Map<String,Object> body){
+  var transport=new ExternalHttp(json){@Override public Map<?,?> post(java.net.URI uri,String key,Map<String,Object> body,Duration deadline){
    @SuppressWarnings("unchecked") var messages=(List<Map<String,Object>>)body.get("messages");inputs.add(messages.get(1).get("content").toString());
    return Map.of("choices",List.of(Map.of("finish_reason","stop","message",Map.of("content",replies.get(calls.getAndIncrement())))));
   }};

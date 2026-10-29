@@ -18,6 +18,19 @@ function page(name, request, wx = {}, confirmation = async () => true) {
   return instance
 }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
+test('model requests have a bounded longer client deadline while fixed queries keep the ordinary deadline', async () => {
+  const calls = []
+  const assistant = page('assistant', async (url, method, body, options) => { calls.push({ url, options }); return { status: 'UNKNOWN', items: [] } })
+  for (const url of ['/assistant', '/assistant/clarify', '/assistant/retry', '/assistant/query', '/assistant/queries']) await assistant.load(url, {})
+  assert.deepEqual(calls.map(c => c.options.timeout), [20000, 20000, 20000, 10000, 10000])
+  const native = [], context = { module: { exports: {} }, require: () => ({ baseUrl: 'http://localhost' }), wx: {
+    getStorageSync: () => '', request(options) { native.push(options); options.success({ statusCode: 200, data: { code: 0, data: {} } }) }
+  } }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/request.js'), 'utf8'), context)
+  await context.module.exports.request('/activities')
+  await context.module.exports.request('/assistant', 'POST', {}, calls[0].options)
+  assert.deepEqual(native.map(c => c.timeout), [10000, 20000])
+})
 function keyboardViewport(rectangles, fields = []) {
   const state = { scrollTop: 0, moves: [], pending: [] }
   const shift = rect => ({ top: rect.top - state.scrollTop, bottom: rect.bottom - state.scrollTop })

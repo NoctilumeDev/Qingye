@@ -76,6 +76,8 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 模型可能选错格子或遗漏条件，合法 JSON、真实事实和用户确认都不单独证明语义正确。当前实现合同及验收范围见 [业务优先四道门 v5](docs/assistant-business-first-v5.md)。[v4.2/v4.3](docs/assistant-completion-v42.md)、[v4.1](docs/assistant-contract-v4.md)、[此前真实模型复查](docs/assistant-validation-v4-20261021.md)和 [v3](docs/assistant-contract.md)保留为历史证据，不代表 v5 已通过同一轮实验。
 模型密钥仅通过本机环境变量提供，不随源码交付。可在环境变量设置 `QINGYE_LLM_URL`（完整 chat-completions 地址）、`QINGYE_LLM_KEY`、`QINGYE_LLM_MODEL`。
 
+模型接入交接修补见[能力表、请求参数与复测记录](docs/assistant-model-handoff-20261029.md)。模型可见时间选项从每个业务格子的有效配置展开，包含继承值。`gpt-6-astra` 使用 `max_completion_tokens=2048`、`reasoning_effort=low`、默认温度及 `store=false`；DeepSeek、千问保留原请求参数，共用业务提示词。模型请求及完整响应体的期限为 15 秒，小程序的提问、自然语言澄清和主动重试等待 20 秒；固定查询保持 10 秒。超时不自动重发，业务目录仍可直接使用。
+
 ## 工程维护与复验
 
 RabbitMQ 客户端的有界升级、旧新版对照及公告迁移边界见[第二轮维护记录](docs/governance/rabbitmq-maintenance-20261023.md)；历史不适用和未知记录不包装成升级成果。

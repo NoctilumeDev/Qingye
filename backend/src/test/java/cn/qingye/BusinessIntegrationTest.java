@@ -148,6 +148,24 @@ class BusinessIntegrationTest {
         assertThat(result.stream().filter(Problem.class::isInstance).count()).isEqualTo(1);
         assertThat(sql.count("SELECT SUM(quantity) FROM loan WHERE status='APPROVED'")).isEqualTo(3);
     }
+    @Test void assistantAvailabilityIncludesApprovedAndCheckedOutButNotPendingReservations() {
+        long pickedUp=apply(manager,activityA,2,14,16);
+        approve(pickedUp);
+        approve(apply(secondManager,activityB,1,14,16));
+        apply(manager,activityA,1,14,16);
+        clock.set(NOW.withHour(14));
+        loans.checkout(admin,pickedUp);
+        var preview=assistant.query(student,QueryPlan.query("EQUIPMENT","相机",null,"TODAY"),"availability-contract");
+        var result=assistant.confirm(student,preview.get("confirmationToken").toString(),"availability-contract");
+        var items=(List<?>)result.get("items");
+        assertThat(items).hasSize(1);
+        var item=(Map<?,?>)items.get(0);
+        var availability=(Map<?,?>)item.get("availability");
+        assertThat(((Number)availability.get("peakOccupied")).intValue()).isEqualTo(3);
+        assertThat(((Number)availability.get("availableQuantity")).intValue()).isEqualTo(2);
+        assertThat(((Number)availability.get("physicalAvailable")).intValue()).isEqualTo(3);
+        assertThat(sql.count("SELECT COUNT(*) FROM loan WHERE status='PENDING'")).isEqualTo(1);
+    }
     @Test void overdueLoanBlocksPhysicalPickupUntilActualReturn() {
         long a=apply(manager,activityA,3,14,15),b=apply(secondManager,activityB,3,15,16);
         approve(a);
