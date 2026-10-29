@@ -69,6 +69,10 @@ PR #6 当时**没有**接入持续完整依赖扫描，账册校验不能代替�
 
 ## 变更记录
 
+- 2026-10-29 Tomcat 维护：见[版本迁移与同输入回归](tomcat-maintenance-20261029.md)。
+  10.1.55 在严格 SNI 的环回 HTTP/2 夹具中放行缺少 authority/Host 的请求；10.1.61 在进入 servlet 前拒绝，正常请求仍通过。
+  原分诊及部署未知条件保留；本轮依赖清单单独登记旧坐标退役和具体修复证据，不接受其余风险。
+
 - 2026-10-29 反馈接口绑定复核：`2d78c65` 的 [CI 40844634280](https://github.com/NoctilumeDev/Qingye/actions/runs/40844634280)
   在 181 项 H2 测试通过后，因 `Api.java` 引用版本改变被依赖门禁拦截。
   复核 `Api.java`、`Forms.java`、`application.yml` 后更新这三个文件的规范化源码散列。

@@ -140,6 +140,7 @@ CURRENT_DOCS = ["README.md", "AGENTS.md", "ORIGIN.md", "CONTRIBUTING.md", "SECUR
                 "docs/governance/risk-register.md",
                 "docs/governance/continuous-checks.md",
                 "docs/governance/rabbitmq-maintenance-20261023.md",
+                "docs/governance/tomcat-maintenance-20261029.md",
                 "miniprogram/assets/README.md"]
 DB_SUFFIXES = ["_URL", "_USER", "_PASSWORD"]
 GROUPS = ["hygiene", "client", "h2", "mysql", "static", "dependencies", "quick", "all"]
