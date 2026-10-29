@@ -122,17 +122,22 @@ def handler(store, key):
 
         def do_POST(self):
             self.connection.settimeout(2)
-            if not hmac.compare_digest(self.headers.get('Authorization', ''), 'Bearer ' + key):
-                self.send_error(401)
-                return
-            if self.path not in {'/feedback', '/experiences'}:
-                self.send_error(404)
-                return
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length <= 100000:
                     raise ValueError('invalid body size')
-                body = json.loads(self.rfile.read(length))
+                # Finish the bounded body before closing a rejected POST; otherwise
+                # Windows clients can receive a reset instead of the HTTP status.
+                wire_body = self.rfile.read(length)
+                if len(wire_body) != length:
+                    raise ValueError('incomplete body')
+                if not hmac.compare_digest(self.headers.get('Authorization', ''), 'Bearer ' + key):
+                    self.send_error(401)
+                    return
+                if self.path not in {'/feedback', '/experiences'}:
+                    self.send_error(404)
+                    return
+                body = json.loads(wire_body)
                 if not isinstance(body, dict):
                     raise ValueError('invalid request')
                 if self.path == '/feedback':
