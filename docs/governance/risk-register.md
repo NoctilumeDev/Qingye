@@ -69,6 +69,16 @@ PR #6 当时**没有**接入持续完整依赖扫描，账册校验不能代替�
 
 ## 变更记录
 
+- 2026-10-29：核对 `8abb9e4` 解析出的 Tomcat 10.1.55 新公告
+  [GHSA-f525-44xv-f2qj](https://github.com/advisories/GHSA-f525-44xv-f2qj)。
+  GitHub/OSV 评级为 Critical，[Apache 原公告](https://tomcat.apache.org/security-10.html)评级为 Moderate，均保留。
+  公告涉及 HTTP/2 对严格 TLS SNI 校验的绕过；仓库配置没有启用该链路，
+  但启动脚本接受外部配置，实际部署的连接器设置尚未核实，故登记为 `UNRESOLVED`、`risk_accepted=false`。
+  这次是静态分诊和公告变更登记，没有升级 Tomcat、验证漏洞触发或把它标为已修复。
+  原始拦截见 [CI 40838839920](https://github.com/NoctilumeDev/Qingye/actions/runs/40838839920)。
+  后续启用 HTTP/2/TLS 部署前，应核实有效配置或升级上游修复版再验证。
+  依赖检查器、扫描配置、原有条目及处置规则均未改变；新增一条未决项，不能将门禁通过解释成消除了此风险。
+
 - 2026-10-24 启动配置优先级：见[隔离启动对照](startup-mode-20261024.md)。
   候选让显式 QINGYE_DEMO=false 生效；局域网实际暴露、真实微信登录仍未验证。
 

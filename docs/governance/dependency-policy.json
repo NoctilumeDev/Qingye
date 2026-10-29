@@ -773,6 +773,7 @@
     "io.netty:netty-handler@4.1.135.Final/GHSA-fccg-mwvh-qqg4": "891994d44e37b46f274fdd064a61b5de788a8c5c43a1a092c7cd334fcb500156",
     "org.apache.logging.log4j:log4j-api@2.24.3/GHSA-qv9r-c865-cp47": "f5df2f41b4bcbd822477fec8d512b8ad624bbe3027a08465816a13ccbd587ba2",
     "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-9xv2-5v5q-p794": "806a09487332ccdd9b78c691467e6ca18990407a405d45da989e590634b6d02c",
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-f525-44xv-f2qj": "6ffdd8711b825386aa5682fbccb262804920f32ad399bb88d3715c75759230f1",
     "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-gcx9-497g-6cp6": "2bc5ca0cfb47917e7f1b2c223d347ec9a97e1f682faa9a11341467366e6327b4",
     "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-h3x4-894j-xpx5": "a49d0caf871409b31cdf551979b83889815f5c56380be0fecf59aba22ceeac6e",
     "org.springframework:spring-webmvc@6.2.19/GHSA-j9f9-w8pj-32f8": "67ecff805c7d03fa3b959b61206009babb74e73a0c4da9297582733d628615bf",
