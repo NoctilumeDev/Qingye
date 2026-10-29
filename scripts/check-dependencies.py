@@ -29,6 +29,14 @@ RETIREMENT_CONTRACTS = {
             "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java",
         },
     },
+    "qingye-tomcat-authority/v1": {
+        "package": "org.apache.tomcat.embed:tomcat-embed-core",
+        "manifest": "backend/pom.xml",
+        "evidence": {
+            "docs/governance/tomcat-maintenance-20261029.md",
+            "backend/src/test/java/cn/qingye/TomcatAuthorityBoundaryTest.java",
+        },
+    },
 }
 BINARIES = {
     ("Windows", "AMD64"): ("osv-scanner_windows_amd64.exe", "9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438"),
@@ -110,8 +118,9 @@ def verify_retirement_history(root, identity, retirement, policy, contract):
                                        stderr=subprocess.PIPE, timeout=30)
 
     historical, changed = retirement["historical_revision"], retirement["change_revision"]
+    reviewed = retirement.get("manifest_review_revision", changed)
     # A syntactically valid SHA is not proof that a commit exists or belongs to this history.
-    for revision in (historical, changed):
+    for revision in dict.fromkeys((historical, changed, reviewed)):
         try:
             git("cat-file", "-e", revision + "^{commit}")
         except subprocess.CalledProcessError:
@@ -120,6 +129,7 @@ def verify_retirement_history(root, identity, retirement, policy, contract):
             git("fetch", "--no-tags", "origin", revision)
             git("cat-file", "-e", revision + "^{commit}")
     git("merge-base", "--is-ancestor", historical, changed)
+    git("merge-base", "--is-ancestor", changed, reviewed)
     git("merge-base", "--is-ancestor", historical, "HEAD")
     previous = json.loads(git("show", historical + ":docs/governance/dependency-policy.json"),
                           object_pairs_hook=risk_gate.unique_object)
@@ -130,8 +140,11 @@ def verify_retirement_history(root, identity, retirement, policy, contract):
     original_manifest = git("show", historical + ":" + manifest)
     changed_manifest = git("show", changed + ":" + manifest)
     require(original_manifest != changed_manifest, "retirement change did not modify the manifest")
-    require(hashlib.sha256(changed_manifest.encode()).hexdigest() == policy["applicability_inputs"].get(manifest),
-            "change revision is not bound to the reviewed current manifest")
+    # A later dependency upgrade may change the shared manifest. Retain the
+    # original retirement evidence and bind the subsequent review separately.
+    reviewed_manifest = git("show", reviewed + ":" + manifest)
+    require(hashlib.sha256(reviewed_manifest.encode()).hexdigest() == policy["applicability_inputs"].get(manifest),
+            "manifest review revision is not bound to the reviewed current manifest")
 
 
 def validate_policy(current, findings, policy, register, root=ROOT):
@@ -157,7 +170,8 @@ def validate_policy(current, findings, policy, register, root=ROOT):
                 and identity.rsplit("@", 1)[0] == replacement.rsplit("@", 1)[0],
                 "retirement must identify the current version of the same package")
         require(risk_gate.sha(retirement.get("change_revision"))
-                and risk_gate.sha(retirement.get("historical_revision")),
+                and risk_gate.sha(retirement.get("historical_revision"))
+                and risk_gate.sha(retirement.get("manifest_review_revision", retirement.get("change_revision"))),
                 "retirement requires exact historical and change revisions")
         history = {k for k, item in retained.items() if item["version"] == identity}
         require(all(retained[k]["status"] != "CONFIRMED" for k in history),

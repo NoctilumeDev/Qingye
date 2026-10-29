@@ -211,6 +211,40 @@ class DependencyGateTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.validate()
 
+    def test_later_manifest_requires_a_bound_review_and_preserves_original_history(self):
+        self.retire_fixture()
+        retirement = self.policy["retired_components"]["fixture:lib@1"]
+        original = copy.deepcopy(retirement)
+        (self.root / "backend/pom.xml").write_text("fixture v2; sibling upgraded\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", "review sibling dependency upgrade")
+        reviewed = self.git("rev-parse", "HEAD").strip()
+        self.policy["applicability_inputs"]["backend/pom.xml"] = hashlib.sha256(
+            b"fixture v2; sibling upgraded\n").hexdigest()
+        with self.assertRaisesRegex(ValueError, "manifest review revision"):
+            self.validate()
+        for value in ("", "f" * 40, original["historical_revision"], original["change_revision"]):
+            retirement["manifest_review_revision"] = value
+            with self.subTest(value=value), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                self.validate()
+        retirement["manifest_review_revision"] = reviewed
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
+        self.assertEqual({k: v for k, v in retirement.items() if k != "manifest_review_revision"}, original)
+        # Squash delivery can retain a reviewed source commit off the main ancestry.
+        self.git("checkout", "-qb", "squashed-later", original["historical_revision"])
+        (self.root / "backend/pom.xml").write_text("fixture v2; sibling upgraded\n", encoding="utf-8")
+        (self.root / "docs/reconciliation.md").write_text("fixture evidence\n", encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-qm", "squashed later review")
+        self.assertEqual(self.validate(), {"UNRESOLVED": 1})
+        retirement["replacement"] = "fixture:lib@3"
+        with self.assertRaisesRegex(ValueError, "current version"):
+            self.validate()
+        retirement["replacement"] = "fixture:lib@2"
+        (self.root / "docs/reconciliation.md").write_text("tampered", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "evidence content changed"):
+            self.validate()
+
     def test_duplicate_json_keys_and_missing_reports_fail(self):
         path = self.root / "report.json"
         with self.assertRaises(OSError):

@@ -1,6 +1,6 @@
 {
   "schema": "qingye-dependency-policy/v1",
-  "source_revision": "92f17e8b38ea27db6a1b11616cece8212b3c1765",
+  "source_revision": "579181ebc099b8c69c5959b2e0f127d5fd2580e3",
   "owner": "NoctilumeDev/Qingye repository-maintainer",
   "scope": "Resolved project compile/runtime/test/provided/system dependencies; not Maven plugin dependencies or distribution approval. Declared license labels are not compatibility decisions.",
   "components": {
@@ -307,7 +307,7 @@
         "Apache-2.0"
       ]
     },
-    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55": {
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.61": {
       "scopes": [
         "compile"
       ],
@@ -315,7 +315,7 @@
         "Apache-2.0"
       ]
     },
-    "org.apache.tomcat.embed:tomcat-embed-el@10.1.55": {
+    "org.apache.tomcat.embed:tomcat-embed-el@10.1.61": {
       "scopes": [
         "compile"
       ],
@@ -323,7 +323,7 @@
         "Apache-2.0"
       ]
     },
-    "org.apache.tomcat.embed:tomcat-embed-websocket@10.1.55": {
+    "org.apache.tomcat.embed:tomcat-embed-websocket@10.1.61": {
       "scopes": [
         "compile"
       ],
@@ -772,15 +772,11 @@
     "io.netty:netty-handler@4.1.135.Final/GHSA-c4c3-7fpv-j4q5": "e36a80fae4b5de4ab4431bfb9faf81f631f058a31d28c623ec1e37f3498630ee",
     "io.netty:netty-handler@4.1.135.Final/GHSA-fccg-mwvh-qqg4": "891994d44e37b46f274fdd064a61b5de788a8c5c43a1a092c7cd334fcb500156",
     "org.apache.logging.log4j:log4j-api@2.24.3/GHSA-qv9r-c865-cp47": "f5df2f41b4bcbd822477fec8d512b8ad624bbe3027a08465816a13ccbd587ba2",
-    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-9xv2-5v5q-p794": "806a09487332ccdd9b78c691467e6ca18990407a405d45da989e590634b6d02c",
-    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-f525-44xv-f2qj": "6ffdd8711b825386aa5682fbccb262804920f32ad399bb88d3715c75759230f1",
-    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-gcx9-497g-6cp6": "2bc5ca0cfb47917e7f1b2c223d347ec9a97e1f682faa9a11341467366e6327b4",
-    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-h3x4-894j-xpx5": "a49d0caf871409b31cdf551979b83889815f5c56380be0fecf59aba22ceeac6e",
     "org.springframework:spring-webmvc@6.2.19/GHSA-j9f9-w8pj-32f8": "67ecff805c7d03fa3b959b61206009babb74e73a0c4da9297582733d628615bf",
     "org.springframework:spring-webmvc@6.2.19/GHSA-pc63-qcmh-9cmg": "74e393a5de3ae0f56dfeec35b1a897c885a35699af84ba654459de4df2e34197"
   },
   "applicability_inputs": {
-    "backend/pom.xml": "6755d2309414c211bbacc726ec62e4f2ae9ed0be474df6d43011da8990c9fd21",
+    "backend/pom.xml": "cc269ba307855f1049d011eb7c16a99e5f817e645f6fbc0e7013ad5fef222808",
     "backend/src/main/java/cn/qingye/QingyeApplication.java": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
     "backend/src/main/java/cn/qingye/api/Api.java": "bfbfd961070fb5a05fdb84c2a227a8b725474e44d9019cb72dd819d272c795fe",
     "backend/src/main/java/cn/qingye/api/AuthFilter.java": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
@@ -818,7 +814,24 @@
         "backend/src/test/java/cn/qingye/RabbitClientBoundaryTest.java": "b3d9f80c33cf6a10b76226c059e31c9a5a07234e5aacfec11fa7a04c42b038af",
         "backend/src/test/java/cn/qingye/RabbitBridgeLiveTest.java": "2b95082be8b083fb4925d8c9969d5dc4d4fbdc3308368fb5527ac2fd21cdaee9"
       },
-      "contract": "qingye-rabbitmq-client/v1"
+      "contract": "qingye-rabbitmq-client/v1",
+      "manifest_review_revision": "579181ebc099b8c69c5959b2e0f127d5fd2580e3"
+    },
+    "org.apache.tomcat.embed:tomcat-embed-core@10.1.55": {
+      "contract": "qingye-tomcat-authority/v1",
+      "replacement": "org.apache.tomcat.embed:tomcat-embed-core@10.1.61",
+      "historical_revision": "cb8c8a0cdcf1afbee9c73a63da74f71348edc84e",
+      "change_revision": "579181ebc099b8c69c5959b2e0f127d5fd2580e3",
+      "advisories": {
+        "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-9xv2-5v5q-p794": "806a09487332ccdd9b78c691467e6ca18990407a405d45da989e590634b6d02c",
+        "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-f525-44xv-f2qj": "6ffdd8711b825386aa5682fbccb262804920f32ad399bb88d3715c75759230f1",
+        "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-gcx9-497g-6cp6": "2bc5ca0cfb47917e7f1b2c223d347ec9a97e1f682faa9a11341467366e6327b4",
+        "org.apache.tomcat.embed:tomcat-embed-core@10.1.55/GHSA-h3x4-894j-xpx5": "a49d0caf871409b31cdf551979b83889815f5c56380be0fecf59aba22ceeac6e"
+      },
+      "evidence": {
+        "backend/src/test/java/cn/qingye/TomcatAuthorityBoundaryTest.java": "6a7ce90d61e9e240c1a3444abf8faefa076e685106e2b035af5f1406f2877886",
+        "docs/governance/tomcat-maintenance-20261029.md": "b67135370c6fe878b3a8b9fa5fa018335def821dac0f2d6edfe5b68c65409369"
+      }
     }
   }
 }
