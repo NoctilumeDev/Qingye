@@ -80,6 +80,10 @@ Java 17 / Spring Boot 单体、MySQL 8、原生微信小程序。主线是「社
 
 ## 工程维护与复验
 
+截至 2026-10-30，模型交接修补（PR #13）、查询后反馈与 Python 经验模块（PR #14）、反馈 HTTP 拒绝修复（PR #15）及 Tomcat 升级（PR #16）均已合入独立仓库。
+主线 `3b261d2` 的 [CI](https://github.com/NoctilumeDev/Qingye/actions/runs/40860881604) 三项必需检查通过：客户端 82 项、维护脚本普通/优化模式各 60 项、Python 反馈 9 项；H2 185 项全部执行，MySQL 执行 180 项，其余 5 项 RabbitMQ 用例由 H2 job 的真实 RabbitMQ 环境验证。
+本轮工程改动已交付；真实模型采集中的错误预览、协议拒绝和停止分类偏差仍按[原结果账](docs/assistant-model-handoff-20261029.md)保留。存在业务回归的 [PR #10](https://github.com/NoctilumeDev/Qingye/pull/10) 仍为草稿，未合入。
+
 查询完成后可以点击“还没找到”，补充需求并重新核对查询范围。误点后退出不提交反馈。独立的 [Python 反馈经验模块](tools/feedback-learning/README.md) 默认关闭：提交后为 PENDING，维护者核实为 APPROVED 才可作为该用户后续查询的参考；REJECTED 和未决反馈不学习。模块不改变四道门或业务数据，服务不可用时仍可查询。
 
 RabbitMQ 客户端的有界升级、旧新版对照及公告迁移边界见[第二轮维护记录](docs/governance/rabbitmq-maintenance-20261023.md)；历史不适用和未知记录不包装成升级成果。
