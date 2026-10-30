@@ -8,7 +8,7 @@ const emptyFeedback = { feedbackIndex: -1, feedbackText: '', feedbackNote: '' }
 const emptyTokens = { confirmationToken: '', nextToken: '', clarificationToken: '', retryToken: '', feedbackToken: '' }
 const emptyPresentation = { statusTitle: '', statusHint: '', statusTone: 'neutral', showAnswerText: false }
 function createAssistantPage(manual = false) { return {
-  data: { manual, batchOpen: false, contextOpen: false, scopeOpen: false, question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens, ...emptyFeedback, feedbackCopy,
+  data: { manual, composing: false, composeText: '', supplements: [], busyAction: '', batchOpen: false, contextOpen: false, scopeOpen: false, question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens, ...emptyFeedback, feedbackCopy,
     ...emptyPresentation, hasMore: false, facetOpen: false, directoryOpen: manual, objects: contract.intentLabels, objectIndex: 0, times: contract.timeLabels, timeKeys: contract.times, timeIndex: 0,
     categories: ['全部分类', ...contract.categoryLabels], categoryIndex: 0, states: ['全部状态'], stateIndex: 0,
     entity: '', location: '', date: '', suggestions: ['ACTIVITIES', 'EQUIPMENT', 'MY_REGISTRATIONS'].map(intent => contract.entryCommands.find(c => c.intent === intent).label),
@@ -33,22 +33,28 @@ function createAssistantPage(manual = false) { return {
     const session = this.pageSession
     wx.navigateTo({ url: '/pages/assistant-manual/index', success(result) { if (queries.length) result.eventChannel.emit('queryDraft', { session, queries }) } })
   },
-  editQuestion() { if (!this.data.busy) { this.input({ detail: { value: this.data.question } }); this.setData({ correcting: true }) } },
+  editQuestion() { if (!this.data.busy) { this.setData({ composing: true, composeText: this.data.question, correcting: true }); this.scrollToStart() } },
+  cancelCompose() { if (!this.data.busy) this.setData({ composing: false, composeText: '', correcting: false }) },
+  scrollToStart() { if (!manual && wx.pageScrollTo) wx.pageScrollTo({ scrollTop: 0, duration: 180 }) },
   toggleContext() { this.setData({ contextOpen: !this.data.contextOpen }) },
-  toggleScope() { this.setData({ scopeOpen: !this.data.scopeOpen }) },
+  toggleScope(e) {
+    const index = Number(e && e.currentTarget && e.currentTarget.dataset.index || 0)
+    this.setData({ sections: this.data.sections.map((s, i) => i === index ? { ...s, scopeOpen: !s.scopeOpen } : s) })
+  },
   toggleBatch() { if (!this.data.busy) this.setData({ batchOpen: !this.data.batchOpen }) },
   focusReply(e) { if (this.keyboardLayout) this.keyboardLayout.focus('#clarification-submit', 16, '', e && e.detail) },
+  focusCorrection(e) { if (this.keyboardLayout) this.keyboardLayout.focus('#correction-submit', 16, '', e && e.detail) },
   onShow() {
     if (!guard()) return
     if (!manual) refreshTabBar(this, '/pages/assistant/index')
     const session = wx.getStorageSync ? wx.getStorageSync('qingye-token') : ''
     if (this.pageSession != null && session !== this.pageSession) {
       this.onHide(); this.lastPreviewRequest = null; this.syncQueue([])
-      this.setData({ ...emptyTokens, ...emptyFeedback, ...emptyPresentation, question: '', answer: '', items: [], sections: [], status: '', intent: '', interpretation: '', entity: '', location: '', date: '', replyText: '', followupQuestion: '', facetOpen: false, directoryOpen: manual, completionDraft: null, draftSummaries: [], missingConditions: [], facetPending: [], entityPending: false, recoveryMessage: '' })
+      this.setData({ ...emptyTokens, ...emptyFeedback, ...emptyPresentation, composing: false, composeText: '', supplements: [], busyAction: '', question: '', answer: '', items: [], sections: [], status: '', intent: '', interpretation: '', entity: '', location: '', date: '', replyText: '', followupQuestion: '', facetOpen: false, directoryOpen: manual, completionDraft: null, draftSummaries: [], missingConditions: [], facetPending: [], entityPending: false, recoveryMessage: '' })
     }
     this.pageSession = session
   },
-  input(e) { if (!this.data.busy) { this.lastPreviewRequest = null; this.setData({ question: e.detail.value, ...emptyTokens, ...emptyPresentation, sections: [], items: [], answer: '', interpretation: '', intent: '', status: '', hasMore: false, recoveryMessage: '' }) } },
+  input(e) { if (!this.data.busy) { if (this.data.composing) { this.setData({ composeText: e.detail.value }); return }; this.lastPreviewRequest = null; this.setData({ question: e.detail.value, ...emptyTokens, ...emptyPresentation, sections: [], items: [], answer: '', interpretation: '', intent: '', status: '', hasMore: false, recoveryMessage: '' }) } },
   replyInput(e) { if (!this.data.busy) this.setData({ replyText: e.detail.value }) },
   focusQuestion(e) { this.keyboardLayout.focus('#assistant-query', 16, '', e && e.detail) },
   blurQuestion() { this.keyboardLayout.blur() }, keyboardChange(e) { this.keyboardLayout.change(e) },
@@ -56,7 +62,7 @@ function createAssistantPage(manual = false) { return {
     const bar = this.getTabBar && this.getTabBar(); if (bar) bar.setData({ hidden: false })
     this.setData({ ...emptyFeedback })
     this.queryGeneration = (this.queryGeneration || 0) + 1
-    if (this.data.busy) this.setData({ ...emptyTokens, sections: this.data.sections.map(s => ({ ...s, ...emptyTokens })), busy: false, recoveryMessage: '刚才还没找完，你可以重新试一次。' })
+    if (this.data.busy) this.setData({ ...emptyTokens, sections: this.data.sections.map(s => ({ ...s, ...emptyTokens })), busy: false, busyAction: '', recoveryMessage: '刚才还没找完，你可以重新试一次。' })
     if (this.keyboardLayout) this.keyboardLayout.reset()
   },
   onUnload() { this.onHide(); this.setData({ ...emptyTokens, sections: [] }) },
@@ -72,7 +78,7 @@ function createAssistantPage(manual = false) { return {
   missed(e) {
     if (this.data.busy) return
     const index = Number(e.currentTarget.dataset.index), section = this.data.sections[index]
-    if (section && section.status === 'QUERY' && section.feedbackToken && section.canContinue) this.setData({ feedbackIndex: index, feedbackText: '', feedbackNote: '' })
+    if (section && section.status === 'QUERY' && section.feedbackToken && section.canContinue) { this.setData({ feedbackIndex: index, feedbackText: '', feedbackNote: '' }); this.scrollToStart() }
   },
   feedbackInput(e) { if (!this.data.busy) this.setData({ feedbackText: e.detail.value }) },
   cancelFeedback() { if (!this.data.busy) this.setData({ ...emptyFeedback }) },
@@ -82,7 +88,8 @@ function createAssistantPage(manual = false) { return {
     const correction = this.data.feedbackText.trim()
     if (!correction) return wx.showToast({ title: feedbackCopy.missing, icon: 'none' })
     const token = section.feedbackToken, generation = this.queryGeneration = (this.queryGeneration || 0) + 1
-    this.setData({ busy: true, feedbackNote: '' })
+    if (wx.hideKeyboard) wx.hideKeyboard()
+    this.setData({ busy: true, busyAction: 'correction', feedbackNote: '', supplements: this.data.supplements.concat(correction) })
     try {
       const result = await request('/assistant/feedback', 'POST', { token, correction }, { timeout: 20000 })
       if (generation !== this.queryGeneration) return
@@ -90,7 +97,7 @@ function createAssistantPage(manual = false) { return {
       this.setData({ ...emptyFeedback, busy: false, feedbackNote: feedbackCopy.states[result.feedbackState] || '' })
     } catch (e) {
       if (generation === this.queryGeneration) { this.invalidate(); this.setData({ feedbackIndex: -1, feedbackNote: feedbackCopy.failed }) }
-    } finally { if (generation === this.queryGeneration) this.setData({ busy: false }) }
+    } finally { if (generation === this.queryGeneration) this.setData({ busy: false, busyAction: '' }) }
   },
   correct() {
     if (this.data.busy) return
@@ -225,7 +232,7 @@ function createAssistantPage(manual = false) { return {
   section(result) {
     const labels = { ...contract.stateLabels, PUBLISHED: '已发布' }
     const displayAnswer = result.status === 'CONFIRM_SCOPE' ? this.readableScope(result.answer) : this.readableAnswer(result)
-    return { ...result, displayAnswer, scopeRows: display.scope(result.plan), displayWarnings: (result.warnings || []).map(display.warning), canContinue: !!result.feedbackToken && (!result.gateRound || result.gateRound < (result.maxGateRounds || 2)), warnings: result.warnings || [], items: (result.items || []).map(r => ({ ...r, displayName: r.title || r.equipmentName || r.name, startLabel: (r.startTime || r.plannedStart || '').replace('T', ' '), endLabel: (r.endTime || r.plannedEnd || '').replace('T', ' '), stateLabel: labels[r.registrationStatus || r.status] || '' })) }
+    return { ...result, displayAnswer, scopeOpen: false, scopeRows: display.scope(result.plan), displayWarnings: (result.warnings || []).map(display.warning), canContinue: !!result.feedbackToken && (!result.gateRound || result.gateRound < (result.maxGateRounds || 2)), warnings: result.warnings || [], items: (result.items || []).map(r => ({ ...r, displayName: r.title || r.equipmentName || r.name, timeText: display.timeRange(r.startTime || r.plannedStart || '', r.endTime || r.plannedEnd || ''), startLabel: (r.startTime || r.plannedStart || '').replace('T', ' '), endLabel: (r.endTime || r.plannedEnd || '').replace('T', ' '), stateLabel: labels[r.registrationStatus || r.status] || '' })) }
   },
   readableAnswer(result) {
     return display.message(result) || result.answer
@@ -258,14 +265,17 @@ function createAssistantPage(manual = false) { return {
     return { status: 'QUERY', ...this.presentation('QUERY', sections) }
   },
   accept(result, append = false, index = null) {
-    if (result.contractVersion && result.contractVersion !== contract.version) { this.invalidate(); this.setData({ status: 'SYSTEM_ERROR', items: [], sections: [], answer: '业务能力版本不一致，请更新小程序后重新核对。', ...this.presentation('SYSTEM_ERROR', []) }); return }
+    if (result.contractVersion && result.contractVersion !== contract.version) { this.invalidate(); this.setData({ status: 'SYSTEM_ERROR', items: [], sections: [], answer: '请更新小程序后再试，当前版本暂时无法查询。', ...this.presentation('SYSTEM_ERROR', []) }); return }
     const s = this.section(result)
     if (index != null && this.data.intent === 'BATCH') {
       const sections = this.data.sections.slice(), previous = sections[index]
       sections[index] = { ...s, key: previous.key, items: append ? previous.items.concat(s.items) : s.items }
+      sections[index].resultTitle = display.resultTitle(sections[index].intent, sections[index].items.length)
+      sections[index].scopeOpen = !!previous.scopeOpen
       this.setData({ sections, busy: false, hasMore: sections.some(section => section.hasMore), ...this.batchPresentation(sections) }); return
     }
     const sections = result.sections ? result.sections.map((value, i) => ({ ...this.section(value), key: 'query-' + i })) : [{ ...s, key: 'query-0', items: append ? this.data.items.concat(s.items) : s.items }]
+    sections.forEach((section, i) => { section.resultTitle = display.resultTitle(section.intent, section.items.length); if (append) section.scopeOpen = !!(this.data.sections[i] && this.data.sections[i].scopeOpen) })
     const displayAnswer = this.readableAnswer(result)
     const change = { answer: displayAnswer, items: result.sections ? [] : sections[0].items, sections, intent: result.intent, status: result.status || '', contextOpen: false, scopeOpen: false, correcting: false, interpretation: result.reason === 'MODEL_UNAVAILABLE' ? '' : (result.status === 'QUERY' ? this.readableScope(result.interpretation) : (result.interpretation || '')), ...emptyTokens, ...this.presentation(result.status || '', sections),
       confirmationToken: result.confirmationToken || '', nextToken: result.nextToken || '', clarificationToken: result.clarificationToken || '', retryToken: result.retryToken || '', hasMore: !!result.hasMore, followupQuestion: result.question || '', recoveryMessage: '' }
@@ -286,13 +296,14 @@ function createAssistantPage(manual = false) { return {
     this.setData({ ...emptyFeedback })
     const generation = this.queryGeneration = (this.queryGeneration || 0) + 1
     if (url === '/assistant/query' || url === '/assistant/queries') this.lastPreviewRequest = { url, body }
-    this.setData({ busy: true, answer: '', items: [], sections: [], intent: '', interpretation: '', status: '', ...emptyTokens, ...emptyPresentation, hasMore: false, recoveryMessage: '' })
+    this.setData({ busy: true, busyAction: 'query', answer: '', items: [], sections: [], intent: '', interpretation: '', status: '', ...emptyTokens, ...emptyPresentation, hasMore: false, recoveryMessage: '' })
+    this.scrollToStart()
     const timeout = ['/assistant', '/assistant/clarify', '/assistant/retry'].includes(url) ? 20000 : 10000
     try { const result = await request(url, 'POST', body, { timeout }); if (generation === this.queryGeneration) { this.accept(result); this.setData({ busy: false }) } }
     catch (e) { if (generation === this.queryGeneration) this.setData({ status: 'SYSTEM_ERROR', facetOpen: false, directoryOpen: false, recoveryMessage: '这次没能找完，可以再试一次，或自己选择条件。' }) }
-    finally { if (generation === this.queryGeneration) this.setData({ busy: false }) }
+    finally { if (generation === this.queryGeneration) this.setData({ busy: false, busyAction: '' }) }
   },
-  async reply() { const token = this.data.clarificationToken; if (this.data.busy || !token) return; const answer = this.data.replyText.trim(); if (!answer) return wx.showToast({ title: '请填写要补充的条件', icon: 'none' }); return this.load('/assistant/clarify', { token, answer }) },
+  async reply() { const token = this.data.clarificationToken; if (this.data.busy || !token) return; const answer = this.data.replyText.trim(); if (!answer) return wx.showToast({ title: '先告诉我一点线索吧', icon: 'none' }); if (wx.hideKeyboard) wx.hideKeyboard(); this.setData({ supplements: this.data.supplements.concat(answer) }); return this.load('/assistant/clarify', { token, answer }) },
   async retry() { if (!this.data.busy && this.data.retryToken) return this.load('/assistant/retry', { token: this.data.retryToken }) },
   async confirmScope(e) {
     const index = Number(e && e.currentTarget && e.currentTarget.dataset.index || 0), section = this.data.sections[index]
@@ -311,10 +322,10 @@ function createAssistantPage(manual = false) { return {
     const token = section && section.nextToken || this.data.nextToken
     if (this.data.busy || !token) return
     const generation = this.queryGeneration = (this.queryGeneration || 0) + 1
-    this.setData({ busy: true })
+    this.setData({ busy: true, busyAction: 'more' })
     try { const result = await request('/assistant/more', 'POST', { token }); if (generation === this.queryGeneration) this.accept(result, result.status === 'QUERY', index) }
     catch (e) { if (generation === this.queryGeneration) { this.invalidate(); this.setData({ recoveryMessage: '下一页暂时没加载出来，已显示的记录还在。可以重新查找。' }) } }
-    finally { if (generation === this.queryGeneration) this.setData({ busy: false }) }
+    finally { if (generation === this.queryGeneration) this.setData({ busy: false, busyAction: '' }) }
   },
   async restart() {
     if (this.data.busy) return
@@ -328,7 +339,9 @@ function createAssistantPage(manual = false) { return {
     if (manual) return
     this.manualNewQuery = false
     if (this.data.busy) return
-    if (!this.data.question.trim()) return wx.showToast({ title: '先输入想问的问题吧', icon: 'none' })
+    const question = (this.data.composing ? this.data.composeText : this.data.question).trim()
+    if (!question) return wx.showToast({ title: '先输入想问的问题吧', icon: 'none' })
+    this.setData({ question, composing: false, composeText: '', supplements: [] })
     if (wx.hideKeyboard) wx.hideKeyboard()
     this.lastPreviewRequest = null
     this.setData({ queuedQueries: [], queuedSummaries: [], hasPendingQueries: false, draftSummaries: [], missingConditions: [], facetPending: [], completionDraft: null, entityPending: false, editingIndex: -1, followupQuestion: '', replyText: '', correcting: false, facetOpen: false, directoryOpen: false, entity: '', location: '', date: '', categoryIndex: 0, stateIndex: 0, objectIndex: 0, timeKeys: contract.times, times: contract.timeLabels, timeIndex: 0, states: [contract.stateLabels.ANY] })
