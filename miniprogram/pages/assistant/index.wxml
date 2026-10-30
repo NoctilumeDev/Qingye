@@ -1,5 +1,6 @@
 <view class="page assistant-page">
   <view class="assistant-hero">
+    <view wx:if="{{(status || recoveryMessage || composing) && !startOpen}}" class="assistant-return"><qy-action variant="neutral" size="compact" bindactivate="returnToStart" disabled="{{busy}}" label="返回问青野起始页">‹ 返回</qy-action></view>
     <view class="assistant-brand"><image src="/assets/icons/sparkling-fill-green.png" /><text>青野 · 校园小助手</text></view>
     <view wx:if="{{status && !busy && !composing}}" class="new-question"><qy-action variant="secondary" size="compact" bindactivate="editQuestion">重新提问</qy-action></view>
   </view>
@@ -8,9 +9,9 @@
     <view class="ask-card">
       <textarea class="textarea ask-input" value="{{composing ? composeText : question}}" focus="{{correcting}}" maxlength="300" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" aria-label="想查找的内容" placeholder="例如：明天摄影社活动在哪里？" placeholder-style="color:#75857e" />
       <view id="assistant-query"><qy-action variant="primary" bindactivate="ask">帮我找找</qy-action></view>
-      <view wx:if="{{composing}}" class="compose-cancel"><qy-action variant="neutral" bindactivate="cancelCompose">返回刚才的查找</qy-action></view>
+      <view wx:if="{{composing && !startOpen}}" class="compose-cancel"><qy-action variant="neutral" bindactivate="cancelCompose">返回刚才的查找</qy-action></view>
     </view>
-    <view wx:if="{{!composing}}" class="examples"><view class="examples-label">点一下就能查</view><view class="suggestions"><view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion" aria-role="button"><text>{{item}}</text><image src="/assets/icons/arrow-right-up-line-green.png" /></view></view></view>
+    <view wx:if="{{!composing || startOpen}}" class="examples"><view class="examples-label">点一下就能查</view><view class="suggestions"><view wx:for="{{suggestions}}" wx:key="*this" class="suggestion" data-question="{{item}}" bindtap="suggestion" aria-role="button"><text>{{item}}</text><image src="/assets/icons/arrow-right-up-line-green.png" /></view></view></view>
   </block>
   <block wx:else>
     <view class="question-context"><text class="question-label">你想找</text><text class="question-value">{{question || '继续刚才的查找'}}</text><view wx:for="{{supplements}}" wx:key="index" class="question-supplement"><text class="question-label">你补充说</text><text>{{item}}</text></view></view>
@@ -31,6 +32,6 @@
     <block wx:if="{{feedbackIndex < 0 && busyAction !== 'correction'}}"><include src="../../views/assistant-results.wxml" /></block>
     <view wx:if="{{retryToken && !busy}}" class="retry-button"><qy-action variant="primary" bindactivate="retry">再试一次</qy-action></view>
   </block>
-  <view wx:if="{{!busy && !composing && feedbackIndex < 0}}" class="manual-entry" bindtap="toggleDirectory" hover-class="facet-toggle-pressed" aria-role="button"><text>自己选条件查找</text><text aria-hidden="true">›</text></view>
+  <view wx:if="{{!busy && (!composing || startOpen) && feedbackIndex < 0}}" class="manual-entry" bindtap="toggleDirectory" hover-class="facet-toggle-pressed" aria-role="button"><text>自己选条件查找</text><text aria-hidden="true">›</text></view>
   <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
 </view>

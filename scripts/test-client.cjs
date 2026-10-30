@@ -1248,3 +1248,20 @@ test('result time presentation keeps cross-day dates, nonzero seconds and origin
   assert.equal(assistant.data.items[0].startTime, item.startTime); assert.equal(assistant.data.items[0].description, item.description)
   assert.equal(assistant.data.sections[0].displayWarnings[0], '所选时段按当前预约计算')
 })
+
+test('returning to the assistant start offers manual lookup and submits a new shortcut instead of the previous query', async () => {
+  const calls = [], destinations = [], assistant = page('assistant', async (url, method, body) => {
+    calls.push({ url, body }); return { status: 'QUERY', intent: 'ACTIVITIES', items: [] }
+  }, { navigateTo: options => destinations.push(options.url) })
+  assistant.setData({ question: '查相机' }); assistant.accept(feedbackResult)
+  assistant.returnToStart()
+  assert.equal(assistant.data.startOpen, true); assert.equal(assistant.data.composeText, ''); assert.equal(assistant.data.correcting, false)
+  assert.equal(calls.length, 0); assert.equal(assistant.data.items[0].name, '相机')
+  assistant.toggleDirectory(); assert.deepEqual(destinations, ['/pages/assistant-manual/index'])
+  await assistant.suggestion({ currentTarget: { dataset: { question: '全部活动' } } })
+  assert.equal(calls.length, 1); assert.equal(calls[0].body.question, '全部活动'); assert.equal(assistant.data.startOpen, false)
+  for (const status of ['UNKNOWN', 'SYSTEM_ERROR', 'CLARIFY']) {
+    assistant.accept({ status, clarificationToken: status === 'CLARIFY' ? 'clarify' : '', items: [] })
+    assistant.returnToStart(); assert.equal(assistant.data.startOpen, true); assert.equal(assistant.data.composing, true)
+  }
+})

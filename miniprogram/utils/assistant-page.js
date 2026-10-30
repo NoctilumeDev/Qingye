@@ -8,7 +8,7 @@ const emptyFeedback = { feedbackIndex: -1, feedbackText: '', feedbackNote: '' }
 const emptyTokens = { confirmationToken: '', nextToken: '', clarificationToken: '', retryToken: '', feedbackToken: '' }
 const emptyPresentation = { statusTitle: '', statusHint: '', statusTone: 'neutral', showAnswerText: false }
 function createAssistantPage(manual = false) { return {
-  data: { manual, composing: false, composeText: '', supplements: [], busyAction: '', batchOpen: false, contextOpen: false, scopeOpen: false, question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens, ...emptyFeedback, feedbackCopy,
+  data: { manual, startOpen: false, composing: false, composeText: '', supplements: [], busyAction: '', batchOpen: false, contextOpen: false, scopeOpen: false, question: '', answer: '', busy: false, status: '', interpretation: '', correcting: false, ...emptyTokens, ...emptyFeedback, feedbackCopy,
     ...emptyPresentation, hasMore: false, facetOpen: false, directoryOpen: manual, objects: contract.intentLabels, objectIndex: 0, times: contract.timeLabels, timeKeys: contract.times, timeIndex: 0,
     categories: ['全部分类', ...contract.categoryLabels], categoryIndex: 0, states: ['全部状态'], stateIndex: 0,
     entity: '', location: '', date: '', suggestions: ['ACTIVITIES', 'EQUIPMENT', 'MY_REGISTRATIONS'].map(intent => contract.entryCommands.find(c => c.intent === intent).label),
@@ -33,8 +33,9 @@ function createAssistantPage(manual = false) { return {
     const session = this.pageSession
     wx.navigateTo({ url: '/pages/assistant-manual/index', success(result) { if (queries.length) result.eventChannel.emit('queryDraft', { session, queries }) } })
   },
-  editQuestion() { if (!this.data.busy) { this.setData({ composing: true, composeText: this.data.question, correcting: true }); this.scrollToStart() } },
-  cancelCompose() { if (!this.data.busy) this.setData({ composing: false, composeText: '', correcting: false }) },
+  returnToStart() { if (!this.data.busy) { if (wx.hideKeyboard) wx.hideKeyboard(); this.setData({ startOpen: true, composing: true, composeText: '', correcting: false, ...emptyFeedback }); this.scrollToStart() } },
+  editQuestion() { if (!this.data.busy) { this.setData({ startOpen: false, composing: true, composeText: this.data.question, correcting: true }); this.scrollToStart() } },
+  cancelCompose() { if (!this.data.busy) this.setData({ startOpen: false, composing: false, composeText: '', correcting: false }) },
   scrollToStart() { if (!manual && wx.pageScrollTo) wx.pageScrollTo({ scrollTop: 0, duration: 180 }) },
   toggleContext() { this.setData({ contextOpen: !this.data.contextOpen }) },
   toggleScope(e) {
@@ -50,7 +51,7 @@ function createAssistantPage(manual = false) { return {
     const session = wx.getStorageSync ? wx.getStorageSync('qingye-token') : ''
     if (this.pageSession != null && session !== this.pageSession) {
       this.onHide(); this.lastPreviewRequest = null; this.syncQueue([])
-      this.setData({ ...emptyTokens, ...emptyFeedback, ...emptyPresentation, composing: false, composeText: '', supplements: [], busyAction: '', question: '', answer: '', items: [], sections: [], status: '', intent: '', interpretation: '', entity: '', location: '', date: '', replyText: '', followupQuestion: '', facetOpen: false, directoryOpen: manual, completionDraft: null, draftSummaries: [], missingConditions: [], facetPending: [], entityPending: false, recoveryMessage: '' })
+      this.setData({ ...emptyTokens, ...emptyFeedback, ...emptyPresentation, startOpen: false, composing: false, composeText: '', supplements: [], busyAction: '', question: '', answer: '', items: [], sections: [], status: '', intent: '', interpretation: '', entity: '', location: '', date: '', replyText: '', followupQuestion: '', facetOpen: false, directoryOpen: manual, completionDraft: null, draftSummaries: [], missingConditions: [], facetPending: [], entityPending: false, recoveryMessage: '' })
     }
     this.pageSession = session
   },
@@ -66,7 +67,7 @@ function createAssistantPage(manual = false) { return {
     if (this.keyboardLayout) this.keyboardLayout.reset()
   },
   onUnload() { this.onHide(); this.setData({ ...emptyTokens, sections: [] }) },
-  suggestion(e) { if (this.data.busy) return; this.setData({ question: e.currentTarget.dataset.question }); return this.ask() },
+  suggestion(e) { if (this.data.busy) return; this.setData({ [this.data.composing ? 'composeText' : 'question']: e.currentTarget.dataset.question }); return this.ask() },
   invalidate() { this.setData({ ...emptyTokens, sections: this.data.sections.map(s => ({ ...s, ...emptyTokens })), recoveryMessage: '' }) },
   found(e) {
     if (this.data.busy) return
@@ -341,7 +342,7 @@ function createAssistantPage(manual = false) { return {
     if (this.data.busy) return
     const question = (this.data.composing ? this.data.composeText : this.data.question).trim()
     if (!question) return wx.showToast({ title: '先输入想问的问题吧', icon: 'none' })
-    this.setData({ question, composing: false, composeText: '', supplements: [] })
+    this.setData({ question, startOpen: false, composing: false, composeText: '', supplements: [] })
     if (wx.hideKeyboard) wx.hideKeyboard()
     this.lastPreviewRequest = null
     this.setData({ queuedQueries: [], queuedSummaries: [], hasPendingQueries: false, draftSummaries: [], missingConditions: [], facetPending: [], completionDraft: null, entityPending: false, editingIndex: -1, followupQuestion: '', replyText: '', correcting: false, facetOpen: false, directoryOpen: false, entity: '', location: '', date: '', categoryIndex: 0, stateIndex: 0, objectIndex: 0, timeKeys: contract.times, times: contract.timeLabels, timeIndex: 0, states: [contract.stateLabels.ANY] })
