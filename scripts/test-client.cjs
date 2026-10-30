@@ -824,7 +824,7 @@ test('manual preview network recovery does not require an unrelated natural lang
 
 test('contract version mismatch cannot restore execution or continuation credentials', async () => {
   const assistant = page('assistant', async () => ({ contractVersion: 'unknown-future-contract', status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', confirmationToken: 'must-not-use', nextToken: 'must-not-use', answer: '旧版本不了解的计划', items: [{ id: 4 }] }))
-  assistant.setData({ question: '查相机' }); await assistant.ask(); assert.equal(assistant.data.status, 'SYSTEM_ERROR'); assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.items.length, 0); assert.match(assistant.data.answer, /版本不一致/)
+  assistant.setData({ question: '查相机' }); await assistant.ask(); assert.equal(assistant.data.status, 'SYSTEM_ERROR'); assert.equal(assistant.data.confirmationToken, ''); assert.equal(assistant.data.items.length, 0); assert.match(assistant.data.answer, /请更新小程序/)
   assert.equal(assistant.data.statusTitle, '暂时没能完成'); assert.equal(assistant.data.showAnswerText, true)
 })
 
@@ -1023,7 +1023,7 @@ test('user-facing assistant states distinguish results, empty data, clarificatio
     assert.equal(assistant.data.statusTitle, title); assert.equal(assistant.data.statusTone, tone); assert.equal(assistant.data.showAnswerText, true)
   }
   assistant.accept({ status: 'SYSTEM_ERROR', reason: 'MODEL_UNAVAILABLE', interpretation: '系统暂时无法完成解析', answer: '内部术语', items: [] })
-  assert.match(assistant.data.answer, /暂时没连上/); assert.equal(assistant.data.interpretation, '')
+  assert.equal(assistant.data.statusTitle, '青野暂时没连上'); assert.match(assistant.data.answer, /稍后重试/); assert.equal(assistant.data.interpretation, '')
 })
 
 test('confirmation copy retains the actual conditions while removing internal terminology', () => {
@@ -1196,4 +1196,72 @@ test('shared campus carousel pauses after touch and stays paused across page cha
   component.methods.pause.call(state); component.pageLifetimes.hide.call(state); component.pageLifetimes.show.call(state)
   assert.equal(state.data.visible, true); assert.equal(state.data.playing, false)
   component.methods.change.call(state, { detail: { current: 1 } }); assert.equal(state.data.current, 1)
+})
+
+
+test('editing a new question is reversible and does not discard or execute the saved result', async () => {
+  const calls = [], assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'QUERY', intent: 'EQUIPMENT', items: [] } })
+  assistant.setData({ question: '全部活动', supplements: ['明天'] }); assistant.accept({ ...feedbackResult, nextToken: 'next-page' })
+  assistant.editQuestion(); assistant.input({ detail: { value: '查看投影仪' } })
+  assert.equal(assistant.data.question, '全部活动'); assert.equal(assistant.data.composeText, '查看投影仪')
+  assert.equal(assistant.data.sections[0].feedbackToken, 'result-receipt'); assert.equal(calls.length, 0)
+  assistant.cancelCompose(); assert.equal(assistant.data.items[0].name, '相机'); assert.equal(assistant.data.composing, false)
+  assistant.editQuestion(); assistant.input({ detail: { value: '查看投影仪' } }); await assistant.ask()
+  assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant'); assert.equal(calls[0].body.question, '查看投影仪')
+  assert.equal(assistant.data.question, '查看投影仪'); assert.equal(assistant.data.supplements.length, 0)
+})
+
+test('clarification keeps the original question visible and sends only the bound answer once', async () => {
+  const calls = [], pending = deferred(), assistant = page('assistant', (url, method, body) => { calls.push({ url, body }); return pending.promise })
+  assistant.setData({ question: '查一下摄像的' }); assistant.accept({ status: 'CLARIFY', clarificationToken: 'c', question: '活动还是器材？', items: [] })
+  assistant.replyInput({ detail: { value: '摄像器材' } }); const sending = assistant.reply(); await assistant.reply()
+  assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/clarify'); assert.equal(calls[0].body.answer, '摄像器材'); assert.equal(calls[0].body.token, 'c')
+  assert.equal(assistant.data.question, '查一下摄像的'); assert.deepEqual(Array.from(assistant.data.supplements), ['摄像器材'])
+  pending.resolve(feedbackResult); await sending; assert.equal(assistant.data.busyAction, '')
+})
+
+test('leaving a correction clears its loading presentation and a different account sees no old draft', async () => {
+  let session = 'a'; const pending = deferred(), assistant = page('assistant', () => pending.promise, { getStorageSync: () => session })
+  assistant.onLoad(); assistant.setData({ question: '相机' }); assistant.accept(feedbackResult)
+  assistant.missed(feedbackEvent(0)); assistant.feedbackInput({ detail: { value: '投影仪' } }); const sending = assistant.continueFeedback()
+  assert.equal(assistant.data.busyAction, 'correction'); assistant.onHide(); assert.equal(assistant.data.busyAction, '')
+  assert.equal(assistant.data.items[0].name, '相机'); assistant.editQuestion(); assistant.input({ detail: { value: '我的报名' } })
+  session = 'b'; assistant.onShow(); pending.resolve(feedbackResult); await sending
+  assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.composeText, ''); assert.equal(assistant.data.composing, false); assert.equal(assistant.data.supplements.length, 0)
+})
+
+test('query scopes expand independently and pagination preserves other sections and visible counts', async () => {
+  const assistant = page('assistant', async () => ({ status: 'QUERY', intent: 'EQUIPMENT', items: [{ id: 2, name: '投影仪' }] }))
+  assistant.accept({ status: 'QUERY', intent: 'BATCH', sections: [{ ...feedbackResult, nextToken: 'next', hasMore: true }, { status: 'QUERY', intent: 'ACTIVITIES', items: [{ id: 3, title: '观星' }] }] })
+  assistant.toggleScope(feedbackEvent(0)); assert.equal(assistant.data.sections[0].scopeOpen, true); assert.equal(assistant.data.sections[1].scopeOpen, false)
+  await assistant.more(feedbackEvent(0)); assert.equal(assistant.data.sections[0].items.length, 2); assert.equal(assistant.data.sections[0].resultTitle, '找到 2 种器材')
+  assert.equal(assistant.data.sections[0].scopeOpen, true); assert.equal(assistant.data.sections[1].items[0].title, '观星')
+})
+
+test('result time presentation keeps cross-day dates, nonzero seconds and original facts', () => {
+  const display = require('../miniprogram/utils/assistant-display')
+  assert.equal(display.timeRange('2026-10-31T18:00:00', '2026-10-31T20:00:00'), '2026-10-31 18:00 — 20:00')
+  assert.equal(display.timeRange('2026-10-31T23:30:05', '2026-11-01T01:00:10'), '2026-10-31 23:30:05 — 2026-11-01 01:00:10')
+  assert.equal(display.timeRange('2026-10-31T18:00', ''), '2026-10-31 18:00')
+  const assistant = page('assistant', async () => ({})), item = { id: 1, title: '观星', startTime: '2026-10-31T18:00:00', endTime: '2026-10-31T20:00:00', description: '完整简介' }
+  assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', items: [item], warnings: ['所选时段按当前预约计算'] })
+  assert.equal(assistant.data.items[0].startTime, item.startTime); assert.equal(assistant.data.items[0].description, item.description)
+  assert.equal(assistant.data.sections[0].displayWarnings[0], '所选时段按当前预约计算')
+})
+
+test('returning to the assistant start offers manual lookup and submits a new shortcut instead of the previous query', async () => {
+  const calls = [], destinations = [], assistant = page('assistant', async (url, method, body) => {
+    calls.push({ url, body }); return { status: 'QUERY', intent: 'ACTIVITIES', items: [] }
+  }, { navigateTo: options => destinations.push(options.url) })
+  assistant.setData({ question: '查相机' }); assistant.accept(feedbackResult)
+  assistant.returnToStart()
+  assert.equal(assistant.data.startOpen, true); assert.equal(assistant.data.composeText, ''); assert.equal(assistant.data.correcting, false)
+  assert.equal(calls.length, 0); assert.equal(assistant.data.items[0].name, '相机')
+  assistant.toggleDirectory(); assert.deepEqual(destinations, ['/pages/assistant-manual/index'])
+  await assistant.suggestion({ currentTarget: { dataset: { question: '全部活动' } } })
+  assert.equal(calls.length, 1); assert.equal(calls[0].body.question, '全部活动'); assert.equal(assistant.data.startOpen, false)
+  for (const status of ['UNKNOWN', 'SYSTEM_ERROR', 'CLARIFY']) {
+    assistant.accept({ status, clarificationToken: status === 'CLARIFY' ? 'clarify' : '', items: [] })
+    assistant.returnToStart(); assert.equal(assistant.data.startOpen, true); assert.equal(assistant.data.composing, true)
+  }
 })

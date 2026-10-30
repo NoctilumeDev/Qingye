@@ -1,5 +1,5 @@
 <view class="page manual-page">
-  <view class="manual-page-heading"><view class="eyebrow">FIND IT YOUR WAY</view><view class="title">自己选，直接找。</view><view class="subtitle">活动、器材，还有你自己的记录。</view></view>
+  <view class="manual-page-heading"><view class="eyebrow">FIND IT YOUR WAY</view><view class="manual-title">自己选，直接找。</view><view class="manual-subtitle">活动、器材，还有你自己的记录。</view></view>
     <view wx:if="{{directoryOpen}}" class="directory-grid">
       <view wx:for="{{objects}}" wx:key="*this" class="directory-tile {{busy ? 'is-disabled' : ''}}" data-index="{{index}}" bindtap="openDirectory" hover-class="directory-tile-pressed" aria-role="button" aria-disabled="{{busy}}"><text>{{item}}</text><text class="directory-action">选择条件 ›</text></view>
     </view>
