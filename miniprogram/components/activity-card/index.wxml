@@ -1,15 +1,15 @@
 <view class="activity-card {{variant}}" bindtap="open" hover-class="pressed" aria-role="button" aria-label="查看{{item.title}}">
   <view class="cover">
-    <image src="{{failed ? item.defaultCover : item.cover}}" mode="aspectFill" binderror="imageError" />
+    <image class="cover-image" src="{{failed ? item.defaultCover : item.cover}}" mode="aspectFill" binderror="imageError" />
     <text wx:if="{{variant === 'tile'}}" class="category">{{item.categoryName}}</text>
   </view>
   <view class="content">
     <view class="card-title">{{item.title}}</view>
-    <view class="meta"><text>{{item.categoryName}}</text><text class="phase">{{item.phase}}</text></view>
-    <view class="when"><image src="/assets/icons/time-line-muted.png" /><text>{{item.displayTime}}</text></view>
+    <view class="meta"><text class="category-label">{{item.categoryName}}</text><text class="phase">{{item.phase}}</text></view>
+    <view class="when"><image class="meta-icon" src="/assets/icons/time-line-muted.png" /><text>{{item.displayTime}}</text></view>
     <view class="location">{{item.location}} · {{item.clubName}}</view>
     <view class="bottom">
-      <view class="capacity"><image src="/assets/icons/team-line-ink.png" /><text>{{item.registeredCount}} / {{item.capacity}}</text></view>
+      <view class="capacity"><image class="meta-icon" src="/assets/icons/team-line-ink.png" /><text>{{item.registeredCount}} / {{item.capacity}}</text></view>
       <view class="cta">{{item.phase === '候补报名' ? '看候补' : '去看看'}}</view>
     </view>
     <view wx:if="{{item.recommendationReason && variant !== 'tile'}}" class="reason">{{item.recommendationReason}}</view>
