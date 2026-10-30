@@ -1,0 +1,382 @@
+{
+  "taskCount": 391,
+  "shards": 4,
+  "model": "doubao-seed-2-1-pro-260915",
+  "endpoint": "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+  "network": "DIRECT, TLS verification enabled, redirects disabled",
+  "thinking": "DISABLED; documented provider option only",
+  "productDeadlineMs": 18000,
+  "observerUpstreamTimeoutSeconds": 30,
+  "sourceCommit": "e2f635609cf10580b4e24b6a1cb4b0762f810887",
+  "mainCommit": "481cbd6f815afc9eb632464d7ac1e78040f70320",
+  "sourceReadback": [
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\QingyeApplication.java",
+      "recordedHash": "0afc8d3701fbfcc18394efab716a07751f0576660401acd8fb9516bca48e395b",
+      "workingHash": "0afc8d3701fbfcc18394efab716a07751f0576660401acd8fb9516bca48e395b"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\api\\Api.java",
+      "recordedHash": "5afce2abd6715a973e245ffb13eb7c24ec034a839d98bc3f9e3d9968fc6b69e2",
+      "workingHash": "5afce2abd6715a973e245ffb13eb7c24ec034a839d98bc3f9e3d9968fc6b69e2"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\api\\AuthFilter.java",
+      "recordedHash": "0da1a78f024bc34c4d21ee4b0eeb88d7366b818bd5b5feb4c37583d93056e4fd",
+      "workingHash": "0da1a78f024bc34c4d21ee4b0eeb88d7366b818bd5b5feb4c37583d93056e4fd"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\api\\Errors.java",
+      "recordedHash": "2b30854d6bb5b604cc81a7950a3adbf5148f7b354292d0dd6e624ab62bf07845",
+      "workingHash": "2b30854d6bb5b604cc81a7950a3adbf5148f7b354292d0dd6e624ab62bf07845"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\api\\Forms.java",
+      "recordedHash": "864fb8b2947317e3a28fef0233987012d42298a5afc1f80c1e7d797fcc59e802",
+      "workingHash": "864fb8b2947317e3a28fef0233987012d42298a5afc1f80c1e7d797fcc59e802"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\Access.java",
+      "recordedHash": "6a9718fbe15307ad17661087736e82431fa34f47801656e3260954eae1e42ec4",
+      "workingHash": "6a9718fbe15307ad17661087736e82431fa34f47801656e3260954eae1e42ec4"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\AccountService.java",
+      "recordedHash": "88964941bc348882f0377f40d3efbb5398f241dfba0c85380709f5166d361fbe",
+      "workingHash": "88964941bc348882f0377f40d3efbb5398f241dfba0c85380709f5166d361fbe"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\ActivityService.java",
+      "recordedHash": "aa695e37ad5c390ea7e0a6ef9df12006c8114f7c3d7f484b11d893385691ab42",
+      "workingHash": "aa695e37ad5c390ea7e0a6ef9df12006c8114f7c3d7f484b11d893385691ab42"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\AssistantConfirmations.java",
+      "recordedHash": "da1004572e56e0d540a8c67d7f425375d363e6e8d21db50317775a5ccce87651",
+      "workingHash": "912a757646cf3d7ec012e0318b26c7ad9afd925df7b035097be2115f4fc076f3"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\AssistantService.java",
+      "recordedHash": "50b97bcd98bea574b50978645158b8d06f1683a5d3013d9dc9396b17f61dfb89",
+      "workingHash": "50b97bcd98bea574b50978645158b8d06f1683a5d3013d9dc9396b17f61dfb89"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\AssistantTime.java",
+      "recordedHash": "5357574a9961e14ec86dc9fa504428fb5e6d5c1da49fab52b52b57ab18a04357",
+      "workingHash": "5357574a9961e14ec86dc9fa504428fb5e6d5c1da49fab52b52b57ab18a04357"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\AuthService.java",
+      "recordedHash": "403fcd2e1ea5165e03210e56465a3a5e2a468ff66cdf210c3c59d1a01b21d3f4",
+      "workingHash": "403fcd2e1ea5165e03210e56465a3a5e2a468ff66cdf210c3c59d1a01b21d3f4"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\CapacityScan.java",
+      "recordedHash": "2813edcd76d267fa07f76ed1ae1c5c9c84d3c0b6ea88410a95fd6f3b9dd99d49",
+      "workingHash": "2813edcd76d267fa07f76ed1ae1c5c9c84d3c0b6ea88410a95fd6f3b9dd99d49"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\ClubService.java",
+      "recordedHash": "a73b9315e36dc9616ffa7f1593a299c5e0bf750b7392ea7df26a4f66c42342c3",
+      "workingHash": "a73b9315e36dc9616ffa7f1593a299c5e0bf750b7392ea7df26a4f66c42342c3"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\DemoData.java",
+      "recordedHash": "9ff2fc09b2bc1f64c12facd126993274285240d5312c45a2a5aad0947e633105",
+      "workingHash": "9ff2fc09b2bc1f64c12facd126993274285240d5312c45a2a5aad0947e633105"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\LoanService.java",
+      "recordedHash": "d877a3cb6455d19e3f8dc2b9ca2b3670cd6e64ed43b4512822bce4b06ef59d2c",
+      "workingHash": "d877a3cb6455d19e3f8dc2b9ca2b3670cd6e64ed43b4512822bce4b06ef59d2c"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\Problem.java",
+      "recordedHash": "14d67a3cadee89b1d77722a41199a2cc049ac8ac1e5528cf6d679a4671790b3a",
+      "workingHash": "14d67a3cadee89b1d77722a41199a2cc049ac8ac1e5528cf6d679a4671790b3a"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\Recommendation.java",
+      "recordedHash": "d760b3e0ba2c6363d0a4a22526a08a3d53e1ef946c901ec9614a08dd4b53ede1",
+      "workingHash": "d760b3e0ba2c6363d0a4a22526a08a3d53e1ef946c901ec9614a08dd4b53ede1"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\business\\TaskService.java",
+      "recordedHash": "f5fe91e2d5a120bd26889eeab05eb54cae78e811f6e69a3dbd79b012d8f49574",
+      "workingHash": "f5fe91e2d5a120bd26889eeab05eb54cae78e811f6e69a3dbd79b012d8f49574"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\ActivityStore.java",
+      "recordedHash": "335748ea874c4445ba7e05ecaf96079307c8b4599a06f97bac98f18dc9fe537d",
+      "workingHash": "335748ea874c4445ba7e05ecaf96079307c8b4599a06f97bac98f18dc9fe537d"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\AssistantSql.java",
+      "recordedHash": "fd887464a523e5b80915487ddef99a8f111942fbd63eff058186dbe9d084c61f",
+      "workingHash": "fd887464a523e5b80915487ddef99a8f111942fbd63eff058186dbe9d084c61f"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\ClubStore.java",
+      "recordedHash": "10680986bebeb1b5f9d190eff342b9ff6eee38a12dd726f6de9687afb91d056a",
+      "workingHash": "10680986bebeb1b5f9d190eff342b9ff6eee38a12dd726f6de9687afb91d056a"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\LoanStore.java",
+      "recordedHash": "93b77079695d0e565ba58aeac4b12dbdc7b4e19deadc32810c5051401bc928ce",
+      "workingHash": "93b77079695d0e565ba58aeac4b12dbdc7b4e19deadc32810c5051401bc928ce"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\MessageStore.java",
+      "recordedHash": "3fb95e0c56de21e9a1083186c514fdd6fc17772c208c2cfcc514821fd9828ed7",
+      "workingHash": "3fb95e0c56de21e9a1083186c514fdd6fc17772c208c2cfcc514821fd9828ed7"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\Rows.java",
+      "recordedHash": "b5d4579b14c3cc06472cade84b1df735603c81044355c707baeaa56eb235aaaa",
+      "workingHash": "b5d4579b14c3cc06472cade84b1df735603c81044355c707baeaa56eb235aaaa"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\SchemaUpgrade.java",
+      "recordedHash": "72e58fa4b56a4fdd00c0077c86e8a7fd1fd7f5956082897c30b4d4b1a7386217",
+      "workingHash": "72e58fa4b56a4fdd00c0077c86e8a7fd1fd7f5956082897c30b4d4b1a7386217"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\Sql.java",
+      "recordedHash": "ff84e31795c256eb0fac136e1ac7180fedc8b1378d432fc128e243bf50a97668",
+      "workingHash": "ff84e31795c256eb0fac136e1ac7180fedc8b1378d432fc128e243bf50a97668"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\db\\UserStore.java",
+      "recordedHash": "bf0623e3b6fba398da1f25388071c8c167a695254cba8bf553d39f69585b1e30",
+      "workingHash": "bf0623e3b6fba398da1f25388071c8c167a695254cba8bf553d39f69585b1e30"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\AssistantHintDecoder.java",
+      "recordedHash": "30b0936f3c5f01a46b71c1d8079e9fce0e255e8d0097ce14070fa735a9c021a4",
+      "workingHash": "30b0936f3c5f01a46b71c1d8079e9fce0e255e8d0097ce14070fa735a9c021a4"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\AssistantLearning.java",
+      "recordedHash": "855cc31048fc35ebe8aafc39606c5a13708c4332e9f071f8acbf40de96afe8ac",
+      "workingHash": "855cc31048fc35ebe8aafc39606c5a13708c4332e9f071f8acbf40de96afe8ac"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\ExternalHttp.java",
+      "recordedHash": "c9e596cadc299c26b042b7928431be8a673de25e01da92c6d3e8eca506a6d5bc",
+      "workingHash": "c9e596cadc299c26b042b7928431be8a673de25e01da92c6d3e8eca506a6d5bc"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\LlmPlanner.java",
+      "recordedHash": "5e315d2abb1fa2f3e248328fbe641ccf6c3c987c22cee38dadfe01548de9ffda",
+      "workingHash": "5e315d2abb1fa2f3e248328fbe641ccf6c3c987c22cee38dadfe01548de9ffda"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\QueryCache.java",
+      "recordedHash": "f3caec135c89a7d30c3d651b350a0f8bd8606562975d75fd7865b37e0882124f",
+      "workingHash": "f3caec135c89a7d30c3d651b350a0f8bd8606562975d75fd7865b37e0882124f"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\RabbitBridge.java",
+      "recordedHash": "8a93655b7c1807367da48bed2b918fe4e0838e8021ec6ff0ddd2ee10dc65bfc8",
+      "workingHash": "8a93655b7c1807367da48bed2b918fe4e0838e8021ec6ff0ddd2ee10dc65bfc8"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\integration\\TaskWorker.java",
+      "recordedHash": "2f67bd364840b858add2180ae251e1850c99ec7c1ea520c0f7d23c1ba818adcf",
+      "workingHash": "2f67bd364840b858add2180ae251e1850c99ec7c1ea520c0f7d23c1ba818adcf"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\Actor.java",
+      "recordedHash": "c70b6b1b913c7657de607b079dafdd948e1a3a2345895b3c57d4e048200873a0",
+      "workingHash": "c70b6b1b913c7657de607b079dafdd948e1a3a2345895b3c57d4e048200873a0"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\AssistantContract.java",
+      "recordedHash": "cb338d4fdb73ee13038989c986b10956682dd8e3459ecd26615efbef6704fcc1",
+      "workingHash": "cb338d4fdb73ee13038989c986b10956682dd8e3459ecd26615efbef6704fcc1"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\AssistantContractData.java",
+      "recordedHash": "47d7520fb573a97704a3b58edd2aee2007a250a0ce420ff501987183219362e2",
+      "workingHash": "47d7520fb573a97704a3b58edd2aee2007a250a0ce420ff501987183219362e2"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\AssistantHint.java",
+      "recordedHash": "9ebc517655cadd2918d6ad3fb5572ee2f65b454379b0d4d7784c468c616b5776",
+      "workingHash": "9ebc517655cadd2918d6ad3fb5572ee2f65b454379b0d4d7784c468c616b5776"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\AssistantIntake.java",
+      "recordedHash": "798b3684a62183c468de5b88063700adc77f6eab1800f49facf23fcb0858c560",
+      "workingHash": "798b3684a62183c468de5b88063700adc77f6eab1800f49facf23fcb0858c560"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\AssistantLocatorProtocol.java",
+      "recordedHash": "6c0c486f8a59a042812f13b8119ccc711b84c36e8a37663fba4d6a3dc323139c",
+      "workingHash": "6c0c486f8a59a042812f13b8119ccc711b84c36e8a37663fba4d6a3dc323139c"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\AssistantQualification.java",
+      "recordedHash": "f29ea246fa61c81f609d7aa5a3f80ded55cdd52620a6539fa05b8f4ff2fbbf7f",
+      "workingHash": "f29ea246fa61c81f609d7aa5a3f80ded55cdd52620a6539fa05b8f4ff2fbbf7f"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\QueryPlan.java",
+      "recordedHash": "82ce80adae0035c4e44f334036b26fa670b042b644a4ba2ee228a6bb58b0b59d",
+      "workingHash": "82ce80adae0035c4e44f334036b26fa670b042b644a4ba2ee228a6bb58b0b59d"
+    },
+    {
+      "path": "backend\\src\\main\\java\\cn\\qingye\\model\\Reservation.java",
+      "recordedHash": "b315f13dd0455ded1ed4602358ce92ed34410887a27e1cd1ca307f066fc13455",
+      "workingHash": "b315f13dd0455ded1ed4602358ce92ed34410887a27e1cd1ca307f066fc13455"
+    },
+    {
+      "path": "backend\\src\\main\\resources\\application.yml",
+      "recordedHash": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0",
+      "workingHash": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0"
+    },
+    {
+      "path": "backend\\src\\main\\resources\\assistant-contract.json",
+      "recordedHash": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80",
+      "workingHash": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80"
+    },
+    {
+      "path": "backend\\src\\main\\resources\\assistant-locator-protocol.json",
+      "recordedHash": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6",
+      "workingHash": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6"
+    },
+    {
+      "path": "backend\\src\\main\\resources\\assistant-planner.txt",
+      "recordedHash": "13b8db11dd8b55ae7c112a9668e726dd22b3351c3675bc4c8d8c34cdbc5f7793",
+      "workingHash": "603f7d1ab3260d8fd2c4c5a5af54bd72c08237346bfa0ca1622bc619f8a3a80c"
+    },
+    {
+      "path": "backend\\src\\main\\resources\\schema.sql",
+      "recordedHash": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397",
+      "workingHash": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397"
+    }
+  ],
+  "corpora": {
+    "long-tail-attack": 124,
+    "business": 33,
+    "legacy": 133,
+    "business93": 93,
+    "feedback8": 8
+  },
+  "secondRound": "Only original-run first-round WRONG or CLARIFY with fixed oracle, exactly one observation/model attempt and gateRound=1. Replay original candidate; live second-round response. Merge once per original task, retain all attempts.",
+  "declaredHarnessCorrection": "MT11 sends the original second legitimate request after rejection as a new task; oracle is own loans. Same correction as previous final fresh evaluation.",
+  "productMutations": false,
+  "frontend": false,
+  "externalLearning": false,
+  "files": {
+    "analyze.py": "9c7a9972490123becc67f98d6aa88128638a56fd7f43ea3046d4a2a037b19502",
+    "base-0.json": "d3bc6a7c0f53004fb85fc93b01c8a333fa79f4c5ffb18d804db375b9d3ccbd5f",
+    "base-1.json": "68a8571053a302fd2b7f7db22e90d008a52f573db09dfd08769b3ff3e5376fca",
+    "base-2.json": "db8155eea6c3c50d44936f4e63cb107aae94f8a273af18488cb589094221f20d",
+    "base-3.json": "96394c866f92a61048a9600b729fe562dd18694452f7a49f49961fe6bedb1dac",
+    "business-oracle.json": "5dfabce9c159f0f4083e41f97e45f5804b61cd2d2b7ca93e27f12a1ccd0b389a",
+    "cases.json": "291998f96d1855c97b8ef51d92c0dd7817d464b0668aef44fa55127ba909ffc0",
+    "classpath.txt": "7627cc9e7bfac752e459ce8921bc6b1f21f8c44db4f635197490d20f7e69cba6",
+    "FourGateProbe$ObservedPlanner.class": "6bd9da518ceb6cdb683c2588aa5f34f6caa2a8c770d04beffa390b5e30b2700a",
+    "FourGateProbe$ProbeClock.class": "2bfd64024dd68f8afaadb97ec23108fa0cd4af2b49f638f904112aab68f17bff",
+    "FourGateProbe.class": "04b5e7d5b952fa7f6e048bd53775ea2afc6b391b2e50e9ba7491484d195aa34e",
+    "FourGateProbe.java": "7ed3f8e3ad4d6799523ad45ca2bd9db3c95e9060f0e0bfbe070780594f1caa86",
+    "grade.py": "46a1641003a4a090d97b4ebcc7e05091bb183ff051011acfca0de5d2e071437f",
+    "run.py": "0457f774ae68a65955de8d4c60cdc197f60b3da9f4a3896d4f615b16a1106ebc",
+    "supplements.json": "791a2b26beb8dea3399c9d222c7cf9583bb2b67b940c1c9f091dabc42fedfa98",
+    "supplements.py": "081c7365bf84a14b73452a339c0a09694bc730373bc6f2275d1e13a0a535c244",
+    "gpt\\run1-0\\fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "gpt\\run1-0\\references.json": "4ef68ba1bd3548ee23ded869122d3a09c80edf2058d778b174e8bd58e1053651",
+    "product-classes\\application.yml": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0",
+    "product-classes\\assistant-contract.json": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80",
+    "product-classes\\assistant-locator-protocol.json": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6",
+    "product-classes\\assistant-planner.txt": "13b8db11dd8b55ae7c112a9668e726dd22b3351c3675bc4c8d8c34cdbc5f7793",
+    "product-classes\\schema.sql": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397",
+    "product-classes\\cn\\qingye\\QingyeApplication.class": "60341dd930f71c38fc1ff13313e886a5efd3c8863aa469496dac297262be47fb",
+    "product-classes\\cn\\qingye\\api\\Api.class": "a56624dedaaf4c05f0ae385f6256552769e8b6d42dedcd349ae3badf47b12878",
+    "product-classes\\cn\\qingye\\api\\AuthFilter.class": "52f27f3433cd288d4096e19663445e1098a2ffc53f6ed1c8399f68dca821c1dc",
+    "product-classes\\cn\\qingye\\api\\Errors.class": "abc828882e7a4b95a1a1f376b6f929c8e67648a54538c5b1b21a9cdc49ce9e34",
+    "product-classes\\cn\\qingye\\api\\Forms$Activity.class": "b4d8896d7c9fc66c025b49549ceed1bbd63f59f25b36709447b6c82c5f750aba",
+    "product-classes\\cn\\qingye\\api\\Forms$Administrator.class": "4bc38aed0c6d4b5368ece6cf49ae22da5e98e414782e456d30f7319b2fb6b95f",
+    "product-classes\\cn\\qingye\\api\\Forms$AssistantClarification.class": "6dd5d68a24fc730790abb60bd43349a99a6da65bdc836d43467b62ed0da26e54",
+    "product-classes\\cn\\qingye\\api\\Forms$AssistantConfirmation.class": "f2a4ab32919450b36ae76bf79b663317186a7b24ae76a8df138a6849837f1a88",
+    "product-classes\\cn\\qingye\\api\\Forms$AssistantFeedback.class": "b4827c09e95768a7e99489a3a8714a3f87941339ecac48590174b2f07ee5794b",
+    "product-classes\\cn\\qingye\\api\\Forms$AssistantQueries.class": "264b3a8675f0214ecb222d5bebdbb9a79b22109321261f4514e6343d025fca69",
+    "product-classes\\cn\\qingye\\api\\Forms$AssistantQuery.class": "7c32da6b8e25eb15195c2d92cdfcd17b86ce771e1e1e69ae5e3470c826691f29",
+    "product-classes\\cn\\qingye\\api\\Forms$Club.class": "8c40bc430a226169f568fad33427b54b625b8ef5fa7e9e7dec5b3be14465cc9c",
+    "product-classes\\cn\\qingye\\api\\Forms$Decision.class": "1b425d38e652f66fd4dcd0ad7f61c3d70aec43da3d57bfac1dcd6d73adffd1f3",
+    "product-classes\\cn\\qingye\\api\\Forms$DemoLogin.class": "7226e1bfb6a8307e42607d080edca7197ee08c5443b97dd756d22655056bee6e",
+    "product-classes\\cn\\qingye\\api\\Forms$Equipment.class": "dcff9c4d48d7ad0a313182d0252f5ba1b040862020146702e1024d7eb1a79de7",
+    "product-classes\\cn\\qingye\\api\\Forms$Loan.class": "3e5974bc2673b570832a1b845e55ed4264f67f607cdbada7002be2a6afa6f693",
+    "product-classes\\cn\\qingye\\api\\Forms$Member.class": "ffb54dfc28e08ba7d3077585c57233cd5be1961e220e4d7a7491417e20fa1c37",
+    "product-classes\\cn\\qingye\\api\\Forms$Messages.class": "9032bf8cc9812ed4058b21eb82ab2be8937ab290aacb2be1fccd4b487799f434",
+    "product-classes\\cn\\qingye\\api\\Forms$Profile.class": "9c34fba6c4d6dccb26673fbe766ddd1c9db4085e2b18fb562c334323abe9202e",
+    "product-classes\\cn\\qingye\\api\\Forms$Question.class": "e68834739aaae8b5f4060a701f7a7499c58b4dd26815a0033efceffd4b4b0ade",
+    "product-classes\\cn\\qingye\\api\\Forms$WxLogin.class": "0edb5f61e1663f3523cffbfa1594d5b61dabf8e35173303777bf8fe5d53bb647",
+    "product-classes\\cn\\qingye\\api\\Forms.class": "a7e32894a24b61ab7146504b18b44e58f8060760731ea95d8d03af4c7a425b36",
+    "product-classes\\cn\\qingye\\business\\Access.class": "0ff596a6cde39314d1e90edb3b4871a408a199681497780bdee790fcf1d8a3fa",
+    "product-classes\\cn\\qingye\\business\\AccountService.class": "333dda45b5dee77dbf79834f2152981c07fb26d3dbe76d1a6aa0bd771454471c",
+    "product-classes\\cn\\qingye\\business\\ActivityService.class": "2c678803b06fa2af50b058ea1098b233fa4b75d933006df4beb64e58df7571b4",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Context.class": "3428a5bbb9504dd8d194211d4543358fa5c6cf9a9c41b9534cf62eeba0e3b753",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Dialogue.class": "36cea8bed137e9de4bb65f50fc47713f6ca6557555e8583a9e3e8c8efe0b5a56",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Feedback.class": "9bbb3ecc19cbae03cfc9d07d5ede22292da92376a28a9f0476e6c6c1e1e22900",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Issued.class": "25e917f6f5478521c53bcc74ba055f8d36839cedc720c9db1cea62f1609c97b2",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Offer.class": "b18ce29b4859f348619c3c3944f058c77b7bfb5fc3bcfa0ca08226e1d64f3d4c",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Owner.class": "48f251336bd4889d64a835a0187b0fdc71ab759cd4ab26848b98183d2e16059e",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations$Request.class": "82237d03d6279e4b2387a4ab28d559b155c6d9b5e026093e99a8f41dd94d25db",
+    "product-classes\\cn\\qingye\\business\\AssistantConfirmations.class": "4dc7324347e5d4b1abc888cca51b7f67c4831a76e1f11a110cdbadcf71d8b544",
+    "product-classes\\cn\\qingye\\business\\AssistantService.class": "7fe74cc0d51a92e389d02b1e08f1ae63efff821628535a01531355ea48553be4",
+    "product-classes\\cn\\qingye\\business\\AssistantTime.class": "8d4622e9f631a14764d5f0a6cbb3a40388b16d7d4e29bd5f4d1b8534e53ceae8",
+    "product-classes\\cn\\qingye\\business\\AuthService.class": "aac72b799dcc1798541dc302312812263f800e8cf5fa6953d3a898d4eeae2290",
+    "product-classes\\cn\\qingye\\business\\CapacityScan.class": "b57ef287d841550a49626bb6d9a644ddcc4dadc1222c1d7c6ac3427211400132",
+    "product-classes\\cn\\qingye\\business\\ClubService.class": "37aa00119d8b2a86c3828300d4c795f99032e57eb9c456388ac4bd3fb933ab0b",
+    "product-classes\\cn\\qingye\\business\\DemoData.class": "b56b146bb0c91d6e948592c9fc53c0a27f69e3dea746f57c2632851fa63a702b",
+    "product-classes\\cn\\qingye\\business\\LoanService.class": "976a56dd2c7b566b6c42cb47ed5cd37dcdf43e0315a073931311a51557854d5a",
+    "product-classes\\cn\\qingye\\business\\Problem.class": "21ae2735b0e67e46190da33ff4aa90ca91f7154e676a4aefc7249b545847522c",
+    "product-classes\\cn\\qingye\\business\\Recommendation.class": "e81c6560a2462d028c10e288449ab88d49d63d3c23d8a39d3a3068c76ba9d634",
+    "product-classes\\cn\\qingye\\business\\TaskService.class": "0e3f5b9680acc1cc5cacfc5f0c117d82edae6d699f028f13a89572a8054c14a7",
+    "product-classes\\cn\\qingye\\db\\ActivityStore.class": "41a0a31dc2af2bf8aab14a119dfc45ec0aa0a7057272f2473b1a070ed32f3cac",
+    "product-classes\\cn\\qingye\\db\\AssistantSql.class": "67d63c8a31f5b3df31ea9ccad3cd7a9c3c55eac4d11021b66a54651bd8ea7c9a",
+    "product-classes\\cn\\qingye\\db\\ClubStore.class": "ef51d0bf36e706fdf1837e2ab9e94015ae2248edc6ed7ce0c4d0f966435d992e",
+    "product-classes\\cn\\qingye\\db\\LoanStore.class": "bb0c329c7bbb2cade9f51e30b1626a97d9fa5e3ea2b1a190c31d9781c73ba179",
+    "product-classes\\cn\\qingye\\db\\MessageStore.class": "a76b29cc63f6f59088b44cdeddd6f4387455ee69aac63de7947117da59095873",
+    "product-classes\\cn\\qingye\\db\\Rows.class": "b287f8e6404b67269aa25a351b409e07bd05d605bae4c621b0302e75acaacb7a",
+    "product-classes\\cn\\qingye\\db\\SchemaUpgrade.class": "1f808f77b180eeccad2b90487a18cae07771a3ffa01dd2cdbad32aa2e8820114",
+    "product-classes\\cn\\qingye\\db\\Sql.class": "0acd51ab81da8468d4884978e776561e3b107a5ddae706712efd29242583e866",
+    "product-classes\\cn\\qingye\\db\\UserStore.class": "dcc0882e2212df4cfd061f206a2caa44a7134a7742c7faf0df693a7ec91c57b3",
+    "product-classes\\cn\\qingye\\integration\\AssistantHintDecoder$Failure.class": "5b89262bbde1f50fdb92b1bddd6f81ce18ece61d6b599f3137e08a5d6e49056a",
+    "product-classes\\cn\\qingye\\integration\\AssistantHintDecoder$ProtocolViolation.class": "4ad3920c52a593e4786a742762254409552c99840dad212a78f4f96577e3db01",
+    "product-classes\\cn\\qingye\\integration\\AssistantHintDecoder.class": "01e485f9e5cf8c16ca9b7a5f657354f959d4be8dacfeb2bbad627ae97566492c",
+    "product-classes\\cn\\qingye\\integration\\AssistantLearning.class": "d79c72a8367f866541d57d8238ec02675cb980821dd35bb328cdd33ca81f2fdd",
+    "product-classes\\cn\\qingye\\integration\\ExternalHttp$BoundedBody.class": "795d9795965a88983c7deaa614cbe8ce8cc3089c761b5cbd02c18ad7feb27936",
+    "product-classes\\cn\\qingye\\integration\\ExternalHttp$ResponseFailure.class": "08a55b8304a8b73d179763938299cd3cc88cb9bbe69a9f3e1a579439dc20095f",
+    "product-classes\\cn\\qingye\\integration\\ExternalHttp.class": "71b30bb527dacdf6c25ddd4af13006b426557968359e93d7ea1ebb8f269a2688",
+    "product-classes\\cn\\qingye\\integration\\LlmPlanner$TransportFailure.class": "07969bf64d88a590d7d8834b1724c9665050ee6969f711901fe44a2b1ec8ca3f",
+    "product-classes\\cn\\qingye\\integration\\LlmPlanner$Unavailable.class": "6dac886bb82bba8576e4f51e51a474eb58c42be7c4e395703df200d7c513c426",
+    "product-classes\\cn\\qingye\\integration\\LlmPlanner.class": "522a3143ed5d07eab676131a5078d53ac7b328b73f013db4328ed4201f880de4",
+    "product-classes\\cn\\qingye\\integration\\QueryCache.class": "6ea6ac9a83a9b18be39ac4afc76ff77649a335c0f8f84dd98d02c09efa3c78d6",
+    "product-classes\\cn\\qingye\\integration\\RabbitBridge.class": "bff40972dee03406d231d6e160f19586b9619d3f6e3d989b5eac1c378925ac16",
+    "product-classes\\cn\\qingye\\integration\\TaskWorker.class": "c6b5576efe3a40794288aa8ad05d9cc2829c94cdf166ce5b2506e18327acdaee",
+    "product-classes\\cn\\qingye\\model\\Actor.class": "d9b8fd90a68026f6616c34b4a0aee2fb8724882f684e1fe34c8c21c01385fec8",
+    "product-classes\\cn\\qingye\\model\\AssistantContract$1Match.class": "085088a98eea2acedf0a39cd25b460a6b124bf3cbf71ff663acc490cef0690a0",
+    "product-classes\\cn\\qingye\\model\\AssistantContract$DirectoryCompilation.class": "aec738cc6965b8f8f0f52c0364471e4c802f34d362fdc5a2a14876a740686738",
+    "product-classes\\cn\\qingye\\model\\AssistantContract$DirectoryFailure.class": "50e2376f4aa0848b75e3c2f2df06964db3ce64869921a66f2b64f64be3e591ef",
+    "product-classes\\cn\\qingye\\model\\AssistantContract.class": "e143a6a4012f01ec520a5ea1e67566fc5d4bcd70c765da5455962349465a4919",
+    "product-classes\\cn\\qingye\\model\\AssistantContractData.class": "9f32fbf7e85ff2cd968b0451f9ff0c8a9d7258c84699c03513e4cec1f5a1819e",
+    "product-classes\\cn\\qingye\\model\\AssistantHint$Selection.class": "186e8427fc338d352a346066063aed52cd4b886bf033877273ff7c3a9b0fc3a7",
+    "product-classes\\cn\\qingye\\model\\AssistantHint.class": "de97a54822d0bd4bcc2430fbdba4238619f4f6cf107e3a098c3af3f418d62b86",
+    "product-classes\\cn\\qingye\\model\\AssistantIntake.class": "d471924284194d3d856bfe982bb78fd48c89d592c5a52cdf5b71fde27f8b4e18",
+    "product-classes\\cn\\qingye\\model\\AssistantLocatorProtocol.class": "e635f2a15f12a52a86dd91f32ca7c09628fdf0b329825801b2a52d80ebd67f3b",
+    "product-classes\\cn\\qingye\\model\\AssistantQualification$MissingCondition.class": "a8ba699231ac4ac293e23cef9de9613e7b909936a041cf547ce833ffcba4fa94",
+    "product-classes\\cn\\qingye\\model\\AssistantQualification.class": "34986e3b7c3f24f97fb6c3cb457cef29c14eb443a036bbbeaf71f46a5d132364",
+    "product-classes\\cn\\qingye\\model\\QueryPlan.class": "6792fe6e5cdf5c1a1d05fdb9e91a2b4c4244019a94871aae158f2bbda88b1162",
+    "product-classes\\cn\\qingye\\model\\Reservation.class": "cf1de2cdc0399ae9251421a0f7c95371fd19e247072cfe57f386a9d121a9240d"
+  },
+  "transportOverride": {
+    "thinking": {
+      "type": "disabled"
+    }
+  },
+  "defaultModePilot": "D:\\ResearchEvidence\\qingye-doubao-full-20261030",
+  "reasonForSeparateRun": "Default-mode pilot stopped after 29 tasks following repeated read timeouts. All pilot evidence retained. This full run restarts all391 tasks independently in non-thinking mode; no scores combined."
+}

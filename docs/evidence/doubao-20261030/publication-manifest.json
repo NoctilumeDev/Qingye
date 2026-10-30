@@ -1,0 +1,559 @@
+{
+  "formatVersion": 1,
+  "experimentSourceCommit": "e2f635609cf10580b4e24b6a1cb4b0762f810887",
+  "experimentMainCommit": "481cbd6f815afc9eb632464d7ac1e78040f70320",
+  "publicationBaseCommit": "ddbd4ba42928cf69aebc5fa16ee14f68f9492605",
+  "fullSourceDirectory": "D:\\ResearchEvidence\\qingye-doubao-full-20261030-nonthinking",
+  "pilotSourceDirectory": "D:\\ResearchEvidence\\qingye-doubao-full-20261030",
+  "archive": "raw-evidence.zip",
+  "archiveSha256": "f11228e059c4afa682e1d74a2979b05ed2bae7dcef92ddfff3069baeb01543fc",
+  "archiveBytes": 839201,
+  "members": {
+    "full/FourGateProbe.java": "7ed3f8e3ad4d6799523ad45ca2bd9db3c95e9060f0e0bfbe070780594f1caa86",
+    "full/analyze.py": "9c7a9972490123becc67f98d6aa88128638a56fd7f43ea3046d4a2a037b19502",
+    "full/artifact-hashes.json": "287fbf8743cdea622829f42d3470cba0f6e85b82be8b34c620533a2273b1308e",
+    "full/base-0.json": "d3bc6a7c0f53004fb85fc93b01c8a333fa79f4c5ffb18d804db375b9d3ccbd5f",
+    "full/base-1.json": "68a8571053a302fd2b7f7db22e90d008a52f573db09dfd08769b3ff3e5376fca",
+    "full/base-2.json": "db8155eea6c3c50d44936f4e63cb107aae94f8a273af18488cb589094221f20d",
+    "full/base-3.json": "96394c866f92a61048a9600b729fe562dd18694452f7a49f49961fe6bedb1dac",
+    "full/base/0/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "full/base/0/native.log": "f4d2ea40744dac2b83eb6cc574fa894060ef96b4cdb5c9830d620c423e20409f",
+    "full/base/0/network.jsonl": "fa5baef23c5c492b751c1f08f986bcdd0410e16317dd43f58d1b0572d4c8715b",
+    "full/base/0/references.json": "80b2051347d54b616332e892b33f68bba74b7c4902b9baaa7aaa309306afb450",
+    "full/base/0/results.jsonl": "2c71a5d5c12bafc6d3aaa1dc4b8795237764e5017cffaed50784f91623e0d5cc",
+    "full/base/0/status.json": "d7b1647e20b6fbdc2f17f480358dee144c4effe0e1f6d2f2f4c6adea98021884",
+    "full/base/0/summary.json": "3c0120f42c19d295ba32d715dbe33b7303b3262311e316269c5f26fd6cc0d998",
+    "full/base/1/fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "full/base/1/native.log": "d6c8814d2011f0f1f845cabd8f1de45e28067238f6055929b41dd38356e397ae",
+    "full/base/1/network.jsonl": "7a7b003976cbdefb3f13d850d2c64f301e8c04f777ffccf1bd652122be33165d",
+    "full/base/1/references.json": "29f3556d321abfe5dbffd33e65e5626539abfaf1747f68272e9c2ff4c6fe4145",
+    "full/base/1/results.jsonl": "800bd8cbecc82d546c5ee302c241ca55dad0338ca0ad18cc5ce7efe49ebc9b30",
+    "full/base/1/status.json": "8fb8ba1ce93768c0d852a35c2996aba1313dd085a32b2b9faa2dd5f019cc7707",
+    "full/base/1/summary.json": "4f4335a468dad3659e20360b0ffbea5d80fcf0b8f3fcec6c004f00de62fdc512",
+    "full/base/2/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "full/base/2/native.log": "86d96aef6dc02918918708aaa2ce09ded4d925b528149f0b3572e4337d7c5ba6",
+    "full/base/2/network.jsonl": "a344b5692920d3e3e1239c37ada76d84198435e9e75bb14631124bbd0f13ea94",
+    "full/base/2/references.json": "40090a7b56ffcc7862f5ce6398c45d5ea90a65e4b91b4d143e4704ae9b1d4fa5",
+    "full/base/2/results.jsonl": "6e8431aba3a67d039050e9d8fd3aec308d742c2092dc938145df0059baf52d25",
+    "full/base/2/status.json": "f09e3c053ce7344e805ae312a912813d85487aa69835360977e17991c716b7b4",
+    "full/base/2/summary.json": "29fcafeb569091a4b020b67500628a4b39d7bd41cdd44b1b1852c17039e78bf3",
+    "full/base/3/fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "full/base/3/native.log": "f286fccf2d181916f6c21cdbb862752ae4c37f975c5855e59bfaaadfacbd5a27",
+    "full/base/3/network.jsonl": "e444d91a324fdf92cb136cd540389bfe2caa70cbedaf6deb2b7d20c5a714b3fa",
+    "full/base/3/references.json": "29f3556d321abfe5dbffd33e65e5626539abfaf1747f68272e9c2ff4c6fe4145",
+    "full/base/3/results.jsonl": "3e9a9d70d815fa87561b04942eac8a1ed0291714bb32fe3b5d4dd913ec0cb8e0",
+    "full/base/3/status.json": "57a68684d3792c9697f3fdd71caef9be36b0812e3d280ae33e3806fcc0666e1c",
+    "full/base/3/summary.json": "30e87f38048c7bb5ceab83fc1b2145310d6cb155e9d87355320f18966ee03083",
+    "full/business-oracle.json": "5dfabce9c159f0f4083e41f97e45f5804b61cd2d2b7ca93e27f12a1ccd0b389a",
+    "full/cases.json": "291998f96d1855c97b8ef51d92c0dd7817d464b0668aef44fa55127ba909ffc0",
+    "full/continuation-0.json": "5cc75f9c7fdd6f7219a19d13965fc28a8ebc8553c550382318bb3068c45df751",
+    "full/continuation-1.json": "67c2ecb69c39b91ea57be27594f17559c95489942873e92d4338922963475378",
+    "full/continuation-2.json": "bbfbd374feb44f34630c0afc5fb24a2b620805fd74be6ff15f881b9aeea550de",
+    "full/continuation-3.json": "5bdba943e5b2aa580c6dba9d7d02d63e50647a0af303a8f0f12e7d7a0828ab0b",
+    "full/continuation-audit.json": "7d0d89216bec5439013390e174d9a8214f3988ddfd9c94906844d2db094e5833",
+    "full/continuation-selection.json": "0d56e199ca9e4c9d843c63ed777b24c8b8a289a1ec4ee33b1e4e986cc69bd176",
+    "full/continuation/0/fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "full/continuation/0/native.log": "b31e1af457b079cce3e5f25c83f6fbd548a2e0eb3022a4d74bb1b9b8edb99ebe",
+    "full/continuation/0/network.jsonl": "459d71195d38cfdb56a7b4589a77ce2485eeb8bbd2fb23f631b12b486f0d2b50",
+    "full/continuation/0/references.json": "40090a7b56ffcc7862f5ce6398c45d5ea90a65e4b91b4d143e4704ae9b1d4fa5",
+    "full/continuation/0/results.jsonl": "3d1ebe60c477eefb43db2fd49bc96ebdbaaa9c172c3ea7e460e3c37d9b3b02af",
+    "full/continuation/0/status.json": "61188fd1d979d607deefa8ab2cbf2a5a4abe91ac3266d78abab54582eecf254c",
+    "full/continuation/0/summary.json": "9b5bcd3180c916ce22e9d13de858033a1f71f058979adc5d2ae1ebb9acdb1301",
+    "full/continuation/1/fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "full/continuation/1/native.log": "c1d2dd7a1293d0a62c7ade8bea1e9693f2fb072176f294a6358f8bfb35adbdcc",
+    "full/continuation/1/network.jsonl": "64779892b238b85a4177c5757d3a88e58671fc8e5a6dc5ad13fa9ec729582388",
+    "full/continuation/1/references.json": "40090a7b56ffcc7862f5ce6398c45d5ea90a65e4b91b4d143e4704ae9b1d4fa5",
+    "full/continuation/1/results.jsonl": "0cda712b38d7c0fbb23e1c2467407f10e3a11ca1dac8cac2cbef4d4287fd4cb1",
+    "full/continuation/1/status.json": "b0faf4fd12701ff7f33e4b857791b3b8326ab3ea4e2ae041e7c4b271a3f6413a",
+    "full/continuation/1/summary.json": "f4e0afb4baa0bbdb483cd627a64a57c3c517da8804e94414cd10cfcd9bfc44b2",
+    "full/continuation/2/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "full/continuation/2/native.log": "c33cca0ecb80f938ca396f0be2e9a5ea4e4c5b59fe968148aa73a502e2c81aae",
+    "full/continuation/2/network.jsonl": "374b3f1ee6c2a3e17039f9f091f663dbe6dfefe187284f800f99e1d4900a0037",
+    "full/continuation/2/references.json": "80b2051347d54b616332e892b33f68bba74b7c4902b9baaa7aaa309306afb450",
+    "full/continuation/2/results.jsonl": "a706c37c64525c79542a7225a422d81b14cfb056a50ebaa6a7410080c922fdf7",
+    "full/continuation/2/status.json": "841d1219af4bd8c0bf1f902775ab6efd7a7a077645f6712c2c2f1ed3b7281313",
+    "full/continuation/2/summary.json": "2f80423822ddb6a6197d7d12b15898f507e5d99c42927fd1e28c2423cf5df06f",
+    "full/continuation/3/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "full/continuation/3/native.log": "6ccbe2798105b6b9bb368bbaeeb2ef6aab4e2fe67df606b28af8dc84a38531ff",
+    "full/continuation/3/network.jsonl": "4565d114cec66f9c23329325371474dbe34db7a5280d1dd80cb89b7b4912343b",
+    "full/continuation/3/references.json": "40090a7b56ffcc7862f5ce6398c45d5ea90a65e4b91b4d143e4704ae9b1d4fa5",
+    "full/continuation/3/results.jsonl": "dd9c7bcf40675b4b3134c156ebaa8e329b8baa3e1cf6a180554b3f93deded982",
+    "full/continuation/3/status.json": "b329176b96976560ffc5f07a60e5c05cd47426133aa9d5f37eaa15f890cca8df",
+    "full/continuation/3/summary.json": "ee3102a3fd9d9afbf0481c499cdca541772e1af0441d195c18ec202b444efa62",
+    "full/credential-hygiene.json": "7ac0ca4f94b9dee89d238c9bec6bbaf45026ca7afc830231cbd96072b0273343",
+    "full/driver.log": "5aabe2651c7f787335ea30530d4984850f50a6a1f0be3e3b7f8f0030f95654ef",
+    "full/finished.json": "03742ee841d445c65a74fa9d22c7295fc3ad7e01d968c47ca408cec8906bd7b7",
+    "full/gpt/run1-0/fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "full/gpt/run1-0/references.json": "4ef68ba1bd3548ee23ded869122d3a09c80edf2058d778b174e8bd58e1053651",
+    "full/grade.py": "46a1641003a4a090d97b4ebcc7e05091bb183ff051011acfca0de5d2e071437f",
+    "full/integrity.json": "2da9eaacf6a293274be22eb594fea189de533567856225ccb2e9be61e4d138f3",
+    "full/manifest.json": "fda7dbacb705823fc38748e425d3f71ab7788c2bf6f8908150fb19a33224089b",
+    "full/native-failures.json": "3320772ac571b098bef10d64093a43b4e1e208f5d18425effe0d73fac2f62e4c",
+    "full/product-classes/application.yml": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0",
+    "full/product-classes/assistant-contract.json": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80",
+    "full/product-classes/assistant-locator-protocol.json": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6",
+    "full/product-classes/assistant-planner.txt": "13b8db11dd8b55ae7c112a9668e726dd22b3351c3675bc4c8d8c34cdbc5f7793",
+    "full/product-classes/schema.sql": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397",
+    "full/review.json": "a2ecc38c99baf491779d9817598ab167d1f0fbe8435d39dd073b37e25709cd8a",
+    "full/review.py": "29da65fe1565d69666533e3c48ebb3a4aa968d21f26ff91d8d304ee752b9b067",
+    "full/run.py": "0457f774ae68a65955de8d4c60cdc197f60b3da9f4a3896d4f615b16a1106ebc",
+    "full/stop-annotations.json": "5f4b05a0fdf36444045c18b678563acf1a0f985f2f7a9be9fea4015ecec4f903",
+    "full/stop-review.json": "cb0c8e114ab3925caa65184bc268b29c61ff24b168a6476e26d029ae8b9c00a4",
+    "full/summary.json": "83bd2fdebb5433b663c7f0402d8b48e1c045305f765f61c8ee9f743479a7e3f1",
+    "full/supplements.json": "791a2b26beb8dea3399c9d222c7cf9583bb2b67b940c1c9f091dabc42fedfa98",
+    "full/supplements.py": "081c7365bf84a14b73452a339c0a09694bc730373bc6f2275d1e13a0a535c244",
+    "full/task-results.json": "2ea035bcaaa847f07e8e6ffdb1798988c3d0cd07de081b7d1f15b645acc3ee9f",
+    "pilot/FourGateProbe.java": "7ed3f8e3ad4d6799523ad45ca2bd9db3c95e9060f0e0bfbe070780594f1caa86",
+    "pilot/STOP.json": "19eb9aa4217d6b8d5c8db2ec51f3a8628778030749ff89af9738f3cee0ba9faf",
+    "pilot/base/0/STOP.json": "c415a45f225d68766527374fbc9b557b0afc8f7fb30bff9a406a9b5714a271a6",
+    "pilot/base/0/fixture.json": "08a844a9e256606623535d12d94ba7ab567f3528c163e2932d24b04f8daf0ea1",
+    "pilot/base/0/native.log": "67dd622fc6e32dccf6426edc14fd3c13587a1efb39c95335aacc3a446d638f1d",
+    "pilot/base/0/network.jsonl": "f5b159316030838d5cc41a4a29ea442c92549594d8dbadb94858e865f9009262",
+    "pilot/base/0/references.json": "4ef68ba1bd3548ee23ded869122d3a09c80edf2058d778b174e8bd58e1053651",
+    "pilot/base/0/results.jsonl": "ccde286c997714fe2ba6bf57e5ced1d5f717ee62610b11450764eb8dd76135af",
+    "pilot/base/0/status.json": "4e686a960f91a442cad0d30e047f65aab8a442d9a3277faaa26726d84b104a7b",
+    "pilot/base/0/summary.json": "aab6f4dc7ba9542cc419a786656de030d95d6368fcf51ef6db083e0de040afb5",
+    "pilot/base/1/STOP.json": "c415a45f225d68766527374fbc9b557b0afc8f7fb30bff9a406a9b5714a271a6",
+    "pilot/base/1/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "pilot/base/1/native.log": "1103930dfc4c7066e81b9257590f8532d24bc82bdc7e31d38a8f327d5ed80e61",
+    "pilot/base/1/network.jsonl": "20c9f895a439f52fd65ccd4c057123a13fbe3c8de5d2de1b505ef1e5eafda5be",
+    "pilot/base/1/references.json": "80b2051347d54b616332e892b33f68bba74b7c4902b9baaa7aaa309306afb450",
+    "pilot/base/1/results.jsonl": "3a3659a9dda4fc473ffa249445297df914122e1d4782b47e9c2db08342eb43ba",
+    "pilot/base/1/status.json": "1fe69ee6485c37ff4656f99a152767630fac5c7540dfa8035fcae82f9fda20bb",
+    "pilot/base/1/summary.json": "754851d60278e1b044ed2361473ed2f4c51197d840a0c7f06d761be319dedc47",
+    "pilot/base/2/STOP.json": "c415a45f225d68766527374fbc9b557b0afc8f7fb30bff9a406a9b5714a271a6",
+    "pilot/base/2/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "pilot/base/2/native.log": "614d7e7e993f42fd538215af7ab64be1377722e3f807780fb787cb50dcc00bf7",
+    "pilot/base/2/network.jsonl": "07b574a3bcc3d1208d98bd8dcdeb6e27b2081ac0d104731aff56e5ef82275d2a",
+    "pilot/base/2/references.json": "40090a7b56ffcc7862f5ce6398c45d5ea90a65e4b91b4d143e4704ae9b1d4fa5",
+    "pilot/base/2/results.jsonl": "4d665eebe436047bb4df1f022321fedacddce9affd8fc587b6c8b94663310335",
+    "pilot/base/2/status.json": "587827f0065340b056fb07fb24c7b3a07814d88e3c0f44030245eaacd26c264c",
+    "pilot/base/2/summary.json": "4401bf23c255fd9f91e1423d55dfc7dd54f3afae756359d58d461f3fe8ff61c0",
+    "pilot/base/3/STOP.json": "c415a45f225d68766527374fbc9b557b0afc8f7fb30bff9a406a9b5714a271a6",
+    "pilot/base/3/fixture.json": "fae5ff2e4c217206886e58b1214887b6b7dec9411ba4fb35e1e4c8e2a6dbc8b6",
+    "pilot/base/3/native.log": "217820994ccf004be3c2150098ae209e34d096a87b4d591fa4552b22061bc9aa",
+    "pilot/base/3/network.jsonl": "917d19231587c8053d9d29d6dbceeecd51d680fef73aa204511121009096deaf",
+    "pilot/base/3/references.json": "ec7d444197d7665d7b9d0fcbf054213f06e0d4273c0907d3194a0901ad652794",
+    "pilot/base/3/results.jsonl": "1972e72c9ff463ec04cdcd3d78be368b68ef0bf0b332b3adb6f414898f1dedfc",
+    "pilot/base/3/status.json": "000b0cab32d6a74fb41bfb7aba7ef464530999fd238fae00c40d916e0533428c",
+    "pilot/base/3/summary.json": "3ab40c5d5463ab688609b878e4938bffcfe1f0ac18ea6d4b28343c6b2f3ca343",
+    "pilot/diagnostic-default.json": "98b4db949ec633247fc6269766882e4750216df2440f887dc2dd226968db2d3f",
+    "pilot/diagnostic-disabled.json": "9885c8e1cb3c0527a3eaa75f3914be69d3ba8246eca47731692f1eaf47b41d52",
+    "pilot/manifest.json": "fc2e96bd3133554ab9aa91a700fff97c52d399915ea8c1411d5c84d2515b4e01",
+    "pilot/run.py": "f851a234c45c02578b942cc37375880a98d35dbeb9d4ffb26af86e8180ac8917",
+    "pilot/runner-error.json": "7e75e2d8b411ad524848a83c90c791b36c79cce61bb5f3dfbaa25b702fe5fea3",
+    "full/report.html": "c396adb2feac6059296854bf8f69967aa1e3496d639e0540fe17337807e7fe55"
+  },
+  "publicCopies": {
+    "summary.json": "83bd2fdebb5433b663c7f0402d8b48e1c045305f765f61c8ee9f743479a7e3f1",
+    "task-results.json": "2ea035bcaaa847f07e8e6ffdb1798988c3d0cd07de081b7d1f15b645acc3ee9f",
+    "stop-review.json": "cb0c8e114ab3925caa65184bc268b29c61ff24b168a6476e26d029ae8b9c00a4",
+    "review.json": "a2ecc38c99baf491779d9817598ab167d1f0fbe8435d39dd073b37e25709cd8a",
+    "continuation-audit.json": "7d0d89216bec5439013390e174d9a8214f3988ddfd9c94906844d2db094e5833",
+    "manifest.json": "fda7dbacb705823fc38748e425d3f71ab7788c2bf6f8908150fb19a33224089b",
+    "report.html": "c396adb2feac6059296854bf8f69967aa1e3496d639e0540fe17337807e7fe55"
+  },
+  "sourceReadback": [
+    {
+      "path": "backend/src/main/java/cn/qingye/QingyeApplication.java",
+      "gitLfSha256": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
+      "gitCrlfSha256": "0afc8d3701fbfcc18394efab716a07751f0576660401acd8fb9516bca48e395b",
+      "recordedHash": "0afc8d3701fbfcc18394efab716a07751f0576660401acd8fb9516bca48e395b",
+      "workingHash": "0afc8d3701fbfcc18394efab716a07751f0576660401acd8fb9516bca48e395b",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/api/Api.java",
+      "gitLfSha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+      "gitCrlfSha256": "5afce2abd6715a973e245ffb13eb7c24ec034a839d98bc3f9e3d9968fc6b69e2",
+      "recordedHash": "5afce2abd6715a973e245ffb13eb7c24ec034a839d98bc3f9e3d9968fc6b69e2",
+      "workingHash": "5afce2abd6715a973e245ffb13eb7c24ec034a839d98bc3f9e3d9968fc6b69e2",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/api/AuthFilter.java",
+      "gitLfSha256": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
+      "gitCrlfSha256": "0da1a78f024bc34c4d21ee4b0eeb88d7366b818bd5b5feb4c37583d93056e4fd",
+      "recordedHash": "0da1a78f024bc34c4d21ee4b0eeb88d7366b818bd5b5feb4c37583d93056e4fd",
+      "workingHash": "0da1a78f024bc34c4d21ee4b0eeb88d7366b818bd5b5feb4c37583d93056e4fd",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/api/Errors.java",
+      "gitLfSha256": "45cc6dcd06f91cc3e36573606e53c7ae977c653b7013867915cad9763fb1bdb7",
+      "gitCrlfSha256": "2b30854d6bb5b604cc81a7950a3adbf5148f7b354292d0dd6e624ab62bf07845",
+      "recordedHash": "2b30854d6bb5b604cc81a7950a3adbf5148f7b354292d0dd6e624ab62bf07845",
+      "workingHash": "2b30854d6bb5b604cc81a7950a3adbf5148f7b354292d0dd6e624ab62bf07845",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/api/Forms.java",
+      "gitLfSha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+      "gitCrlfSha256": "864fb8b2947317e3a28fef0233987012d42298a5afc1f80c1e7d797fcc59e802",
+      "recordedHash": "864fb8b2947317e3a28fef0233987012d42298a5afc1f80c1e7d797fcc59e802",
+      "workingHash": "864fb8b2947317e3a28fef0233987012d42298a5afc1f80c1e7d797fcc59e802",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/Access.java",
+      "gitLfSha256": "167bfff48340f44a9b2821fd01c3d3a8716538db6877787f1349808fdb347723",
+      "gitCrlfSha256": "6a9718fbe15307ad17661087736e82431fa34f47801656e3260954eae1e42ec4",
+      "recordedHash": "6a9718fbe15307ad17661087736e82431fa34f47801656e3260954eae1e42ec4",
+      "workingHash": "6a9718fbe15307ad17661087736e82431fa34f47801656e3260954eae1e42ec4",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/AccountService.java",
+      "gitLfSha256": "88964941bc348882f0377f40d3efbb5398f241dfba0c85380709f5166d361fbe",
+      "gitCrlfSha256": "05fe66213b10d86eb10f67caf02d4891cb3fee0e9f11071e0b2fe510f339d695",
+      "recordedHash": "88964941bc348882f0377f40d3efbb5398f241dfba0c85380709f5166d361fbe",
+      "workingHash": "88964941bc348882f0377f40d3efbb5398f241dfba0c85380709f5166d361fbe",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/ActivityService.java",
+      "gitLfSha256": "ee7be084a8546429ee18c8f90c8fbcd0c04fb630700afdda709dfcba337bc420",
+      "gitCrlfSha256": "aa695e37ad5c390ea7e0a6ef9df12006c8114f7c3d7f484b11d893385691ab42",
+      "recordedHash": "aa695e37ad5c390ea7e0a6ef9df12006c8114f7c3d7f484b11d893385691ab42",
+      "workingHash": "aa695e37ad5c390ea7e0a6ef9df12006c8114f7c3d7f484b11d893385691ab42",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/AssistantConfirmations.java",
+      "gitLfSha256": "da1004572e56e0d540a8c67d7f425375d363e6e8d21db50317775a5ccce87651",
+      "gitCrlfSha256": "912a757646cf3d7ec012e0318b26c7ad9afd925df7b035097be2115f4fc076f3",
+      "recordedHash": "da1004572e56e0d540a8c67d7f425375d363e6e8d21db50317775a5ccce87651",
+      "workingHash": "912a757646cf3d7ec012e0318b26c7ad9afd925df7b035097be2115f4fc076f3",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/AssistantService.java",
+      "gitLfSha256": "05deec011a9d4148c76b4397118739a6bd980c47602a5dd4ebdf33ddd47d9e17",
+      "gitCrlfSha256": "50b97bcd98bea574b50978645158b8d06f1683a5d3013d9dc9396b17f61dfb89",
+      "recordedHash": "50b97bcd98bea574b50978645158b8d06f1683a5d3013d9dc9396b17f61dfb89",
+      "workingHash": "50b97bcd98bea574b50978645158b8d06f1683a5d3013d9dc9396b17f61dfb89",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/AssistantTime.java",
+      "gitLfSha256": "f7f27563585c23768d4179398af1c089ab3b28f579c4340812125e7f3dc833d8",
+      "gitCrlfSha256": "5357574a9961e14ec86dc9fa504428fb5e6d5c1da49fab52b52b57ab18a04357",
+      "recordedHash": "5357574a9961e14ec86dc9fa504428fb5e6d5c1da49fab52b52b57ab18a04357",
+      "workingHash": "5357574a9961e14ec86dc9fa504428fb5e6d5c1da49fab52b52b57ab18a04357",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/AuthService.java",
+      "gitLfSha256": "9aabca6021f7fbe17ff42349e5e84e8df3d36d0d85adbab4a274693a2a730fd8",
+      "gitCrlfSha256": "403fcd2e1ea5165e03210e56465a3a5e2a468ff66cdf210c3c59d1a01b21d3f4",
+      "recordedHash": "403fcd2e1ea5165e03210e56465a3a5e2a468ff66cdf210c3c59d1a01b21d3f4",
+      "workingHash": "403fcd2e1ea5165e03210e56465a3a5e2a468ff66cdf210c3c59d1a01b21d3f4",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/CapacityScan.java",
+      "gitLfSha256": "6d612c743f1b6faa25ab50255a0fb5a7d10b0bc6b12c8e77d684389c995f9762",
+      "gitCrlfSha256": "2813edcd76d267fa07f76ed1ae1c5c9c84d3c0b6ea88410a95fd6f3b9dd99d49",
+      "recordedHash": "2813edcd76d267fa07f76ed1ae1c5c9c84d3c0b6ea88410a95fd6f3b9dd99d49",
+      "workingHash": "2813edcd76d267fa07f76ed1ae1c5c9c84d3c0b6ea88410a95fd6f3b9dd99d49",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/ClubService.java",
+      "gitLfSha256": "c45bdbf3b231535feff802d004205042eff11b03cd71681aa972e71aefdc6715",
+      "gitCrlfSha256": "a73b9315e36dc9616ffa7f1593a299c5e0bf750b7392ea7df26a4f66c42342c3",
+      "recordedHash": "a73b9315e36dc9616ffa7f1593a299c5e0bf750b7392ea7df26a4f66c42342c3",
+      "workingHash": "a73b9315e36dc9616ffa7f1593a299c5e0bf750b7392ea7df26a4f66c42342c3",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/DemoData.java",
+      "gitLfSha256": "fc464fb190c7d586e43eb1a0b38b346e354fc6b75e47a8ca3dc7cf0466a6383e",
+      "gitCrlfSha256": "9ff2fc09b2bc1f64c12facd126993274285240d5312c45a2a5aad0947e633105",
+      "recordedHash": "9ff2fc09b2bc1f64c12facd126993274285240d5312c45a2a5aad0947e633105",
+      "workingHash": "9ff2fc09b2bc1f64c12facd126993274285240d5312c45a2a5aad0947e633105",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/LoanService.java",
+      "gitLfSha256": "660eba41586a1e33baf972bfa027a4d01332b9152c2f5ef187fc3569ddaec21a",
+      "gitCrlfSha256": "d877a3cb6455d19e3f8dc2b9ca2b3670cd6e64ed43b4512822bce4b06ef59d2c",
+      "recordedHash": "d877a3cb6455d19e3f8dc2b9ca2b3670cd6e64ed43b4512822bce4b06ef59d2c",
+      "workingHash": "d877a3cb6455d19e3f8dc2b9ca2b3670cd6e64ed43b4512822bce4b06ef59d2c",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/Problem.java",
+      "gitLfSha256": "51113fb32d7f7f4c29aa809c048e01b95b2c5d3146253f10ed7547b9530d1457",
+      "gitCrlfSha256": "14d67a3cadee89b1d77722a41199a2cc049ac8ac1e5528cf6d679a4671790b3a",
+      "recordedHash": "14d67a3cadee89b1d77722a41199a2cc049ac8ac1e5528cf6d679a4671790b3a",
+      "workingHash": "14d67a3cadee89b1d77722a41199a2cc049ac8ac1e5528cf6d679a4671790b3a",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/Recommendation.java",
+      "gitLfSha256": "1b955d155be929072f41b59054ce25e813d7a7715c27f292a9b70420a9bce259",
+      "gitCrlfSha256": "d760b3e0ba2c6363d0a4a22526a08a3d53e1ef946c901ec9614a08dd4b53ede1",
+      "recordedHash": "d760b3e0ba2c6363d0a4a22526a08a3d53e1ef946c901ec9614a08dd4b53ede1",
+      "workingHash": "d760b3e0ba2c6363d0a4a22526a08a3d53e1ef946c901ec9614a08dd4b53ede1",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/business/TaskService.java",
+      "gitLfSha256": "eb3511c5bf0474a190f7f4af9037b9e9e9a6ca4264f5aa0f6cad4483ee0d84eb",
+      "gitCrlfSha256": "f5fe91e2d5a120bd26889eeab05eb54cae78e811f6e69a3dbd79b012d8f49574",
+      "recordedHash": "f5fe91e2d5a120bd26889eeab05eb54cae78e811f6e69a3dbd79b012d8f49574",
+      "workingHash": "f5fe91e2d5a120bd26889eeab05eb54cae78e811f6e69a3dbd79b012d8f49574",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/ActivityStore.java",
+      "gitLfSha256": "c5dbb36d7df345fa05341d1f3995346c45413c74abdf3b57db1a8f8ecf8b5052",
+      "gitCrlfSha256": "335748ea874c4445ba7e05ecaf96079307c8b4599a06f97bac98f18dc9fe537d",
+      "recordedHash": "335748ea874c4445ba7e05ecaf96079307c8b4599a06f97bac98f18dc9fe537d",
+      "workingHash": "335748ea874c4445ba7e05ecaf96079307c8b4599a06f97bac98f18dc9fe537d",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/AssistantSql.java",
+      "gitLfSha256": "46db7068a5c98cd10152bc17034509b6cb14b0e9312e1d306802156ba6d012a0",
+      "gitCrlfSha256": "fd887464a523e5b80915487ddef99a8f111942fbd63eff058186dbe9d084c61f",
+      "recordedHash": "fd887464a523e5b80915487ddef99a8f111942fbd63eff058186dbe9d084c61f",
+      "workingHash": "fd887464a523e5b80915487ddef99a8f111942fbd63eff058186dbe9d084c61f",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/ClubStore.java",
+      "gitLfSha256": "3c36cca855df460a342141c7fbd0cddf62c752d4b6bfc0f0da1e81cf090baf0e",
+      "gitCrlfSha256": "10680986bebeb1b5f9d190eff342b9ff6eee38a12dd726f6de9687afb91d056a",
+      "recordedHash": "10680986bebeb1b5f9d190eff342b9ff6eee38a12dd726f6de9687afb91d056a",
+      "workingHash": "10680986bebeb1b5f9d190eff342b9ff6eee38a12dd726f6de9687afb91d056a",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/LoanStore.java",
+      "gitLfSha256": "d30fdcdd056dfa08d078d90eeea7671d5ef8b1e14c3b7aca57314f29aa397dff",
+      "gitCrlfSha256": "93b77079695d0e565ba58aeac4b12dbdc7b4e19deadc32810c5051401bc928ce",
+      "recordedHash": "93b77079695d0e565ba58aeac4b12dbdc7b4e19deadc32810c5051401bc928ce",
+      "workingHash": "93b77079695d0e565ba58aeac4b12dbdc7b4e19deadc32810c5051401bc928ce",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/MessageStore.java",
+      "gitLfSha256": "634e444eb8e19ac96d6a40011af6ecbf257b2d4c3798afae522344c2a8acfc94",
+      "gitCrlfSha256": "3fb95e0c56de21e9a1083186c514fdd6fc17772c208c2cfcc514821fd9828ed7",
+      "recordedHash": "3fb95e0c56de21e9a1083186c514fdd6fc17772c208c2cfcc514821fd9828ed7",
+      "workingHash": "3fb95e0c56de21e9a1083186c514fdd6fc17772c208c2cfcc514821fd9828ed7",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/Rows.java",
+      "gitLfSha256": "848099bb41bcb7c40a706e6faa497a2bf3ac525c4a9cbecb8bec3a91d3119768",
+      "gitCrlfSha256": "b5d4579b14c3cc06472cade84b1df735603c81044355c707baeaa56eb235aaaa",
+      "recordedHash": "b5d4579b14c3cc06472cade84b1df735603c81044355c707baeaa56eb235aaaa",
+      "workingHash": "b5d4579b14c3cc06472cade84b1df735603c81044355c707baeaa56eb235aaaa",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/SchemaUpgrade.java",
+      "gitLfSha256": "c6223b4be2145745bfe654707a3d0e58ba54854d13a0c165d5336b82160eb541",
+      "gitCrlfSha256": "72e58fa4b56a4fdd00c0077c86e8a7fd1fd7f5956082897c30b4d4b1a7386217",
+      "recordedHash": "72e58fa4b56a4fdd00c0077c86e8a7fd1fd7f5956082897c30b4d4b1a7386217",
+      "workingHash": "72e58fa4b56a4fdd00c0077c86e8a7fd1fd7f5956082897c30b4d4b1a7386217",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/Sql.java",
+      "gitLfSha256": "61f2e04ede780a161820e821b708d3e0b0e5bd9f782b977d28caca56283b261b",
+      "gitCrlfSha256": "ff84e31795c256eb0fac136e1ac7180fedc8b1378d432fc128e243bf50a97668",
+      "recordedHash": "ff84e31795c256eb0fac136e1ac7180fedc8b1378d432fc128e243bf50a97668",
+      "workingHash": "ff84e31795c256eb0fac136e1ac7180fedc8b1378d432fc128e243bf50a97668",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/db/UserStore.java",
+      "gitLfSha256": "63942c2a39463314d21df6d98fbfcb56181cdf7160aaa6e2b6974969625d242e",
+      "gitCrlfSha256": "bf0623e3b6fba398da1f25388071c8c167a695254cba8bf553d39f69585b1e30",
+      "recordedHash": "bf0623e3b6fba398da1f25388071c8c167a695254cba8bf553d39f69585b1e30",
+      "workingHash": "bf0623e3b6fba398da1f25388071c8c167a695254cba8bf553d39f69585b1e30",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java",
+      "gitLfSha256": "6a519a7794559ab6a6157216ba914b181cff4ff2298a3602c0f632755faf03a9",
+      "gitCrlfSha256": "30b0936f3c5f01a46b71c1d8079e9fce0e255e8d0097ce14070fa735a9c021a4",
+      "recordedHash": "30b0936f3c5f01a46b71c1d8079e9fce0e255e8d0097ce14070fa735a9c021a4",
+      "workingHash": "30b0936f3c5f01a46b71c1d8079e9fce0e255e8d0097ce14070fa735a9c021a4",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/AssistantLearning.java",
+      "gitLfSha256": "03172d1c840166a038303df82d9efa122db4707b0db6a151156252cfdf048ae3",
+      "gitCrlfSha256": "855cc31048fc35ebe8aafc39606c5a13708c4332e9f071f8acbf40de96afe8ac",
+      "recordedHash": "855cc31048fc35ebe8aafc39606c5a13708c4332e9f071f8acbf40de96afe8ac",
+      "workingHash": "855cc31048fc35ebe8aafc39606c5a13708c4332e9f071f8acbf40de96afe8ac",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+      "gitLfSha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+      "gitCrlfSha256": "c9e596cadc299c26b042b7928431be8a673de25e01da92c6d3e8eca506a6d5bc",
+      "recordedHash": "c9e596cadc299c26b042b7928431be8a673de25e01da92c6d3e8eca506a6d5bc",
+      "workingHash": "c9e596cadc299c26b042b7928431be8a673de25e01da92c6d3e8eca506a6d5bc",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+      "gitLfSha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+      "gitCrlfSha256": "5e315d2abb1fa2f3e248328fbe641ccf6c3c987c22cee38dadfe01548de9ffda",
+      "recordedHash": "5e315d2abb1fa2f3e248328fbe641ccf6c3c987c22cee38dadfe01548de9ffda",
+      "workingHash": "5e315d2abb1fa2f3e248328fbe641ccf6c3c987c22cee38dadfe01548de9ffda",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
+      "gitLfSha256": "1ad48b0901a2470229e65d8b7b72dc9752f2a700b437bae87f4c631e532d0808",
+      "gitCrlfSha256": "f3caec135c89a7d30c3d651b350a0f8bd8606562975d75fd7865b37e0882124f",
+      "recordedHash": "f3caec135c89a7d30c3d651b350a0f8bd8606562975d75fd7865b37e0882124f",
+      "workingHash": "f3caec135c89a7d30c3d651b350a0f8bd8606562975d75fd7865b37e0882124f",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/RabbitBridge.java",
+      "gitLfSha256": "3b66989beb9af1b203c6796654d78a261250ec5ec06d90cbfda23090ef9c7df3",
+      "gitCrlfSha256": "8a93655b7c1807367da48bed2b918fe4e0838e8021ec6ff0ddd2ee10dc65bfc8",
+      "recordedHash": "8a93655b7c1807367da48bed2b918fe4e0838e8021ec6ff0ddd2ee10dc65bfc8",
+      "workingHash": "8a93655b7c1807367da48bed2b918fe4e0838e8021ec6ff0ddd2ee10dc65bfc8",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/integration/TaskWorker.java",
+      "gitLfSha256": "a5089f472c44f5d1bde294825902f729c8a7b154fdc028b971d4a8ba1bf052df",
+      "gitCrlfSha256": "2f67bd364840b858add2180ae251e1850c99ec7c1ea520c0f7d23c1ba818adcf",
+      "recordedHash": "2f67bd364840b858add2180ae251e1850c99ec7c1ea520c0f7d23c1ba818adcf",
+      "workingHash": "2f67bd364840b858add2180ae251e1850c99ec7c1ea520c0f7d23c1ba818adcf",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/Actor.java",
+      "gitLfSha256": "3e11afb04a1adf2a55bc4495372b8b887a730c6d689c334870a1e394b12ac35b",
+      "gitCrlfSha256": "c70b6b1b913c7657de607b079dafdd948e1a3a2345895b3c57d4e048200873a0",
+      "recordedHash": "c70b6b1b913c7657de607b079dafdd948e1a3a2345895b3c57d4e048200873a0",
+      "workingHash": "c70b6b1b913c7657de607b079dafdd948e1a3a2345895b3c57d4e048200873a0",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/AssistantContract.java",
+      "gitLfSha256": "6ffb8d5353c64175456a1c4d6e40c36cdf9b50d738433999e21127b7c1246e3b",
+      "gitCrlfSha256": "cb338d4fdb73ee13038989c986b10956682dd8e3459ecd26615efbef6704fcc1",
+      "recordedHash": "cb338d4fdb73ee13038989c986b10956682dd8e3459ecd26615efbef6704fcc1",
+      "workingHash": "cb338d4fdb73ee13038989c986b10956682dd8e3459ecd26615efbef6704fcc1",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/AssistantContractData.java",
+      "gitLfSha256": "47d7520fb573a97704a3b58edd2aee2007a250a0ce420ff501987183219362e2",
+      "gitCrlfSha256": "a47ed59a43ca50d13178d272439c96b8ebcca47c10a6f9f3d81899032345e310",
+      "recordedHash": "47d7520fb573a97704a3b58edd2aee2007a250a0ce420ff501987183219362e2",
+      "workingHash": "47d7520fb573a97704a3b58edd2aee2007a250a0ce420ff501987183219362e2",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/AssistantHint.java",
+      "gitLfSha256": "bf5efc267144afc6862ce3fd0320ea3a2061a1b8eb6d4a8b51ebb1189e0ac578",
+      "gitCrlfSha256": "9ebc517655cadd2918d6ad3fb5572ee2f65b454379b0d4d7784c468c616b5776",
+      "recordedHash": "9ebc517655cadd2918d6ad3fb5572ee2f65b454379b0d4d7784c468c616b5776",
+      "workingHash": "9ebc517655cadd2918d6ad3fb5572ee2f65b454379b0d4d7784c468c616b5776",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/AssistantIntake.java",
+      "gitLfSha256": "38571da2c1696527efc20d95673d22fc397be28ceb415116ab8d69e6f55fa107",
+      "gitCrlfSha256": "798b3684a62183c468de5b88063700adc77f6eab1800f49facf23fcb0858c560",
+      "recordedHash": "798b3684a62183c468de5b88063700adc77f6eab1800f49facf23fcb0858c560",
+      "workingHash": "798b3684a62183c468de5b88063700adc77f6eab1800f49facf23fcb0858c560",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/AssistantLocatorProtocol.java",
+      "gitLfSha256": "97ab390ba99873203f5d8d77f085357ec8d9eb11cee9780d070659f873070ed5",
+      "gitCrlfSha256": "6c0c486f8a59a042812f13b8119ccc711b84c36e8a37663fba4d6a3dc323139c",
+      "recordedHash": "6c0c486f8a59a042812f13b8119ccc711b84c36e8a37663fba4d6a3dc323139c",
+      "workingHash": "6c0c486f8a59a042812f13b8119ccc711b84c36e8a37663fba4d6a3dc323139c",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/AssistantQualification.java",
+      "gitLfSha256": "2aaa870497e1eb66ab09f3e001a87ec46b05cdae76852ffd54674795c858d535",
+      "gitCrlfSha256": "f29ea246fa61c81f609d7aa5a3f80ded55cdd52620a6539fa05b8f4ff2fbbf7f",
+      "recordedHash": "f29ea246fa61c81f609d7aa5a3f80ded55cdd52620a6539fa05b8f4ff2fbbf7f",
+      "workingHash": "f29ea246fa61c81f609d7aa5a3f80ded55cdd52620a6539fa05b8f4ff2fbbf7f",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
+      "gitLfSha256": "928cf58bcbc8eedbc70dd3636830ee96d0e5ab4e0e8599afb55ae2e5de12715c",
+      "gitCrlfSha256": "82ce80adae0035c4e44f334036b26fa670b042b644a4ba2ee228a6bb58b0b59d",
+      "recordedHash": "82ce80adae0035c4e44f334036b26fa670b042b644a4ba2ee228a6bb58b0b59d",
+      "workingHash": "82ce80adae0035c4e44f334036b26fa670b042b644a4ba2ee228a6bb58b0b59d",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/java/cn/qingye/model/Reservation.java",
+      "gitLfSha256": "fd88268abd861a2023939b5a55e855d2ff90df8527be3e7e4a5753848e04f57f",
+      "gitCrlfSha256": "b315f13dd0455ded1ed4602358ce92ed34410887a27e1cd1ca307f066fc13455",
+      "recordedHash": "b315f13dd0455ded1ed4602358ce92ed34410887a27e1cd1ca307f066fc13455",
+      "workingHash": "b315f13dd0455ded1ed4602358ce92ed34410887a27e1cd1ca307f066fc13455",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "gitLfSha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+      "gitCrlfSha256": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0",
+      "recordedHash": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0",
+      "workingHash": "58cc9fb13254ad173d2537bf0a453edebb0eaa74f83aeddca666a550a0d7aab0",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/resources/assistant-contract.json",
+      "gitLfSha256": "507b24060f63dbeccc724f928ce40bf71de76de429c31732bc42a6204c91555e",
+      "gitCrlfSha256": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80",
+      "recordedHash": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80",
+      "workingHash": "3751fc0073acd17943e6dd554d16fbe1113caf0b788af32685ed60a6e3e12e80",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/resources/assistant-locator-protocol.json",
+      "gitLfSha256": "b0ac9d8d909b528fa2cd88f93a48518db382774703e9a0598f81af2359b27cae",
+      "gitCrlfSha256": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6",
+      "recordedHash": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6",
+      "workingHash": "5876b4125fb2eecdf9400a1f4dcf4e0fecda2ad88054641324faaec3e80f6da6",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/resources/assistant-planner.txt",
+      "gitLfSha256": "13b8db11dd8b55ae7c112a9668e726dd22b3351c3675bc4c8d8c34cdbc5f7793",
+      "gitCrlfSha256": "603f7d1ab3260d8fd2c4c5a5af54bd72c08237346bfa0ca1622bc619f8a3a80c",
+      "recordedHash": "13b8db11dd8b55ae7c112a9668e726dd22b3351c3675bc4c8d8c34cdbc5f7793",
+      "workingHash": "603f7d1ab3260d8fd2c4c5a5af54bd72c08237346bfa0ca1622bc619f8a3a80c",
+      "sameAsPublicationBase": true
+    },
+    {
+      "path": "backend/src/main/resources/schema.sql",
+      "gitLfSha256": "1fe67793d7ed8f7dfb84a2bcce46bd9bff93ce0fc464fc91d823606789eaec00",
+      "gitCrlfSha256": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397",
+      "recordedHash": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397",
+      "workingHash": "aef121f11566ac705c68af9cfbdab6c2a694bb4bd586a134a68ad87248706397",
+      "sameAsPublicationBase": true
+    }
+  ],
+  "omissions": [
+    "Compiled .class files and local classpath.txt remain in original evidence directory; their hashes are retained in full/manifest.json and full/artifact-hashes.json.",
+    "No credentials or dependency binaries are published."
+  ],
+  "transformations": "ZIP compression only; included original bytes and public copies are unchanged. Original Windows paths remain as historical provenance.",
+  "credentialPatternScan": {
+    "files": 134,
+    "matches": 0
+  }
+}

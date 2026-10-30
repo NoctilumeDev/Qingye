@@ -1,0 +1,5 @@
+# Preserve the archived evidence's original bytes across checkout platforms.
+*.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+*.html -text whitespace=trailing-space,space-before-tab,cr-at-eol
+*.zip -text
+verify.py text eol=lf
