@@ -24,7 +24,7 @@
   background:#e7f0f2;
 }
 
-.cover > image {
+.cover-image {
   width:100%;
   height:100%;
   display:block;
@@ -54,7 +54,7 @@
   font-size:19rpx;
 }
 
-.meta > text:first-child {
+.category-label {
   color:#276f83;
   background:#e7f5f9;
   border-radius:7rpx;
@@ -73,7 +73,7 @@
   font-size:21rpx;
 }
 
-.when image,.capacity image {
+.meta-icon {
   width:25rpx;
   height:25rpx;
   flex-shrink:0;
