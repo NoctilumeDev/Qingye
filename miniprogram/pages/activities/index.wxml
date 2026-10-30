@@ -1,0 +1,16 @@
+<view class="page activity-directory">
+  <view class="search-row"><view class="search-box"><image src="/assets/icons/search-line-muted.png" /><input value="{{searchText}}" focus="{{searchFocused}}" maxlength="60" confirm-type="search" placeholder="搜索活动名称或介绍" bindinput="input" bindfocus="focusSearch" bindconfirm="search" /><view wx:if="{{searchText}}" class="clear" bindtap="clearSearch" aria-role="button" aria-label="清除搜索">×</view></view><view class="search-submit" bindtap="search" aria-role="button">搜索</view></view>
+  <view wx:if="{{searchFocused}}" class="search-history">
+    <view class="row"><text class="history-title">最近搜索</text><view wx:if="{{history.length}}" class="link" bindtap="clearHistory" aria-role="button">清空</view></view>
+    <view wx:if="{{!history.length}}" class="muted gap">还没有搜索记录</view>
+    <view class="history-tags"><view wx:for="{{history}}" wx:key="*this" class="history-tag" data-keyword="{{item}}" bindtap="useHistory">{{item}}</view></view>
+    <view class="history-close" bindtap="closeHistory">收起</view>
+  </view>
+  <scroll-view class="chips" scroll-x="true"><view class="chip {{category === item.key ? 'selected' : ''}}" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="category">{{item.name}}</view></scroll-view>
+  <view class="list-heading">{{keyword ? '“' + keyword + '”的搜索结果' : '校园里正在发生'}}</view>
+  <activity-card wx:for="{{items}}" wx:key="id" item="{{item}}" bindopen="open" />
+  <view wx:if="{{loading}}" class="loading">正在找活动…</view>
+  <view wx:elif="{{failed}}" class="empty">活动暂时没加载出来<view class="gap"><qy-action variant="secondary" bindactivate="retry">重新加载</qy-action></view></view>
+  <view wx:elif="{{!items.length}}" class="empty">没有找到符合条件的活动<view>试试其他名称，或换个分类。</view><view wx:if="{{keyword}}" class="gap"><qy-action variant="secondary" bindactivate="clearSearch">清除搜索</qy-action></view></view>
+  <view wx:elif="{{finished}}" class="footnote">已经看到最后了</view>
+</view>

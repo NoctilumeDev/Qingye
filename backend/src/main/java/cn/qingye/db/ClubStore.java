@@ -35,4 +35,7 @@ public class ClubStore {
     public List<Map<String,Object>> members(long club) {
         return sql.list("SELECT m.*,u.name,u.avatar FROM club_member m JOIN app_user u ON u.id=m.user_id WHERE club_id=? ORDER BY m.status,m.id LIMIT 200",club);
     }
+    public List<Map<String,Object>> publicLeaders(long club) {
+        return sql.list("SELECT u.name FROM club_member m JOIN app_user u ON u.id=m.user_id JOIN club c ON c.id=m.club_id WHERE m.club_id=? AND c.enabled=TRUE AND m.role='MANAGER' AND m.status='ACTIVE' AND u.enabled=TRUE ORDER BY m.id LIMIT 20",club);
+    }
 }

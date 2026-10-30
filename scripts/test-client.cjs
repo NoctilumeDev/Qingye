@@ -10,10 +10,25 @@ function page(name, request, wx = {}, confirmation = async () => true) {
   const native = { stopPullDownRefresh() {}, getWindowInfo: () => ({ windowHeight: 800 }), ...wx }
   const layout = { module: { exports: {} }, wx: native, setTimeout, clearTimeout }
   vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/keyboard.js'), 'utf8'), layout)
-  vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
+  const navigation = { module: { exports: {} }, wx: native, getApp: () => app, getCurrentPages: () => [{ route: 'pages/' + name + '/index' }] }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/navigation.js'), 'utf8'), navigation)
+  const cache = new Map()
+  function loadModule(file) {
+    if (cache.has(file)) return cache.get(file).exports
+    const module = { exports: {} }; cache.set(file, module)
+    vm.runInNewContext(fs.readFileSync(file, 'utf8'), { module, exports: module.exports, wx: native, getApp: () => app, setTimeout, clearTimeout, Date, require: requestModule(file) })
+    return module.exports
+  }
+  function requestModule(from) { return dependency => {
+    if (dependency.endsWith('/request')) return { request, guard: () => true, confirm: confirmation }
+    if (dependency.endsWith('/keyboard')) return layout.module.exports
+    if (dependency.endsWith('/navigation')) return navigation.module.exports
+    return loadModule(path.resolve(path.dirname(from), dependency + '.js'))
+  } }
+  const entry = path.join(client, 'pages', name, 'index.js')
+  vm.runInNewContext(fs.readFileSync(entry, 'utf8'), {
     Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = (values, callback) => { for (const [key, value] of Object.entries(values)) { const fields = key.split('.'); let target = instance.data; for (const field of fields.slice(0, -1)) target = target[field]; target[fields.at(-1)] = value }; if (callback) callback() } },
-    require(module) { return module.includes('assistant-feedback-copy') ? require(path.join(client,'utils/assistant-feedback-copy.js')) : module.includes('assistant-contract') ? require(path.join(client,'utils/assistant-contract.js')) : module.includes('request') ? { request, guard: () => true, confirm: confirmation } : module.includes('keyboard') ? layout.module.exports : module.includes('navigation') ? { switchTab: url => wx.switchTab({ url }) } : require(path.join(client, 'utils/view.js')) },
-    getApp: () => app, wx: native, setTimeout, clearTimeout, Date
+    require: requestModule(entry), getApp: () => app, wx: native, setTimeout, clearTimeout, Date
   })
   return instance
 }
@@ -30,16 +45,18 @@ test('negative click, cancellation and leaving do not submit feedback or trigger
   assistant.found(feedbackEvent(0)); assert.equal(assistant.data.sections[0].feedbackDone, true)
   assert.equal(calls.length, 0)
 })
-test('continuation sends only the bound receipt and correction, prevents double submission and awaits new consent', async () => {
+test('continuation sends only the bound receipt and correction, prevents double submission and shows the second-round result', async () => {
   const calls = [], pending = deferred(), assistant = page('assistant', (...args) => { calls.push(args); return pending.promise })
   assistant.accept(feedbackResult); assistant.missed(feedbackEvent(0)); assistant.feedbackInput({ detail: { value: '要投影仪' } })
   const send = assistant.continueFeedback(); await assistant.continueFeedback()
   assert.equal(calls.length, 1); assert.equal(calls[0][0], '/assistant/feedback')
   assert.deepEqual(JSON.parse(JSON.stringify(calls[0][2])), { token: 'result-receipt', correction: '要投影仪' })
   assert.equal(calls[0][3].timeout, 20000); assert.equal(assistant.data.items[0].name, '相机')
-  pending.resolve({ status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', items: [], confirmationToken: 'new-consent', feedbackState: 'PENDING' }); await send
-  assert.equal(assistant.data.status, 'CONFIRM_SCOPE'); assert.equal(calls.length, 1)
-  assert.match(assistant.data.feedbackNote, /核实/)
+  pending.resolve({ status: 'QUERY', intent: 'EQUIPMENT', items: [{ id: 2, name: '投影仪' }], gateRound: 2, maxGateRounds: 2, feedbackToken: 'second-result' }); await send
+  assert.equal(assistant.data.status, 'QUERY'); assert.equal(calls.length, 1)
+  assert.equal(assistant.data.items[0].name, '投影仪'); assert.equal(assistant.data.confirmationToken, '')
+  assert.equal(assistant.data.sections[0].canContinue, false)
+  assistant.missed(feedbackEvent(0)); assert.equal(assistant.data.feedbackIndex, -1)
 })
 test('feedback transport failure preserves displayed facts and never retries a consumed receipt', async () => {
   const assistant = page('assistant', async () => { throw Error('offline') })
@@ -193,7 +210,7 @@ test('an expired current session signs out, and a current network failure shows 
 const row = (id, category = 'SPORT') => ({ id, category, status: 'PUBLISHED', capacity: 10, registeredCount: 0, startTime: '2027-01-01T10:00:00', endTime: '2027-01-01T12:00:00', signupDeadline: '2026-12-31T10:00:00' })
 test('rapid filter and search changes eventually show the latest query', async () => {
   const first = deferred(), urls = []
-  const home = page('home', url => { urls.push(url); return urls.length === 1 ? first.promise : Promise.resolve([row(2, 'ART')]) })
+  const home = page('activities', url => { urls.push(url); return urls.length === 1 ? first.promise : Promise.resolve([row(2, 'ART')]) })
   const loading = home.load(true)
   home.category({ currentTarget: { dataset: { key: 'SPORT' } } })
   home.search({ detail: { value: '摄影' } })
@@ -208,7 +225,7 @@ test('rapid filter and search changes eventually show the latest query', async (
 })
 test('a failed in-flight request still runs the queued refresh', async () => {
   const first = deferred(); let calls = 0
-  const home = page('home', () => ++calls === 1 ? first.promise : Promise.resolve([row(3)]))
+  const home = page('activities', () => ++calls === 1 ? first.promise : Promise.resolve([row(3)]))
   const loading = home.load(true)
   home.category({ currentTarget: { dataset: { key: 'SPORT' } } })
   first.reject(new Error('temporary failure')); await loading
@@ -217,7 +234,7 @@ test('a failed in-flight request still runs the queued refresh', async () => {
 })
 test('pagination appends once and stops at the short final page', async () => {
   const urls = []
-  const home = page('home', async url => { urls.push(url); return urls.length === 1 ? Array.from({ length: 20 }, (_, n) => row(n)) : [row(20)] })
+  const home = page('activities', async url => { urls.push(url); return urls.length === 1 ? Array.from({ length: 20 }, (_, n) => row(n)) : [row(20)] })
   home.data.category = 'SPORT'
   await home.load(true); await home.load(); await home.load()
   assert.equal(home.data.items.length, 21)
@@ -325,7 +342,7 @@ test('expired restore reports zero honestly and a failed restore keeps the selec
 
 test('returning to a filtered activity list keeps all loaded pages and refreshes their facts', async () => {
   const urls = [], rows = Array.from({ length: 41 }, (_, n) => row(n))
-  const home = page('home', async url => { urls.push(url); const index = Number(new URL(url, 'http://test.invalid').searchParams.get('page')); return rows.slice(index * 20, (index + 1) * 20) })
+  const home = page('activities', async url => { urls.push(url); const index = Number(new URL(url, 'http://test.invalid').searchParams.get('page')); return rows.slice(index * 20, (index + 1) * 20) })
   home.data.category = 'SPORT'; home.data.keyword = '篮球'
   await home.load(true); await home.load(); await home.load()
   rows[40].registeredCount = 1; urls.length = 0
@@ -337,7 +354,7 @@ test('returning to a filtered activity list keeps all loaded pages and refreshes
 })
 
 test('a failed return refresh does not discard the existing long list', async () => {
-  const home = page('home', async url => { if (url.includes('page=1')) throw new Error('offline'); return Array.from({ length: 20 }, (_, n) => row(n)) })
+  const home = page('activities', async url => { if (url.includes('page=1')) throw new Error('offline'); return Array.from({ length: 20 }, (_, n) => row(n)) })
   home.data.items = Array.from({ length: 41 }, (_, n) => row(n)); home.data.page = 3; home.data.category = 'SPORT'
   await home.onShow()
   assert.equal(home.data.items.length, 41); assert.equal(home.data.page, 3); assert.equal(home.data.loading, false)
@@ -345,7 +362,7 @@ test('a failed return refresh does not discard the existing long list', async ()
 
 test('a new filter takes priority over a queued return refresh', async () => {
   const first = deferred(), urls = []
-  const home = page('home', url => { urls.push(url); return urls.length === 1 ? first.promise : Promise.resolve([row(99, 'ART')]) })
+  const home = page('activities', url => { urls.push(url); return urls.length === 1 ? first.promise : Promise.resolve([row(99, 'ART')]) })
   home.data.items = Array.from({ length: 41 }, (_, n) => row(n)); home.data.page = 3; home.data.category = 'SPORT'
   const returning = home.onShow(); home.category({ currentTarget: { dataset: { key: 'ART' } } }); home.onShow()
   first.resolve(Array.from({ length: 20 }, (_, n) => row(n))); await returning
@@ -354,10 +371,41 @@ test('a new filter takes priority over a queued return refresh', async () => {
 
 test('workbench return keeps the loaded activity range and selected section', async () => {
   const rows = Array.from({ length: 41 }, (_, n) => row(n))
-  const workbench = page('workbench', async url => url === '/me' ? { workbench: true } : rows.slice(Number(new URL(url, 'http://test.invalid').searchParams.get('page')) * 20, (Number(new URL(url, 'http://test.invalid').searchParams.get('page')) + 1) * 20))
+  const workbench = page('workbench', async url => url === '/me' ? { workbench: true } : url === '/clubs' ? [] : rows.slice(Number(new URL(url, 'http://test.invalid').searchParams.get('page')) * 20, (Number(new URL(url, 'http://test.invalid').searchParams.get('page')) + 1) * 20))
   await workbench.load(); await workbench.more(); await workbench.more(); await workbench.onShow()
   assert.equal(workbench.data.activities.length, 41); assert.equal(workbench.activityPage, 3); assert.equal(workbench.data.more, false)
   assert.equal(workbench.data.tab, 'activities')
+})
+
+test('workbench selects a club before pagination and preserves that selection', async () => {
+  const rows = Array.from({ length: 23 }, (_, i) => ({ ...row(i + 1), clubId: i % 2 + 1, clubName: i % 2 ? '音乐社' : '摄影社' }))
+  const urls = [], workbench = page('workbench', async url => { urls.push(url); if (url === '/clubs') return [{ id: 1, name: '摄影社' }, { id: 2, name: '音乐社' }]; const params = new URL(url, 'http://test.invalid').searchParams; const filtered = rows.filter(r => !params.get('clubId') || r.clubId === Number(params.get('clubId'))); return filtered.slice(Number(params.get('page')) * 20, (Number(params.get('page')) + 1) * 20) })
+  workbench.data.user.admin = true
+  await workbench.load(); assert.equal(workbench.data.more, true); await workbench.more()
+  await workbench.selectActivityClub({ detail: { value: '1' } }); await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(workbench.data.activities.length, 12); assert.ok(workbench.data.activities.every(r => r.clubId === 1)); assert.equal(workbench.data.more, false)
+  assert.ok(urls.some(url => url.includes('page=0&clubId=1')))
+})
+
+test('my activities filters on the server and does not mix stale responses', async () => {
+  const pending = deferred(), calls = [], me = page('me', async url => {
+    calls.push(url)
+    if (url === '/me') return { name: '同学' }
+    if (url === '/clubs') return [{ id: 1, name: '摄影社' }, { id: 2, name: '音乐社' }]
+    if (url === '/notifications') return []
+    if (url.includes('clubId=1')) return pending.promise
+    return url.includes('clubId=2') ? [{ ...row(2), clubId: 2 }] : [{ ...row(1), clubId: 1 }]
+  })
+  await me.onShow(); const first = me.selectActivityClub({ detail: { value: '1' } }); const second = me.selectActivityClub({ detail: { value: '2' } }); await second
+  pending.resolve([{ ...row(1), clubId: 1 }]); await first
+  assert.equal(me.data.activityClubIndex, 2); assert.equal(me.data.items[0].clubId, 2)
+  assert.ok(calls.includes('/activities?scope=mine&page=0&clubId=2'))
+})
+
+test('club details load the selected club and do not submit when exit is cancelled', async () => {
+  const calls = [], detail = page('club-detail', async (url, method) => { calls.push([url, method]); return url === '/clubs' ? [{ id: 1, name: '摄影社', myStatus: 'ACTIVE', myRole: 'MEMBER' }] : [] }, {}, async () => false)
+  detail.onLoad({ id: '1' }); await detail.onShow(); await detail.leave()
+  assert.equal(detail.data.item.name, '摄影社'); assert.deepEqual(calls, [['/clubs', undefined], ['/clubs/1/leaders', undefined]])
 })
 
 test('returning from club editing retains the selected club even if the list order changes', async () => {
@@ -369,28 +417,109 @@ test('returning from club editing retains the selected club even if the list ord
 
 test('an earlier workbench request cannot replace the active section after a quick switch', async () => {
   const pending = deferred()
-  const workbench = page('workbench', url => url === '/clubs' ? pending.promise : Promise.resolve([row(7)]))
+  let clubRequests = 0; const workbench = page('workbench', url => url === '/clubs' ? (++clubRequests === 1 ? pending.promise : Promise.resolve([])) : Promise.resolve([row(7)]))
   workbench.data.user.admin = true; workbench.data.tab = 'members'; const previous = workbench.load()
   workbench.data.tab = 'activities'; await workbench.load(); pending.resolve([{ id: 1 }]); await previous
   assert.equal(workbench.data.activities[0].id, 7); assert.equal(workbench.data.clubs.length, 0); assert.equal(workbench.data.loading, false)
 })
 
-test('clubs return follows the latest actual tab entry and does not overwrite it on repeated taps', () => {
-  const app = { globalData: {} }, urls = [], context = { module: { exports: {} }, getApp: () => app, getCurrentPages: () => [{ route: context.route }], wx: { switchTab: ({ url }) => urls.push(url) } }
+test('student equipment entry opens the ordinary page and the clubs tab remains available', () => {
+  const app = { globalData: { user: { workbench: false } } }, calls = [], context = { module: { exports: {} }, getApp: () => app, getCurrentPages: () => [{ route: context.route }], wx: { switchTab: ({ url }) => calls.push(['tab', url]), navigateTo: ({ url }) => calls.push(['page', url]) } }
   vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/navigation.js'), 'utf8'), context)
   const navigation = context.module.exports
-  for (const source of ['pages/me/index', 'pages/home/index', 'pages/me/index']) {
-    context.route = source; navigation.switchTab('/pages/clubs/index')
-    context.route = 'pages/clubs/index'; navigation.switchTab('/pages/clubs/index'); navigation.backFromClubs()
-    assert.equal(urls.at(-1), '/' + source)
-  }
+  context.route = 'pages/home/index'; navigation.switchTab('/pages/equipment/index')
+  context.route = 'pages/equipment/index'; navigation.switchTab('/pages/clubs/index')
+  assert.deepEqual(calls, [['page', '/pages/equipment/index'], ['tab', '/pages/clubs/index']])
 })
 
-test('account switching clears the previous clubs entry', () => {
+test('account switching clears the pending my-activities jump', () => {
   let app; const context = { App(value) { app = value }, wx: { setStorageSync() {}, removeStorageSync() {}, reLaunch() {} } }
   vm.runInNewContext(fs.readFileSync(path.join(client, 'app.js'), 'utf8'), context)
-  app.globalData.clubReturnTo = '/pages/me/index'; app.logout(); assert.equal(app.globalData.clubReturnTo, null)
-  app.globalData.clubReturnTo = '/pages/me/index'; app.setSession({ user: { id: 2 }, token: 'test' }); assert.equal(app.globalData.clubReturnTo, null)
+  app.globalData.openMyActivities = true; app.logout(); assert.equal(app.globalData.openMyActivities, false)
+  app.globalData.openMyActivities = true; app.setSession({ user: { id: 2 }, token: 'test' }); assert.equal(app.globalData.openMyActivities, false)
+})
+
+test('tab selection stays on the same page when workbench access changes', () => {
+  const app = { globalData: { user: { workbench: true } } }, context = { module: { exports: {} }, getApp: () => app }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/navigation.js'), 'utf8'), context)
+  const navigation = context.module.exports, bar = { data: {}, setData(value) { Object.assign(this.data, value) } }, page = { getTabBar: () => bar }
+  navigation.refreshTabBar(page, '/pages/me/index')
+  assert.equal(bar.data.tabs.length, 5); assert.equal(bar.data.tabs[2].path, '/pages/assistant/index'); assert.equal(bar.data.tabs[3].path, '/pages/workbench/index')
+  app.globalData.user = { workbench: false }; navigation.refreshTabBar(page, '/pages/me/index')
+  assert.equal(bar.data.tabs.length, 5); assert.ok(bar.data.tabs.some(t => t.path === '/pages/equipment/index')); assert.equal(bar.data.selectedPath, '/pages/me/index')
+  assert.ok(!bar.data.tabs.some(t => t.path.includes('workbench')))
+})
+
+test('home my-activities entry scrolls to the existing section once on arrival', async () => {
+  const app = { globalData: {} }, calls = [], ticks = [], wx = { switchTab: options => calls.push(options.url), nextTick: fn => ticks.push(fn), pageScrollTo: options => calls.push(options.selector) }
+  function makePage(name) {
+    let instance
+    vm.runInNewContext(fs.readFileSync(path.join(client, 'pages', name, 'index.js'), 'utf8'), {
+      Page(value) { instance = value; instance.data = JSON.parse(JSON.stringify(value.data)); instance.getTabBar = () => null; instance.setData = values => Object.assign(instance.data, values) },
+      require(module) { if (module.includes('request')) return { guard: () => true, request: async url => url === '/me' ? { name: '同学' } : [] }; if (module.includes('navigation')) return { refreshTabBar() {}, switchTab() {} }; if (module.includes('keyboard')) return {}; return require(path.join(client, 'utils/view.js')) },
+      getApp: () => app, wx, Date
+    })
+    return instance
+  }
+  const home = makePage('home'), me = makePage('me')
+  home.myActivities(); assert.equal(calls[0], '/pages/me/index'); assert.equal(app.globalData.openMyActivities, true)
+  await me.onShow(); ticks.shift()(); assert.equal(calls[1], '#my-activities'); assert.equal(app.globalData.openMyActivities, false)
+  await me.onShow(); assert.equal(ticks.length, 0)
+})
+
+test('home and bottom assistant entry use the same tab route without a model request', () => {
+  const destinations = []
+  const home = page('home', () => assert.fail('navigation must not query'), { switchTab: ({ url }) => destinations.push(url) })
+  home.assistant(); assert.deepEqual(destinations, ['/pages/assistant/index'])
+  const assistant = page('assistant', () => assert.fail('opening assistant must not query'))
+  const bar = { data: {}, setData(values) { Object.assign(this.data, values) } }
+  assistant.getTabBar = () => bar; assistant.onShow()
+  assert.equal(bar.data.selectedPath, '/pages/assistant/index')
+})
+
+test('closing or leaving the participant list cannot be undone by a late response', async () => {
+  const pending = deferred(); let calls = 0
+  const detail = page('activity', () => { calls++; return pending.promise })
+  detail.id = 7; detail.data.item = { canManage: true }
+  const first = detail.toggleParticipants(); assert.equal(detail.data.participantsLoading, true)
+  await detail.toggleParticipants(); assert.equal(detail.data.participantsExpanded, false)
+  pending.resolve([{ id: 2, name: '同学' }]); await first
+  assert.equal(calls, 1); assert.equal(detail.data.participants, null)
+  await detail.toggleParticipants(); assert.equal(detail.data.participants.length, 1)
+  detail.onHide(); assert.equal(detail.data.participantsExpanded, false); assert.equal(detail.data.participants, null)
+})
+
+test('participant lists can close when empty and a failed read can be retried', async () => {
+  let fail = true, calls = 0
+  const detail = page('activity', async () => { calls++; if (fail) throw Error('offline'); return [] })
+  detail.data.item = { canManage: false }; await detail.toggleParticipants(); assert.equal(calls, 0)
+  detail.data.item.canManage = true; await detail.toggleParticipants()
+  assert.equal(detail.data.participantsExpanded, false); assert.equal(detail.data.participantsLoading, false)
+  fail = false; await detail.toggleParticipants(); assert.equal(detail.data.participantsExpanded, true)
+  assert.equal(detail.data.participants.length, 0)
+  await detail.toggleParticipants(); assert.equal(detail.data.participantsExpanded, false); assert.equal(calls, 2)
+})
+
+test('a revoked workbench tab clears cached management records and returns home without reading work data', async () => {
+  const calls = [], destinations = []
+  const workbench = page('workbench', async url => { calls.push(url); return { workbench: false } }, { switchTab: ({ url }) => destinations.push(url) })
+  workbench.setData({ activities: [row(9)], loans: [{ id: 1 }], clubs: [{ id: 2 }], members: [{ id: 3 }] })
+  await workbench.onShow()
+  assert.deepEqual(calls, ['/me']); assert.deepEqual(destinations, ['/pages/home/index'])
+  for (const key of ['activities', 'loans', 'clubs', 'members']) assert.equal(workbench.data[key].length, 0)
+})
+
+test('recommendation carousel retains every recommended activity and manual pause survives a page return', async () => {
+  const rows = Array.from({ length: 6 }, (_, index) => row(index + 1))
+  const home = page('home', async url => url === '/recommendations' ? rows : [])
+  await home.onShow(); assert.deepEqual(Array.from(home.data.recommendations, r => r.id), [1, 2, 3, 4, 5, 6])
+  assert.deepEqual(Array.from(home.data.recommendationPages, pair => Array.from(pair, r => r.id)), [[1, 2], [3, 4], [5, 6]])
+  home.pauseRecommendations(); home.onHide(); assert.equal(home.data.visible, false)
+  await home.onShow(); assert.equal(home.data.visible, true); assert.equal(home.data.recommendationsPlaying, false)
+  home.recommendationChange({ detail: { current: 2 } }); rows.splice(3)
+  await home.onShow(); assert.equal(home.data.recommendationIndex, 1)
+  assert.deepEqual(Array.from(home.data.recommendationPages, pair => Array.from(pair, r => r.id)), [[1, 2], [3]])
+  rows.splice(0); await home.onShow(); assert.equal(home.data.recommendationPages.length, 0); assert.equal(home.data.recommendationIndex, 0)
 })
 
 test('every demo identity edits only its nickname and cancelling leaves the profile intact', async () => {
@@ -455,11 +584,11 @@ test('a failed assistant query leaves no stale facts and permits a retry', async
 })
 
 test('assistant shows the executed interpretation and correction never submits by itself', async () => {
-  let calls = 0
-  const assistant = page('assistant', async () => { calls++; return { status: 'QUERY', intent: 'MY_LOANS', answer: '你的借用记录', items: [], interpretation: '我按「你的借用记录 · 当前登录用户」帮你查了。' } })
+  let calls = 0; const destinations = []
+  const assistant = page('assistant', async () => { calls++; return { status: 'QUERY', intent: 'MY_LOANS', answer: '你的借用记录', items: [], interpretation: '我按「你的借用记录 · 当前登录用户」帮你查了。' } }, { navigateTo: o => destinations.push(o.url) })
   assistant.setData({ question: '查相机' }); await assistant.ask()
   assert.equal(assistant.data.status, 'QUERY'); assert.match(assistant.data.interpretation, /你的借用记录/)
-  assistant.correct(); assert.equal(assistant.data.correcting, true); assert.equal(calls, 1)
+  assistant.correct(); assert.equal(destinations[0], '/pages/assistant-manual/index'); assert.equal(calls, 1)
   assistant.input({ detail: { value: '我的借用记录' } }); assert.equal(calls, 1)
   await assistant.ask(); assert.equal(calls, 2); assert.equal(assistant.data.correcting, false)
 })
@@ -530,20 +659,22 @@ test('all objects keeps the other facets and uncertain input opens manual select
 
 test('model plan populates editable facets even while the request is busy', async () => {
   const plan = { intent: 'MY_REGISTRATIONS', entity: '摄影社', category: 'ART', timeOption: 'DATE', date: '2026-10-22', status: 'CANCELLED', location: '东操场' }
-  const assistant = page('assistant', async () => ({ status: 'CONFIRM_SCOPE', intent: plan.intent, plan, answer: '范围', items: [], confirmationToken: 't' }))
+  const assistant = page('assistant', async () => ({ status: 'CONFIRM_SCOPE', intent: plan.intent, plan, answer: '范围', items: [], confirmationToken: 't' }), { navigateTo() {} })
   assistant.setData({ question: '查报名' }); await assistant.ask(); assistant.correct()
   assert.equal(assistant.data.stateIndex, 4); assert.equal(assistant.data.states[4], '已取消'); assert.equal(assistant.data.timeKeys[assistant.data.timeIndex], 'DATE'); assert.equal(assistant.data.location, '东操场'); assert.equal(assistant.data.entity, '摄影社')
 })
 
-test('scope modal cancellation and leaving during confirmation never execute a query', async () => {
-  let calls = 0, prompts = 0; const consent = deferred()
-  const assistant = page('assistant', async () => { calls++; return {} }, {}, async () => { prompts++; return consent.promise })
+test('a single scope confirmation sends only the displayed token and ignores a late result after leaving', async () => {
+  let calls = 0, prompts = 0; const response = deferred()
+  const assistant = page('assistant', async () => { calls++; return response.promise }, {}, async () => { prompts++; return true })
   assistant.setData({ confirmationToken: 'original', answer: '明天相机' })
+  assert.equal(calls, 0)
   const pending = assistant.confirmScope(); await assistant.confirmScope()
-  assert.equal(prompts, 1); assert.equal(calls, 0)
-  assistant.onHide(); consent.resolve(true); await pending; assert.equal(calls, 0)
-  const cancelled = page('assistant', async () => { calls++ }, {}, async () => false)
-  cancelled.setData({ confirmationToken: 't' }); await cancelled.confirmScope(); assert.equal(calls, 0); assert.equal(cancelled.data.busy, false)
+  assert.equal(prompts, 0); assert.equal(calls, 1)
+  assistant.onHide(); response.resolve({ status: 'QUERY', items: [{ id: 1 }] }); await pending
+  assert.equal(assistant.data.items.length, 0)
+  const missing = page('assistant', async () => { calls++ })
+  await missing.confirmScope(); assert.equal(calls, 1)
 })
 
 test('continuation uses only the server token and appends fixed detail cards', async () => {
@@ -554,19 +685,21 @@ test('continuation uses only the server token and appends fixed detail cards', a
 })
 
 test('a wrong model partition can be replaced by explicit facets and its old confirmation is never sent', async () => {
-  const calls = []
-  const assistant = page('assistant', async (url, method, body) => {
+  const calls = []; let navigated; const handler = async (url, method, body) => {
     calls.push({ url, body })
     if (url === '/assistant') return { status: 'CONFIRM_SCOPE', intent: 'EQUIPMENT', answer: '全部器材', items: [], confirmationToken: 'wrong', plan: { intent: 'EQUIPMENT', entity: 'ALL', category: null, timeOption: 'CURRENT', date: null, status: 'ANY', location: null } }
     if (url === '/assistant/query') return { status: 'CONFIRM_SCOPE', intent: 'MY_LOANS', answer: '我的相机已领取未归还', items: [], confirmationToken: 'corrected' }
     return { status: 'QUERY', intent: 'MY_LOANS', answer: '我的记录', items: [] }
-  })
+  }
+  const assistant = page('assistant', handler, { navigateTo: o => { navigated = o } })
   assistant.setData({ question: '我的相机尚未归还记录' }); await assistant.ask(); assistant.correct()
   assert.equal(assistant.data.confirmationToken, '')
-  assistant.facetPick({ currentTarget: { dataset: { field: 'objectIndex' } }, detail: { value: '3' } })
-  assistant.setData({ entity: '相机', stateIndex: 5 }); await assistant.searchFacets(); await assistant.confirmScope()
+  let draft; navigated.success({ eventChannel: { emit: (_, payload) => { draft = payload } } })
+  const manual = page('assistant-manual', handler); manual.receiveDraft(draft)
+  manual.facetPick({ currentTarget: { dataset: { field: 'objectIndex' } }, detail: { value: '3' } })
+  manual.setData({ entity: '相机', stateIndex: 5 }); await manual.searchFacets(); await manual.confirmScope()
   assert.equal(calls.length, 3); assert.equal(calls[1].body.status, 'CHECKED_OUT'); assert.equal(calls[1].body.timeOption, 'ANY')
-  assert.deepEqual(JSON.parse(JSON.stringify(calls[2].body)), { token: 'corrected' }); assert.equal(assistant.data.status, 'QUERY')
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[2].body)), { token: 'corrected' }); assert.equal(manual.data.status, 'QUERY')
 })
 
 test('clarification retains known conditions and sends the answer through its own token', async () => {
@@ -638,7 +771,7 @@ test('a lost continuation response keeps known rows, reports incomplete data and
   const calls = [], plan = { action: 'QUERY', intent: 'ACTIVITIES', entity: '摄影', category: null, location: null, timeOption: 'ANY', status: 'ANY', date: null }
   const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); if (url === '/assistant/more') throw new Error('lost response'); return { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan, confirmationToken: 'fresh', answer: '请重新核对', items: [] } })
   assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', plan, answer: '还有记录', items: [{ id: 1 }], hasMore: true, nextToken: 'possibly-consumed' })
-  await assistant.more(); assert.equal(assistant.data.items[0].id, 1); assert.equal(assistant.data.nextToken, ''); assert.match(assistant.data.recoveryMessage, /不能把这些当作全部/)
+  await assistant.more(); assert.equal(assistant.data.items[0].id, 1); assert.equal(assistant.data.nextToken, ''); assert.match(assistant.data.recoveryMessage, /下一页暂时没加载出来/); assert.equal(assistant.data.hasMore, true)
   await assistant.restart(); assert.equal(calls[1].url, '/assistant/query'); assert.equal(calls[1].body.entity, '摄影'); assert.equal(assistant.data.confirmationToken, 'fresh'); assert.equal(assistant.data.items.length, 0)
 })
 
@@ -678,7 +811,7 @@ test('new equipment images have consumers and an accessory never inherits a came
 })
 
 test('an empty search can return to the activity list while keeping the chosen category', async () => {
-  const urls = [], home = page('home', async url => { urls.push(url); return url.includes('keyword=%E7%B4%A0123456') ? [] : [row(2)] })
+  const urls = [], home = page('activities', async url => { urls.push(url); return url.includes('keyword=%E7%B4%A0123456') ? [] : [row(2)] })
   home.data.category = 'SPORT'; home.data.keyword = '素123456'; await home.load(true)
   assert.equal(home.data.items.length, 0); assert.equal(home.data.finished, true)
   await home.clearSearch()
@@ -695,18 +828,18 @@ test('changing a loan interval invalidates an old response before the debounce f
   assert.equal(editor.data.availability, null)
 })
 
-test('incomplete queries open an editable popup and a reply only remaps, never executes', async () => {
-  const calls = [], prompts = []
-  const draft = { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY', reason: 'MISSING_TIME' }
+test('one inline clarification preserves the draft and only submits after the user answers', async () => {
+  const calls = [], draft = { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY', reason: 'MISSING_TIME' }
   const assistant = page('assistant', async (url, method, body) => {
     calls.push({ url, body })
-    return url === '/assistant' ? { status: 'CLARIFY', draft, items: [], clarificationToken: 'partial', question: '哪段时间？', missingConditions: [{ queryIndex: 1, field: 'timeOption', label: '时间范围' }] }
-      : { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan: { ...draft, action: 'QUERY', timeOption: 'TOMORROW', reason: null }, confirmationToken: 'complete', items: [], answer: '明天摄影社' }
-  }, {}, async (...args) => { prompts.push(args); return '明天' })
+    return url === '/assistant' ? { status: 'CLARIFY', draft, clarificationToken: 'partial', question: '哪段时间？', items: [] }
+      : { status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', plan: { ...draft, action: 'QUERY', timeOption: 'TOMORROW', reason: null }, confirmationToken: 'complete', items: [] }
+  }, {}, () => assert.fail('no native popup'))
   assistant.setData({ question: '摄影社活动在哪里？' }); await assistant.ask()
-  assert.equal(prompts.length, 1); assert.equal(prompts[0][1], true); assert.equal(prompts[0][2].title, '请补充查询条件'); assert.match(prompts[0][0], /尚未查询/)
-  assert.deepEqual(calls.map(c => c.url), ['/assistant', '/assistant/clarify']); assert.equal(calls[1].body.answer, '明天'); assert.equal(calls[1].body.token, 'partial')
-  assert.equal(assistant.data.status, 'CONFIRM_SCOPE'); assert.equal(assistant.data.items.length, 0); assert.equal(assistant.data.confirmationToken, 'complete')
+  assert.equal(calls.length, 1); assert.equal(assistant.data.followupQuestion, '哪段时间？'); assert.equal(assistant.data.entity, '摄影社')
+  assistant.replyInput({ detail: { value: '明天' } }); await assistant.reply()
+  assert.deepEqual(calls.map(c => c.url), ['/assistant', '/assistant/clarify']); assert.equal(calls[1].body.token, 'partial'); assert.equal(calls[1].body.answer, '明天')
+  assert.equal(assistant.data.status, 'CONFIRM_SCOPE'); assert.equal(assistant.data.items.length, 0)
 })
 
 test('cancelling or submitting an empty popup does not query, and missing facets cannot default to all', async () => {
@@ -720,13 +853,15 @@ test('cancelling or submitting an empty popup does not query, and missing facets
   }
 })
 
-test('a delayed popup answer cannot revive a changed or hidden query', async () => {
-  for (const change of ['input', 'onHide']) {
-    const answer = deferred(), calls = []
-    const assistant = page('assistant', async (url) => { calls.push(url); return { status: 'CLARIFY', items: [], clarificationToken: 'old', question: '哪天？', draft: { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY' } } }, {}, () => answer.promise)
-    assistant.setData({ question: '摄影社活动' }); const pending = assistant.ask(); await new Promise(resolve => setImmediate(resolve))
-    if (change === 'input') assistant.input({ detail: { value: '换成器材库存' } }); else assistant.onHide()
-    answer.resolve('明天'); await pending; assert.deepEqual(calls, ['/assistant']); assert.equal(assistant.data.confirmationToken, '')
+test('a late clarification response cannot replace a changed or hidden query', async () => {
+  for (const change of ['editQuestion', 'onHide']) {
+    const pending = deferred(), calls = []
+    const assistant = page('assistant', async (url) => { calls.push(url); return pending.promise })
+    assistant.setData({ question: '摄影社活动', clarificationToken: 'old', replyText: '明天' })
+    const waiting = assistant.reply(); assistant.onHide()
+    if (change === 'editQuestion') assistant.editQuestion()
+    pending.resolve({ status: 'CONFIRM_SCOPE', confirmationToken: 'stale', items: [] }); await waiting
+    assert.deepEqual(calls, ['/assistant/clarify']); assert.equal(assistant.data.confirmationToken, '')
   }
 })
 
@@ -742,11 +877,11 @@ test('a partial batch retains every branch and cannot send just its complete bra
   assert.equal('_needsReview' in calls[1].body.queries[1], false); assert.equal('reason' in calls[1].body.queries[1], false)
 })
 
-test('the popup reopen button accepts a native tap event without changing the request identity', async () => {
-  const calls = []
-  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CLARIFY', items: [] } }, {}, async () => '明天')
-  assistant.queryGeneration = 4; assistant.setData({ clarificationToken: 'partial', followupQuestion: '哪天？' })
-  await assistant.promptClarification({ currentTarget: { dataset: {} } }); assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/clarify'); assert.equal(calls[0].body.token, 'partial')
+test('leaving an unanswered clarification retains its text but does not submit it', async () => {
+  const calls = [], assistant = page('assistant', async (...args) => { calls.push(args); return {} })
+  assistant.setData({ question: '摄影社活动', clarificationToken: 'partial', followupQuestion: '哪天？', replyText: '明天' })
+  assistant.onHide(); assistant.onShow()
+  assert.equal(calls.length, 0); assert.equal(assistant.data.replyText, '明天'); assert.equal(assistant.data.clarificationToken, 'partial')
 })
 
 test('choosing an object during completion recomputes its requirements without losing a known name', async () => {
@@ -772,13 +907,13 @@ test('erasing a required draft name cannot silently turn it into all equipment',
   assert.equal(calls, 0); assert.equal(assistant.data.entityPending, true)
 })
 
-test('the real modal adapter receives editable completion labels and does not authorize a read', async () => {
-  const prompts = [], calls = [], context = { module: { exports: {} }, require: () => ({ baseUrl: '' }), wx: { showModal(options) { prompts.push(options); assert.ok(Array.from(options.confirmText).length <= 4); assert.ok(Array.from(options.cancelText).length <= 4); options.success({ confirm: true, content: '明天' }) } } }
-  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/request.js'), 'utf8'), context)
-  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return calls.length === 1 ? { status: 'CLARIFY', clarificationToken: 'partial', question: '哪天？', draft: { action: 'CLARIFY', intent: 'ACTIVITIES', entity: '摄影社', timeOption: null, status: 'ANY' }, items: [] } : { status: 'CONFIRM_SCOPE', confirmationToken: 'ready', items: [] } }, {}, context.module.exports.confirm)
-  assistant.setData({ question: '摄影社活动' }); await assistant.ask()
-  assert.equal(prompts.length, 1); assert.equal(prompts[0].editable, true); assert.equal(prompts[0].title, '请补充查询条件'); assert.equal(prompts[0].placeholderText, '填写缺少的条件，已明确内容会保留')
-  assert.deepEqual(calls.map(c => c.url), ['/assistant', '/assistant/clarify']); assert.equal(assistant.data.items.length, 0)
+test('empty clarification does not query and successful clarification still needs confirmation', async () => {
+  const calls = [], hints = []
+  const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', confirmationToken: 'ready', items: [] } }, { showToast: m => hints.push(m) })
+  assistant.setData({ clarificationToken: 'partial', replyText: '  ' }); await assistant.reply()
+  assert.equal(calls.length, 0); assert.equal(hints.length, 1)
+  assistant.replyInput({ detail: { value: '明天' } }); await assistant.reply()
+  assert.equal(calls.length, 1); assert.equal(calls[0].url, '/assistant/clarify'); assert.equal(assistant.data.items.length, 0)
 })
 
 test('workbench guards confirmation as well as writes for operations and members', async () => {
@@ -798,6 +933,14 @@ test('workbench guards confirmation as well as writes for operations and members
   }
 })
 
+test('manual lookup opens a separate page without clearing the assistant question or results', () => {
+  const destinations = [], assistant = page('assistant', () => assert.fail('navigation cannot query'), { navigateTo: options => destinations.push(options) })
+  assistant.setData({ question: '摄影活动' }); assistant.accept({ status: 'QUERY', items: [{ id: 77, title: '摄影活动' }] })
+  assistant.toggleDirectory(); assistant.onHide(); assistant.onShow()
+  assert.equal(destinations[0].url, '/pages/assistant-manual/index'); assert.equal(assistant.data.question, '摄影活动'); assert.equal(assistant.data.items[0].id, 77)
+  assert.equal(assistant.data.directoryOpen, false)
+})
+
 test('business directory search is available before any model request and new names are ordinary data', async () => {
   const calls = [], name = '新录_' + require('node:crypto').randomBytes(6).toString('hex')
   const assistant = page('assistant', async (url, method, body) => { calls.push({ url, body }); return { status: 'CONFIRM_SCOPE', confirmationToken: 'manual', items: [] } }, { showToast() {} })
@@ -810,6 +953,16 @@ test('business directory search is available before any model request and new na
   assert.equal(calls[0].body.timeOption, 'ANY'); assert.equal(calls[0].body.category, null)
 })
 
+test('a new manual search does not display an unrelated old question', async () => {
+  const assistant = page('assistant', async () => ({ status: 'CONFIRM_SCOPE', confirmationToken: 'manual', items: [] }), { showToast() {} })
+  assistant.data.question = '查别人的借用记录'
+  assistant.openDirectory({ currentTarget: { dataset: { index: 1 } } })
+  assert.equal(assistant.data.question, '查别人的借用记录')
+  await assistant.searchFacets()
+  assert.equal(assistant.data.question, '')
+  assert.equal(assistant.data.confirmationToken, 'manual')
+})
+
 test('user-facing assistant states distinguish results, empty data, clarification, refusal and outages', () => {
   const assistant = page('assistant', async () => ({}))
   assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', answer: '内部事实摘要不应与卡片重复', items: [{ id: 1, title: '蓝晒活动' }], hasMore: false })
@@ -817,17 +970,28 @@ test('user-facing assistant states distinguish results, empty data, clarificatio
   assistant.accept({ status: 'QUERY', intent: 'EQUIPMENT', answer: '内部事实摘要', warnings: ['分页不是固定快照'], items: [{ id: 2, name: '相机' }], hasMore: true })
   assert.deepEqual(assistant.data.sections[0].warnings, ['分页不是固定快照'])
   assistant.accept({ status: 'QUERY', intent: 'ACTIVITIES', answer: '没有记录', items: [] })
-  assert.equal(assistant.data.statusTitle, '没有匹配记录'); assert.match(assistant.data.statusHint, /不代表从未存在/); assert.equal(assistant.data.showAnswerText, false)
+  assert.equal(assistant.data.statusTitle, '没有匹配记录'); assert.match(assistant.data.statusHint, /按这次的条件/); assert.equal(assistant.data.showAnswerText, false)
   for (const [status, title, tone] of [
     ['CLARIFY', '还差一点信息', 'pending'],
     ['CLARIFICATION_PAUSED', '暂时无法确定', 'unknown'],
-    ['UNSUPPORTED', '当前条件无法完整查询', 'warning'],
+    ['UNSUPPORTED', '这个条件暂时查不了', 'warning'],
     ['REJECT', '这个请求不能执行', 'danger'],
     ['SYSTEM_ERROR', '暂时没能完成', 'warning']
   ]) {
     assistant.accept({ status, answer: status, items: [] })
     assert.equal(assistant.data.statusTitle, title); assert.equal(assistant.data.statusTone, tone); assert.equal(assistant.data.showAnswerText, true)
   }
+  assistant.accept({ status: 'SYSTEM_ERROR', reason: 'MODEL_UNAVAILABLE', interpretation: '系统暂时无法完成解析', answer: '内部术语', items: [] })
+  assert.match(assistant.data.answer, /暂时没连上/); assert.equal(assistant.data.interpretation, '')
+})
+
+test('confirmation copy retains the actual conditions while removing internal terminology', () => {
+  const assistant = page('assistant', async () => ({}))
+  const answer = '公开活动（仅已发布、社团启用）\n名称：摄影社\n上海时间：明天；按活动起止时间匹配（非创建、报名或归还日期）\n状态：全部\n未查业务记录；请核对条件后确认，不对就修改。'
+  assistant.accept({ status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', answer, items: [], confirmationToken: 'token' })
+  const display = assistant.data.sections[0].displayAnswer
+  assert.match(display, /摄影社/); assert.match(display, /明天/); assert.match(display, /活动起止时间/); assert.match(display, /状态：全部/)
+  assert.match(display, /确认前不会开始查找/); assert.equal(assistant.data.sections[0].answer, answer)
 })
 
 test('a resolved model location uses the existing confirmation path without forcing a second form', async () => {
@@ -844,31 +1008,106 @@ test('model outage leaves the same business form usable and does not become an o
   assert.deepEqual(calls, ['/assistant', '/assistant/query']); assert.equal(assistant.data.confirmationToken, 'offline')
 })
 
-test('five automatic clarification dialogs pause without a sixth question or an accidental query', async () => {
-  const calls = [], prompts = []
+test('an unresolved second gate round stops without another question or query', async () => {
+  const calls = []
   const assistant = page('assistant', async (url, method, body) => {
-    calls.push({ url, body }); const answered = calls.length - 1
-    return answered < 5 ? { status: 'CLARIFY', clarificationToken: 'c' + answered, clarificationRound: answered + 1, maxClarifications: 5, question: '必要条件' + (answered + 1), items: [] }
-      : { status: 'CLARIFICATION_PAUSED', reason: 'CLARIFICATION_LIMIT', answer: '仍待明确：对象', clarificationsAnswered: 5, maxClarifications: 5, items: [] }
-  }, {}, async (text, editable) => { prompts.push({ text, editable }); return '补充' + prompts.length })
+    calls.push({ url, body })
+    return calls.length === 1 ? { status: 'CLARIFY', clarificationToken: 'first-question', gateRound: 1, maxGateRounds: 2, question: '想找活动还是器材？', items: [] }
+      : { status: 'UNKNOWN', reason: 'GATE_ROUND_LIMIT', gateRound: 2, maxGateRounds: 2, items: [] }
+  }, {}, () => assert.fail('no auto popup'))
   assistant.setData({ question: '那个对象' }); await assistant.ask()
-  assert.equal(prompts.length, 5); assert.equal(calls.length, 6); assert.equal(assistant.data.status, 'CLARIFICATION_PAUSED')
-  assert.ok(prompts.every(p => p.editable)); assert.match(prompts[4].text, /第 5 次澄清/)
-  assert.equal(assistant.data.clarificationToken, ''); assert.equal(assistant.data.confirmationToken, '')
-  assert.deepEqual(calls.slice(1).map(c => c.url), Array(5).fill('/assistant/clarify'))
-  await assistant.promptClarification(); assert.equal(prompts.length, 5)
+  assistant.replyInput({ detail: { value: '记不清了' } }); await assistant.reply()
+  assert.deepEqual(calls.map(c => c.url), ['/assistant', '/assistant/clarify'])
+  assert.equal(calls[1].body.token, 'first-question'); assert.equal(calls[1].body.answer, '记不清了')
+  assert.equal(assistant.data.status, 'UNKNOWN'); assert.equal(assistant.data.confirmationToken, '')
+  await assistant.reply(); assert.equal(calls.length, 2); assert.equal(assistant.data.clarificationToken, '')
 })
 
-test('a resolved fifth clarification still gets its separate execution confirmation', async () => {
-  const calls = []; let questions = 0, consents = 0
-  const assistant = page('assistant', async (url, method, body) => {
+test('a resolved second round displays facts immediately without a confirmation popup', async () => {
+  const calls = []
+  const assistant = page('assistant', async url => {
     calls.push(url)
-    if (url === '/assistant/confirm') return { status: 'QUERY', intent: 'ACTIVITIES', items: [{ id: 88, title: '目标', location: '北门' }] }
-    return calls.length <= 5 ? { status: 'CLARIFY', clarificationToken: 'c' + calls.length, clarificationRound: calls.length, maxClarifications: 5, question: '缺口' + calls.length, items: [] }
-      : { status: 'CONFIRM_SCOPE', confirmationToken: 'fifth-ready', intent: 'ACTIVITIES', answer: '完整目标', items: [] }
-  }, {}, async (text, editable) => { if (editable) { questions++; return '补充' + questions } consents++; return true })
+    return calls.length === 1 ? { status: 'CLARIFY', clarificationToken: 'c1', gateRound: 1, maxGateRounds: 2, question: '哪场活动？', items: [] }
+      : { status: 'QUERY', gateRound: 2, maxGateRounds: 2, items: [{ id: 88, location: '北门' }] }
+  }, { showModal: () => assert.fail('no modal') }, () => assert.fail('no consent popup'))
   assistant.setData({ question: '找目标' }); await assistant.ask()
-  assert.equal(questions, 5); assert.equal(consents, 0); assert.equal(assistant.data.items.length, 0)
-  await assistant.confirmScope(); assert.equal(consents, 1); assert.equal(questions, 5); assert.equal(assistant.data.items[0].location, '北门')
-  assert.equal(calls.at(-1), '/assistant/confirm')
+  assistant.replyInput({ detail: { value: '暮色观星小聚' } }); await assistant.reply()
+  assert.deepEqual(calls, ['/assistant', '/assistant/clarify'])
+  assert.equal(assistant.data.status, 'QUERY'); assert.equal(assistant.data.items[0].location, '北门')
+  await assistant.confirmScope(); assert.equal(calls.length, 2)
+})
+
+test('home search and all activities share the new directory route without an inline list query', async () => {
+  const urls = [], destinations = [], home = page('home', async url => { urls.push(url); return [] }, { navigateTo: o => destinations.push(o.url) })
+  await home.onShow(); home.activities(); home.search()
+  assert.deepEqual(urls, ['/recommendations']); assert.deepEqual(destinations, ['/pages/activities/index', '/pages/activities/index?search=1'])
+})
+
+test('recent searches retain five distinct submitted terms, survive reload and can be reused and cleared', async () => {
+  const storage = new Map(), native = { getStorageSync: k => storage.get(k), setStorageSync: (k,v) => storage.set(k,v), removeStorageSync: k => storage.delete(k) }
+  const urls = [], listing = page('activities', async url => { urls.push(url); return [] }, native)
+  for (const value of ['相机', '篮球', '摄影', '音乐', '蓝晒', '创作', '摄影']) await listing.search({ detail: { value } })
+  assert.deepEqual(Array.from(listing.data.history), ['摄影', '创作', '蓝晒', '音乐', '篮球'])
+  const returned = page('activities', async () => [], native); returned.focusSearch()
+  assert.deepEqual(Array.from(returned.data.history), ['摄影', '创作', '蓝晒', '音乐', '篮球'])
+  await listing.useHistory({ currentTarget: { dataset: { keyword: '蓝晒' } } })
+  assert.match(urls.at(-1), /keyword=%E8%93%9D%E6%99%92/); assert.equal(listing.data.history[0], '蓝晒')
+  listing.input({ detail: { value: '未提交' } }); assert.equal(listing.data.history.includes('未提交'), false)
+  listing.clearHistory(); returned.focusSearch(); assert.equal(returned.data.history.length, 0)
+})
+
+test('manual correction carries all drafts without confirmation tokens and checks the originating session', () => {
+  const navigations = [], assistant = page('assistant', async () => ({}), { navigateTo: o => navigations.push(o), getStorageSync: () => 'session-A' })
+  assistant.onLoad(); assistant.accept({ status: 'CONFIRM_SCOPE', intent: 'ACTIVITIES', confirmationToken: 'old', plan: { intent:'ACTIVITIES', entity:'摄影', timeOption:'TOMORROW', status:'ANY', location:'北门' }, items: [] })
+  assistant.correct(); assert.equal(assistant.data.confirmationToken, '')
+  let payload; navigations[0].success({ eventChannel: { emit: (event, data) => { payload = data } } })
+  assert.equal(JSON.stringify(payload).includes('confirmationToken'), false)
+  let receive; const manual = page('assistant-manual', () => assert.fail('opening a draft cannot query'), { getStorageSync: () => 'session-A' })
+  manual.getOpenerEventChannel = () => ({ on: (event, fn) => { receive = fn } }); manual.onLoad(); receive(payload)
+  assert.equal(manual.data.entity, '摄影'); assert.equal(manual.data.location, '北门'); assert.equal(manual.data.timeKeys[manual.data.timeIndex], 'TOMORROW')
+  const other = page('assistant-manual', async () => ({}), { getStorageSync: () => 'session-B' }); other.getOpenerEventChannel = () => ({ on: (event, fn) => { receive = fn } }); other.onLoad(); receive(payload)
+  assert.equal(other.data.directoryOpen, true); assert.equal(other.data.entity, '')
+})
+
+test('manual page previews and confirms with no model call and preserves loaded results when returning from detail', async () => {
+  const urls = [], manual = page('assistant-manual', async url => { urls.push(url); return url === '/assistant/query' ? { status: 'CONFIRM_SCOPE', confirmationToken:'m', items:[] } : { status:'QUERY', items:[{id:9,title:'新社团活动'}] } })
+  manual.onLoad(); manual.openDirectory({currentTarget:{dataset:{index:0}}}); await manual.searchFacets()
+  assert.equal(manual.data.status,'CONFIRM_SCOPE'); assert.equal(manual.data.facetOpen,false)
+  await manual.confirmScope(); manual.onHide(); manual.onShow()
+  assert.equal(manual.data.items[0].id,9); assert.deepEqual(urls,['/assistant/query','/assistant/confirm'])
+})
+
+test('failed new searches never label old cards with the new keyword', async () => {
+  const listing = page('activities', async () => { throw Error('offline') })
+  listing.setData({ keyword: '篮球', items: [row(1)], page: 1 })
+  await listing.search({ detail: { value: '追光' } })
+  assert.equal(listing.data.keyword, '追光'); assert.equal(listing.data.failed, true); assert.equal(listing.data.items.length, 0)
+})
+
+test('activity history is separate per account and respects the public API length limit', () => {
+  const store = new Map(), app = { globalData: { user: { id: 1 } } }, context = { module: { exports: {} }, getApp: () => app,
+    wx: { getStorageSync: k => store.get(k), setStorageSync: (k,v) => store.set(k,v), removeStorageSync: k => store.delete(k) } }
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/search-history.js'), 'utf8'), context)
+  const history = context.module.exports
+  history.remember('甲'.repeat(70)); assert.equal(history.read()[0].length, 60)
+  app.globalData.user.id = 2; assert.equal(history.read().length, 0); history.remember('摄影')
+  app.globalData.user.id = 1; assert.equal(history.read()[0], '甲'.repeat(60))
+})
+
+test('collapsed member rosters ignore late results and reopen with a fresh read', async () => {
+  let calls = 0; const pending = deferred(), moves = []
+  const work = page('workbench', async () => { calls++; return calls === 1 ? pending.promise : [{ id: 1, name: '同学', status: 'ACTIVE' }] }, { pageScrollTo: x => moves.push(x.selector) })
+  work.setData({ tab: 'members', clubs: [{ id: 1 }], clubIndex: 0 })
+  const first = work.loadMembers(); await work.toggleMembers(); pending.resolve([{ id: 2, name: '旧成员' }]); await first
+  assert.equal(work.data.membersExpanded, false); assert.equal(work.data.members.length, 0)
+  await work.toggleMembers(); assert.equal(calls, 2); assert.equal(work.data.members[0].id, 1); assert.equal(moves.at(-1), '#members-heading')
+})
+
+test('shared campus carousel pauses after touch and stays paused across page changes', () => {
+  let component
+  vm.runInNewContext(fs.readFileSync(path.join(client, 'components/campus-carousel/index.js'), 'utf8'), { Component: c => { component = c } })
+  const state = { data: { ...component.data }, setData(values) { Object.assign(this.data, values) }, measure() {} }
+  component.methods.pause.call(state); component.pageLifetimes.hide.call(state); component.pageLifetimes.show.call(state)
+  assert.equal(state.data.visible, true); assert.equal(state.data.playing, false)
+  component.methods.change.call(state, { detail: { current: 1 } }); assert.equal(state.data.current, 1)
 })

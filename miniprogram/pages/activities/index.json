@@ -1,0 +1,1 @@
+{ "navigationBarTitleText": "校园活动", "enablePullDownRefresh": true, "usingComponents": { "activity-card": "/components/activity-card/index" } }

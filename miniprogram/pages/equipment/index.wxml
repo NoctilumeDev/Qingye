@@ -26,3 +26,4 @@
   <view wx:if="{{loading}}" class="loading">正在打开器材室…</view>
   <view wx:if="{{!loading && !items.length}}" class="empty">器材室正在整理，稍后再来看看。</view>
 </view>
+<qingye-tab-bar wx:if="{{userReady && !user.workbench}}" />

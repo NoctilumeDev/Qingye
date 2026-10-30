@@ -1,25 +1,47 @@
 const { request, guard } = require('../../utils/request')
 const { activity } = require('../../utils/view')
-const { switchTab } = require('../../utils/navigation')
+const { switchTab, refreshTabBar } = require('../../utils/navigation')
 const { keyboard } = require('../../utils/keyboard')
 Page({
-  data: { user: {}, items: [], unread: 0, avatarFailed: false, renameVisible: false, renameName: '', renameIdentity: '', renameSuffix: '', renameBusy: false, renameError: '', renameKeyboardHeight: 0 },
+  data: { pageVisible: false, heroImages: ['/assets/campus/campus-friends-v1.jpg', '/assets/campus/campus-hero-v1.jpg'], user: {}, items: [], activityClubs: [], activityClubNames: ['全部社团'], activityClubIndex: 0, activityLoading: false, activityMore: false, activityError: false, unread: 0, avatarFailed: false, renameVisible: false, renameName: '', renameIdentity: '', renameSuffix: '', renameBusy: false, renameError: '', renameKeyboardHeight: 0 },
   async onShow() {
-    if (!guard()) return; if (this.getTabBar()) this.getTabBar().setData({ selected: 2, hidden: this.data.renameVisible })
+    if (!guard()) return; this.visible = true; this.setData({ pageVisible: true }); refreshTabBar(this, '/pages/me/index'); if (this.getTabBar()) this.getTabBar().setData({ hidden: this.data.renameVisible })
+    if (getApp().globalData.openMyActivities) { getApp().globalData.openMyActivities = false; wx.nextTick(() => { if (this.visible) this.myActivities() }) }
+    const version = this.activityVersion = (this.activityVersion || 0) + 1
+    this.setData({ activityLoading: true, activityError: false })
     try {
-      const [user, rows, notices] = await Promise.all([request('/me'), request('/activities?scope=mine'), request('/notifications')])
+      const [user, clubs, notices] = await Promise.all([request('/me'), request('/clubs'), request('/notifications')])
+      if (version !== this.activityVersion) return
+      const previous = this.data.activityClubs[this.data.activityClubIndex - 1]
+      const selected = previous ? clubs.findIndex(c => c.id === previous.id) + 1 : 0
       getApp().globalData.user = user
-      this.setData({ user, initial: user.name.slice(0, 1), items: rows.map(activity), unread: notices.filter(n => !n.readAt).length, avatarFailed: false })
-    } catch (e) {}
+      refreshTabBar(this, '/pages/me/index', user)
+      this.setData({ user, initial: user.name.slice(0, 1), activityClubs: clubs, activityClubNames: ['全部社团', ...clubs.map(c => c.name)], activityClubIndex: selected, unread: notices.filter(n => !n.readAt).length, avatarFailed: false })
+      await this.loadActivities(true, version)
+    } catch (e) { if (version === this.activityVersion) this.setData({ activityLoading: false, activityError: true }) }
   },
   avatarError() { this.setData({ avatarFailed: true }) },
-  onHide() { this.setRenameVisible(false) },
+  onHide() { this.visible = false; this.setData({ pageVisible: false }); this.activityVersion = (this.activityVersion || 0) + 1; this.setRenameVisible(false) },
   onUnload() { if (this.renameKeyboardLayout) this.renameKeyboardLayout.reset() },
   myActivities() { wx.pageScrollTo({ selector: '#my-activities', duration: 250 }) },
+  activityUrl(page) { const selected = this.data.activityClubs[this.data.activityClubIndex - 1]; return `/activities?scope=mine&page=${page}` + (selected ? `&clubId=${selected.id}` : '') },
+  async loadActivities(reset = false, version = this.activityVersion) {
+    if (!reset && (this.data.activityLoading || !this.data.activityMore)) return
+    this.setData({ activityLoading: true, activityError: false })
+    const page = reset ? 0 : this.activityPage
+    try {
+      const rows = await request(this.activityUrl(page))
+      if (version !== this.activityVersion) return
+      this.activityPage = page + 1
+      this.setData({ items: reset ? rows.map(activity) : this.data.items.concat(rows.map(activity)), activityMore: rows.length === 20 })
+    } catch (e) { if (version === this.activityVersion) this.setData({ activityError: true }) } finally { if (version === this.activityVersion) this.setData({ activityLoading: false }) }
+  },
+  selectActivityClub(e) { const index = Number(e.detail.value); if (!Number.isInteger(index) || index < 0 || index > this.data.activityClubs.length || index === this.data.activityClubIndex) return; const version = this.activityVersion = (this.activityVersion || 0) + 1; this.setData({ activityClubIndex: index, items: [], activityMore: false }); return this.loadActivities(true, version) },
+  moreActivities() { return this.loadActivities() },
   discover() { wx.switchTab({ url: '/pages/home/index' }) },
   identity() { if (this.data.user.workbench) this.workbench(); else switchTab('/pages/clubs/index') },
   notifications() { wx.navigateTo({ url: '/pages/notifications/index' }) },
-  workbench() { wx.navigateTo({ url: '/pages/workbench/index' }) },
+  workbench() { switchTab('/pages/workbench/index') },
   open(e) { wx.navigateTo({ url: '/pages/activity/index?id=' + e.detail.id }) },
   logout() { getApp().logout() },
   rename() {

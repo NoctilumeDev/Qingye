@@ -1,0 +1,53 @@
+<view wx:if="{{recoveryMessage}}" class="notice-card warning">
+  <view class="notice-title">这次没有完成</view><text>{{recoveryMessage}}</text>
+  <view class="notice-action"><qy-action variant="secondary" bindactivate="restart" disabled="{{busy}}">重新查找</qy-action></view>
+</view>
+<view wx:if="{{statusTitle && status !== 'QUERY' && !clarificationToken && !recoveryMessage}}" class="notice-card {{statusTone}}">
+  <view class="notice-title">{{statusTitle}}</view>
+  <text class="answer-text" selectable="true">{{status === 'CONFIRM_SCOPE' ? '当前服务还需要确认查询。' : answer || statusHint}}</text>
+  <view wx:if="{{!manual && facetOpen}}" class="notice-action"><qy-action variant="secondary" bindactivate="correct">自己选择条件</qy-action></view>
+  <view wx:if="{{status === 'CONFIRM_SCOPE' && sections.length === 1 && sections[0].confirmationToken}}" class="scope-actions">
+    <view wx:for="{{sections[0].scopeRows}}" wx:key="label" class="scope-row"><text>{{item.label}}</text><text>{{item.value}}</text></view>
+    <qy-action variant="primary" data-index="0" loading="{{busy}}" disabled="{{busy}}" bindactivate="confirmScope">开始查找</qy-action>
+  </view>
+</view>
+<view wx:for="{{sections}}" wx:for-item="section" wx:for-index="sectionIndex" wx:key="key" wx:if="{{section.status === 'QUERY' || sections.length > 1}}" class="card results-card">
+  <view wx:if="{{sections.length > 1}}" class="section-title">第 {{sectionIndex + 1}} 项</view>
+  <text wx:if="{{section.status !== 'QUERY'}}" class="section-answer">{{section.displayAnswer}}</text>
+  <qy-action wx:if="{{section.status === 'CONFIRM_SCOPE' && section.confirmationToken}}" variant="primary" data-index="{{sectionIndex}}" disabled="{{busy}}" bindactivate="confirmScope">开始查找</qy-action>
+  <view wx:if="{{section.status === 'QUERY'}}" class="results-heading">
+    <view class="notice-title">{{section.items.length ? '帮你找到了这些' : '暂时没有找到'}}</view>
+    <view class="result-count">{{section.items.length ? '已显示 ' + section.items.length + ' 条' + (section.hasMore ? '，还有更多' : '') : '按这次的条件，没有匹配记录。'}}</view>
+  </view>
+  <view wx:if="{{section.scopeRows.length}}" class="scope-toggle" bindtap="toggleScope" aria-role="button">{{scopeOpen ? '收起查找条件 ∧' : '查找条件 ∨'}}</view>
+  <block wx:if="{{scopeOpen}}">
+    <view wx:for="{{section.scopeRows}}" wx:key="label" class="scope-row"><text>{{item.label}}</text><text>{{item.value}}</text></view>
+    <view wx:for="{{section.displayWarnings}}" wx:key="*this" class="result-warning">{{item}}</view>
+  </block>
+  <view wx:if="{{section.selectionRequired}}" class="candidate-note">有几条相近的记录，看看是哪一个。</view>
+  <view wx:for="{{section.items}}" wx:for-item="item" wx:key="id" class="result detail-card" data-index="{{sectionIndex}}" data-id="{{item.id}}" bindtap="open">
+    <view class="detail-head"><text>{{item.displayName}}</text><text wx:if="{{section.intent === 'ACTIVITIES' || section.intent === 'MY_REGISTRATIONS'}}" class="detail-link">详情 ›</text></view>
+    <view wx:if="{{item.startLabel}}">时间：{{item.startLabel}} — {{item.endLabel}}</view>
+    <view wx:if="{{item.location}}">地点：{{item.location}}</view><view wx:if="{{item.clubName}}">社团：{{item.clubName}}</view>
+    <view wx:if="{{item.activityTitle}}">活动：{{item.activityTitle}}</view><view wx:if="{{item.stateLabel}}">状态：{{item.stateLabel}}</view>
+    <view wx:if="{{section.intent === 'MY_LOANS'}}">数量：{{item.quantity}}</view>
+    <view wx:if="{{section.intent === 'EQUIPMENT'}}">共 {{item.totalQuantity}} 件，已借出 {{item.borrowedQuantity}} 件{{item.enabled ? '' : '（已停用）'}}</view>
+    <view wx:if="{{item.availability}}">所选时段可借 {{item.availability.availableQuantity}} 件（按当前预约）</view>
+    <text wx:if="{{item.description}}" class="detail-description" selectable="true">{{item.description}}</text>
+  </view>
+  <qy-action wx:if="{{section.hasMore && section.nextToken}}" variant="secondary" data-index="{{sectionIndex}}" bindactivate="more" loading="{{busy}}" disabled="{{busy}}">再看一些</qy-action>
+  <view wx:if="{{section.status === 'QUERY' && section.canContinue}}" class="query-feedback">
+    <text wx:if="{{section.feedbackDone}}">{{feedbackCopy.thanks}}</text>
+    <view wx:elif="{{feedbackIndex !== sectionIndex}}" class="feedback-actions">
+      <qy-action variant="neutral" size="compact" data-index="{{sectionIndex}}" disabled="{{busy}}" bindactivate="found">{{feedbackCopy.found}}</qy-action>
+      <qy-action variant="secondary" size="compact" data-index="{{sectionIndex}}" disabled="{{busy}}" bindactivate="missed">{{feedbackCopy.missed}}</qy-action>
+    </view>
+    <view wx:if="{{feedbackIndex === sectionIndex}}" class="feedback-editor">
+      <view>{{feedbackCopy.question}}</view>
+      <textarea class="feedback-input" maxlength="300" value="{{feedbackText}}" placeholder="{{feedbackCopy.placeholder}}" bindinput="feedbackInput" disabled="{{busy}}" />
+      <view class="feedback-actions"><qy-action variant="primary" disabled="{{busy}}" loading="{{busy}}" bindactivate="continueFeedback">{{feedbackCopy.proceed}}</qy-action><qy-action variant="neutral" disabled="{{busy}}" bindactivate="cancelFeedback">{{feedbackCopy.cancel}}</qy-action></view>
+    </view>
+  </view>
+  <view wx:if="{{manual && section.status === 'QUERY'}}" class="notice-action"><qy-action variant="secondary" bindactivate="correct" disabled="{{busy}}">修改查找条件</qy-action></view>
+</view>
+<view wx:if="{{feedbackNote}}" class="feedback-note">{{feedbackNote}}</view>

@@ -585,7 +585,25 @@ class BusinessIntegrationTest {
         var ids=new HashSet<Long>();for(var row:first) assertThat(ids.add(row.path("id").asLong())).isTrue();
         for(var row:second) assertThat(ids.add(row.path("id").asLong())).isTrue();
         for(var row:http(manager,"GET","/activities?scope=work",null,200)) assertThat(row.path("clubId").asLong()).isEqualTo(clubA);
+        assertThat(http(admin,"GET","/activities?scope=work&clubId="+clubA+"&page=0",null,200).size()).isEqualTo(20);
+        assertThat(http(admin,"GET","/activities?scope=work&clubId="+clubA+"&page=1",null,200).size()).isEqualTo(4);
+        assertThat(http(manager,"GET","/activities?scope=work&clubId="+clubB,null,200).size()).isZero();
+        activities.register(student,activityA);
+        assertThat(http(student,"GET","/activities?scope=mine&clubId="+clubA,null,200).size()).isEqualTo(1);
+        assertThat(http(student,"GET","/activities?scope=mine&clubId="+clubB,null,200).size()).isZero();
+        assertThat(http(other,"GET","/activities?scope=mine&clubId="+clubA,null,200).size()).isZero();
+        http(student,"GET","/activities?scope=public&clubId=0",null,400);
         assertThat(http(student,"GET","/activities?scope=work",null,200).size()).isZero();
+    }
+    @Test void publicClubLeadersDoNotExposeOrdinaryOrPendingMembers() throws Exception {
+        clubs.join(student,clubA);
+        var leaders=http(other,"GET","/clubs/"+clubA+"/leaders",null,200);
+        assertThat(leaders.size()).isEqualTo(1);
+        assertThat(leaders.get(0).path("name").asText()).isEqualTo("manager-a");
+        assertThat(leaders.get(0).size()).isEqualTo(1);
+        http(other,"GET","/clubs/"+clubA+"/members",null,403);
+        sql.update("UPDATE club SET enabled=FALSE WHERE id=?",clubA);
+        assertThat(http(other,"GET","/clubs/"+clubA+"/leaders",null,200).size()).isZero();
     }
     @Test void cancellationAndReapplicationMoveWaiterToBackAndDeadlineIsClosed() {
         activities.register(manager,activityA);activities.register(student,activityA);

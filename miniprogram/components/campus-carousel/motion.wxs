@@ -1,0 +1,20 @@
+// Keep the scale in the view layer, in step with the native swiper displacement.
+function applyScale(owner, scale) {
+  var cards = owner.selectAllComponents('.hero-card');
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].setStyle({ transform: 'scale(' + scale + ')' });
+  }
+}
+
+function move(event, owner) {
+  var width = event.instance.getDataset().width;
+  if (!width) return;
+  var progress = (Math.abs(event.detail.dx) / width) % 1;
+  applyScale(owner, 1 - 0.035 * 4 * progress * (1 - progress));
+}
+
+function finish(event, owner) {
+  applyScale(owner, 1);
+}
+
+module.exports = { move: move, finish: finish };

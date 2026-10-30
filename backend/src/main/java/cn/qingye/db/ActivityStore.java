@@ -37,6 +37,9 @@ public class ActivityStore {
         return sql.list(select+from+where+" ORDER BY a.start_time,a.id LIMIT ? OFFSET ?",args.toArray());
     }
     public List<Map<String,Object>> list(Actor actor,String scope,String category,String keyword,int page,LocalDateTime after,LocalDateTime before) {
+        return list(actor,scope,category,keyword,page,after,before,null);
+    }
+    public List<Map<String,Object>> list(Actor actor,String scope,String category,String keyword,int page,LocalDateTime after,LocalDateTime before,Long clubId) {
         var args=new ArrayList<Object>();
         String where=" WHERE c.enabled=TRUE ";
         if ("work".equals(scope)) {
@@ -50,6 +53,7 @@ public class ActivityStore {
             args.add(actor.id());
         }
         else where+="AND a.status='PUBLISHED' ";
+        if (clubId!=null) { where+="AND a.club_id=? "; args.add(clubId); }
         if (category!=null && !category.isBlank()) {
             where+="AND a.category=? ";
             args.add(category);

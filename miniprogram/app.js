@@ -5,13 +5,13 @@ App({
     wx.setStorageSync('qingye-token', session.token)
     wx.setStorageSync('qingye-user', session.user)
     this.globalData.user = session.user
-    this.globalData.clubReturnTo = null
+    this.globalData.openMyActivities = false
   },
   logout() {
     wx.removeStorageSync('qingye-token')
     wx.removeStorageSync('qingye-user')
     this.globalData.user = null
-    this.globalData.clubReturnTo = null
+    this.globalData.openMyActivities = false
     wx.reLaunch({ url: '/pages/login/index' })
   }
 })

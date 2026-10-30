@@ -1,8 +1,13 @@
-const { switchTab } = require('../utils/navigation')
+const { switchTab, visibleTabs } = require('../utils/navigation')
 Component({
-  data: { selected: 0, hidden: false, tabs: [{ path: '/pages/home/index', label: '发现', icon: 'home-5-line-muted', activeIcon: 'home-5-fill-green' }, { path: '/pages/clubs/index', label: '社团', icon: 'team-line-muted', activeIcon: 'team-fill-green' }, { path: '/pages/me/index', label: '我的', icon: 'user-3-line-muted', activeIcon: 'user-3-fill-green' }] },
+  data: { selectedPath: '/pages/home/index', hidden: false, tabs: visibleTabs(null) },
+  lifetimes: { attached() {
+    const current = getCurrentPages().slice(-1)[0]
+    this.setData({ tabs: visibleTabs(getApp().globalData.user), selectedPath: current ? '/' + current.route : '/pages/home/index' })
+  } },
   methods: { switchTab(e) {
     const index = Number(e.currentTarget.dataset.index)
-    switchTab(this.data.tabs[index].path)
+    const target = this.data.tabs[index]
+    if (target && visibleTabs(getApp().globalData.user).some(tab => tab.path === target.path)) switchTab(target.path)
   } }
 })

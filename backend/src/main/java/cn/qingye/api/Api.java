@@ -93,14 +93,17 @@ public class Api {
     @GetMapping("/clubs/{id}/members") Object members(@RequestAttribute Actor actor,@PathVariable long id) {
         return data(clubs.members(actor,id));
     }
+    @GetMapping("/clubs/{id}/leaders") Object leaders(@RequestAttribute Actor actor,@PathVariable long id) {
+        return data(clubs.publicLeaders(id));
+    }
     @PostMapping("/clubs/{id}/members/{user}/decision") Object member(@RequestAttribute Actor actor,@PathVariable long id,@PathVariable long user,@Valid @RequestBody Forms.Member input) {
         clubs.decide(actor,id,user,input);
         return ok();
     }
-    @GetMapping("/activities") Object activities(@RequestAttribute Actor actor,@RequestParam(defaultValue="public") String scope,@RequestParam(required=false) String category,@RequestParam(required=false) String keyword,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="false") boolean upcoming) {
+    @GetMapping("/activities") Object activities(@RequestAttribute Actor actor,@RequestParam(defaultValue="public") String scope,@RequestParam(required=false) String category,@RequestParam(required=false) String keyword,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="false") boolean upcoming,@RequestParam(required=false) Long clubId) {
         if ((keyword!=null && keyword.length()>60) || (category!=null && category.length()>20)) throw Problem.bad("查询条件过长");
-        if (!Set.of("public","mine","work").contains(scope) || page<0 || page>500 || (category!=null && !category.isBlank() && !Set.of("SPORT","ART","TECH","VOLUNTEER","OTHER").contains(category))) throw Problem.bad("查询范围、分类或页码无效");
-        return data("public".equals(scope)?cache.publicList("activities:"+Objects.toString(category,"")+":"+Objects.toString(keyword,"")+":"+page+":"+upcoming,()->activities.list(actor,"public",category,keyword,page,upcoming)):activities.list(actor,scope,category,keyword,page,upcoming));
+        if (!Set.of("public","mine","work").contains(scope) || page<0 || page>500 || (clubId!=null && (clubId<=0 || "public".equals(scope))) || (category!=null && !category.isBlank() && !Set.of("SPORT","ART","TECH","VOLUNTEER","OTHER").contains(category))) throw Problem.bad("查询范围、分类或页码无效");
+        return data("public".equals(scope)?cache.publicList("activities:"+Objects.toString(category,"")+":"+Objects.toString(keyword,"")+":"+page+":"+upcoming,()->activities.list(actor,"public",category,keyword,page,upcoming,null)):activities.list(actor,scope,category,keyword,page,upcoming,clubId));
     }
     @GetMapping("/activities/{id}") Object activity(@RequestAttribute Actor actor,@PathVariable long id) {
         return data(activities.detail(actor,id));
