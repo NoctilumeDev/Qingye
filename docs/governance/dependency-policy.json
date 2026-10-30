@@ -778,7 +778,7 @@
   "applicability_inputs": {
     "backend/pom.xml": "cc269ba307855f1049d011eb7c16a99e5f817e645f6fbc0e7013ad5fef222808",
     "backend/src/main/java/cn/qingye/QingyeApplication.java": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
-    "backend/src/main/java/cn/qingye/api/Api.java": "bfbfd961070fb5a05fdb84c2a227a8b725474e44d9019cb72dd819d272c795fe",
+    "backend/src/main/java/cn/qingye/api/Api.java": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
     "backend/src/main/java/cn/qingye/api/AuthFilter.java": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
     "backend/src/main/java/cn/qingye/api/Errors.java": "45cc6dcd06f91cc3e36573606e53c7ae977c653b7013867915cad9763fb1bdb7",
     "backend/src/main/java/cn/qingye/api/Forms.java": "3d721783f89969ed7f7476c77c75dac0e142e0c5d7006cad7d176852227530f9",

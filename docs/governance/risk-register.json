@@ -1730,7 +1730,15 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "ba1cd59927d1ceb2434e45d03760dfc2d6421d9e",
+          "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        }
+      ]
     },
     {
       "id": "GHSA-pc63-qcmh-9cmg",
@@ -1800,7 +1808,15 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "ba1cd59927d1ceb2434e45d03760dfc2d6421d9e",
+          "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        }
+      ]
     },
     {
       "id": "GHSA-9xv2-5v5q-p794",
@@ -1874,7 +1890,15 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "ba1cd59927d1ceb2434e45d03760dfc2d6421d9e",
+          "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        }
+      ]
     },
     {
       "id": "GHSA-gcx9-497g-6cp6",
@@ -1948,7 +1972,15 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "ba1cd59927d1ceb2434e45d03760dfc2d6421d9e",
+          "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        }
+      ]
     },
     {
       "id": "GHSA-h3x4-894j-xpx5",
@@ -2022,7 +2054,15 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "ba1cd59927d1ceb2434e45d03760dfc2d6421d9e",
+          "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        }
+      ]
     },
     {
       "id": "GHSA-f525-44xv-f2qj",
@@ -2111,7 +2151,7 @@
   "static_findings": [
     {
       "id": "spotbugs-001",
-      "hash": "fb5810a29a9a4e89ad3149f9165b71a7",
+      "hash": "54562539ec38b5149059fb05ed1b98cd",
       "occurrence": 0,
       "type": "EI_EXPOSE_REP2",
       "priority": 2,
@@ -2124,12 +2164,26 @@
       "status": "UNRESOLVED",
       "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7",
       "evidence": [
-        "backend/src/main/java/cn/qingye/api/Api.java:33"
+        "backend/src/main/java/cn/qingye/api/Api.java:34",
+        "docs/governance/risk-register.md#wechat-account-maintenance-20261030"
       ],
-      "summary": "new cn.qingye.api.Api(AuthService, ClubService, ActivityService, LoanService, UserStore, MessageStore, Recommendation, AssistantService, QueryCache, RabbitBridge, LlmPlanner, Clock, Access) may expose internal representation by storing an externally mutable object into Api.messages",
+      "summary": "new cn.qingye.api.Api(AuthService, ClubService, ActivityService, LoanService, UserStore, MessageStore, Recommendation, AssistantService, QueryCache, RabbitBridge, LlmPlanner, Clock, Access, AccountService) may expose internal representation by storing an externally mutable object into Api.messages",
       "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
       "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
-      "risk_accepted": false
+      "risk_accepted": false,
+      "identity_history": [
+        {
+          "hash": "fb5810a29a9a4e89ad3149f9165b71a7",
+          "occurrence": 0,
+          "summary": "new cn.qingye.api.Api(AuthService, ClubService, ActivityService, LoanService, UserStore, MessageStore, Recommendation, AssistantService, QueryCache, RabbitBridge, LlmPlanner, Clock, Access) may expose internal representation by storing an externally mutable object into Api.messages",
+          "source_revision": "f695e1e53ea1c288b12efb9ff192058d4acb80b7"
+        }
+      ],
+      "maintenance_review": {
+        "base_revision": "ba1cd59927d1ceb2434e45d03760dfc2d6421d9e",
+        "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
+        "reason": "Constructor adds AccountService; existing MessageStore reference assignment and detector field/type/severity are unchanged. Identity migration only; UNRESOLVED and risk_accepted=false retained."
+      }
     },
     {
       "id": "spotbugs-002",

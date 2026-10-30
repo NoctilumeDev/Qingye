@@ -9,6 +9,7 @@
       <qy-action variant="primary" size="compact" bindactivate="createActivity">＋ 发起活动</qy-action>
       <qy-action variant="secondary" size="compact" bindactivate="equipment">共享器材室 ↗</qy-action>
       <qy-action wx:if="{{user.admin}}" variant="secondary" size="compact" bindactivate="createClub">＋ 创建社团</qy-action>
+      <qy-action wx:if="{{user.admin}}" variant="secondary" size="compact" bindactivate="accounts">账号管理</qy-action>
     </view>
     <view class="tabs">
       <view wx:for="{{tabs}}" wx:key="key" class="tab {{tab === item.key ? 'selected' : ''}}" data-key="{{item.key}}" bindtap="tab">{{item.name}}</view>

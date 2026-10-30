@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Map;
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -66,5 +67,45 @@ class AuthBoundaryTest {
             assertThatThrownBy(() -> service.authenticate(token)).isInstanceOf(Problem.class);
         }
         verifyNoInteractions(users, sql, http);
+    }
+
+    private AuthService wechat() {
+        return new AuthService(users, sql, http, NOW, false, KEY, "fixture-appid", "fixture-app-secret");
+    }
+
+    @Test void loginOptionsExposeAvailabilityButNoProviderSecrets() {
+        assertThat(wechat().options()).containsEntry("wechatEnabled", true).containsEntry("demoEnabled", false)
+                .containsOnlyKeys("wechatEnabled", "demoEnabled", "demoUsers");
+        var unconfigured = auth(false, KEY, NOW);
+        assertThat(unconfigured.options()).containsEntry("wechatEnabled", false);
+        assertThatThrownBy(() -> unconfigured.wechat("fixture-code")).isInstanceOf(Problem.class);
+        verifyNoInteractions(http, users, sql);
+    }
+
+    @Test void providerErrorsCannotCreateUsersEvenIfTheyContainAnOpenid() throws Exception {
+        for (var entry : Map.of(40029,401,45011,429,40226,403,-1,503,40013,503).entrySet()) {
+            doReturn(Map.of("errcode",entry.getKey(),"openid","ignored-user","errmsg","private-provider-detail"))
+                    .when(http).get(any(URI.class));
+            assertThatThrownBy(() -> wechat().wechat("fixture-code")).isInstanceOfSatisfying(Problem.class,
+                    problem -> { assertThat(problem.status()).isEqualTo(entry.getValue()); assertThat(problem.getMessage()).doesNotContain("private-provider-detail"); });
+        }
+        verifyNoInteractions(users, sql);
+    }
+
+    @Test void missingIdentityAndNetworkFailuresDoNotEstablishSessions() throws Exception {
+        doReturn(Map.of("session_key","fixture-provider-session")).when(http).get(any(URI.class));
+        assertThatThrownBy(() -> wechat().wechat("fixture-code")).isInstanceOfSatisfying(Problem.class, p -> assertThat(p.status()).isEqualTo(503));
+        doThrow(new java.io.IOException("fixture-app-secret")).when(http).get(any(URI.class));
+        assertThatThrownBy(() -> wechat().wechat("fixture-code")).isInstanceOfSatisfying(Problem.class, p -> {
+            assertThat(p.status()).isEqualTo(503); assertThat(p.getMessage()).doesNotContain("fixture-app-secret");
+        });
+        verifyNoInteractions(users, sql);
+    }
+
+    @Test void disabledWechatAccountCannotReceiveSessionOrBeRecreated() throws Exception {
+        doReturn(Map.of("openid","fixture-disabled")).when(http).get(any(URI.class));
+        when(users.byOpenid("fixture-disabled")).thenReturn(Map.of("id",7L,"enabled",false));
+        assertThatThrownBy(() -> wechat().wechat("fixture-code")).isInstanceOfSatisfying(Problem.class, p -> assertThat(p.status()).isEqualTo(403));
+        verify(users,never()).create(anyString(),anyString()); verify(users,never()).profile(anyLong());
     }
 }

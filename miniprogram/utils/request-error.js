@@ -10,7 +10,7 @@ function failure(error) {
     504: ['登录服务响应超时', '服务没有及时响应，请稍后重试。']
   }
   if (copy[status]) return { code: String(status), title: copy[status][0], description: copy[status][1] }
-  if (error.kind === 'WECHAT') return { code: '微信登录', title: '微信登录暂不可用', description: '请重新发起微信登录，或返回选择演示身份。' }
+  if (error.kind === 'WECHAT') return { code: '微信登录', title: '微信登录没有完成', description: '请检查微信和网络后，重新尝试。' }
   if (error.kind === 'INVALID_RESPONSE') return { code: '响应异常', title: '登录响应不完整', description: '服务没有返回有效的登录信息。请重试，或联系管理员检查服务。' }
   if (error.kind === 'TIMEOUT') return { code: '连接超时', title: '登录服务响应超时', description: '请检查网络连接，稍后重试。' }
   if (error.kind === 'BUSINESS') return { code: '请求未完成', title: '登录没有完成', description: error.message || '请返回重新选择身份，或稍后重试。' }

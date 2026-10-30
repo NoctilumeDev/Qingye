@@ -39,6 +39,7 @@ class BusinessIntegrationTest {
     @Autowired MessageStore messages;
     @Autowired TaskService tasks;
     @Autowired AuthService auth;
+    @Autowired AccountService accounts;
     @Autowired UserStore users;
     @Autowired ActivityStore activityStore;
     @Autowired Access access;
@@ -113,6 +114,66 @@ class BusinessIntegrationTest {
         assertThat(time(actual,"startTime")).isEqualTo(expected);
         assertThat(time(actual,"endTime")).isEqualTo(expected.plusHours(2));
         assertThat(time(actual,"signupDeadline")).isEqualTo(NOW.plusDays(1));
+    }
+
+    @Test void administratorsCanGrantAndRevokeButOrdinaryUsersAndManagersCannot() throws Exception {
+        String endpoint="/admin/users/"+other.id()+"/administrator";
+        http(null,"PATCH",endpoint,Map.of("admin",true),401);
+        http(student,"GET","/admin/users",null,403);
+        http(manager,"PATCH",endpoint,Map.of("admin",true),403);
+        http(admin,"PATCH",endpoint,Map.of(),400);
+        http(admin,"PATCH",endpoint,Map.of("admin",true),200);
+        assertThat(users.actor(other.id()).admin()).isTrue();
+        String oldToken=auth.demo(other.id()).get("token").toString();
+        accounts.administrator(admin,other.id(),false);
+        assertThat(auth.authenticate(oldToken).admin()).isFalse();
+        mvc.perform(get("/api/admin/users").header("Authorization","Bearer "+oldToken)).andExpect(status().isForbidden());
+        assertThat(sql.count("SELECT COUNT(*) FROM account_role_audit WHERE target_id=?",other.id())).isEqualTo(2);
+        assertThat(sql.one("SELECT actor_id,previous_admin,new_admin FROM account_role_audit WHERE target_id=? ORDER BY id DESC LIMIT 1",other.id()))
+                .containsEntry("actorId",admin.id()).containsEntry("previousAdmin",true).containsEntry("newAdmin",false);
+    }
+
+    @Test void lastEnabledAdministratorIsProtectedAndRevocationKeepsClubMembership() {
+        assertThatThrownBy(()->accounts.administrator(admin,admin.id(),false)).isInstanceOf(Problem.class).hasMessageContaining("至少保留");
+        accounts.administrator(admin,manager.id(),true);
+        accounts.administrator(admin,manager.id(),true);
+        assertThat(sql.count("SELECT COUNT(*) FROM account_role_audit WHERE target_id=?",manager.id())).isEqualTo(1);
+        accounts.administrator(admin,admin.id(),false);
+        assertThatThrownBy(()->accounts.administrator(admin,other.id(),true)).isInstanceOf(Problem.class).hasMessageContaining("权限");
+        var next=users.actor(manager.id());
+        accounts.administrator(next,student.id(),true);
+        accounts.administrator(users.actor(student.id()),manager.id(),false);
+        assertThat(users.manager(manager.id(),clubA)).isTrue();
+        sql.update("UPDATE app_user SET enabled=FALSE WHERE id=?",other.id());
+        assertThatThrownBy(()->accounts.administrator(users.actor(student.id()),other.id(),true)).isInstanceOf(Problem.class).hasMessageContaining("停用");
+    }
+
+    @Test void concurrentSelfRevocationsKeepOneAdministrator() throws Exception {
+        accounts.administrator(admin,other.id(),true);
+        var second=users.actor(other.id());
+        var result=concurrently(()->{accounts.administrator(admin,admin.id(),false);return true;},()->{accounts.administrator(second,second.id(),false);return true;});
+        assertThat(result.stream().filter(Boolean.TRUE::equals).count()).isEqualTo(1);
+        assertThat(result.stream().filter(Problem.class::isInstance).count()).isEqualTo(1);
+        assertThat(users.administratorCount(true)).isEqualTo(1);
+    }
+
+    @Test void dormantDemoAdministratorCannotSatisfyRealModeLastAdminProtection() {
+        sql.update("UPDATE app_user SET openid='fixture-real-identity',admin=TRUE WHERE id=?",student.id());
+        var real=users.actor(student.id());
+        var service=new AccountService(users,access,false);
+        assertThat(service.search(real,"",0)).extracting(row->id(row,"id")).containsExactly(real.id());
+        assertThatThrownBy(()->service.administrator(real,real.id(),false)).isInstanceOf(Problem.class).hasMessageContaining("至少保留");
+        assertThatThrownBy(()->service.administrator(real,other.id(),true)).isInstanceOf(Problem.class).hasMessageContaining("演示账号");
+    }
+
+    @Test void accountDirectoryHasBoundedPagesAndDoesNotReturnProviderIdentity() throws Exception {
+        for(int i=0;i<23;i++) user("directory-"+i,false);
+        var first=http(admin,"GET","/admin/users?keyword=directory-&page=0",null,200);
+        var second=http(admin,"GET","/admin/users?keyword=directory-&page=1",null,200);
+        assertThat(first.size()).isEqualTo(20);assertThat(second.size()).isEqualTo(3);
+        for(var row:first) { assertThat(row.has("openid")).isFalse();assertThat(row.size()).isEqualTo(4); }
+        assertThat(http(admin,"GET","/admin/users?keyword="+student.id(),null,200).get(0).path("id").asLong()).isEqualTo(student.id());
+        http(admin,"GET","/admin/users?page=-1",null,400);
     }
 
     @Test void lastSeatHasOneRegistrationAndCancellationPromotesEarliestWaiter() throws Exception {
@@ -510,9 +571,43 @@ class BusinessIntegrationTest {
     private Forms.Activity draft(String title) {
         return new Forms.Activity(clubA,title,"校园验收活动","ART","东操场","",NOW.plusHours(10),NOW.plusHours(12),NOW.plusHours(8),2);
     }
+    @Test void wechatIdentityCreatesOneStudentAndReusesItWithoutExposingProviderKeys() throws Exception {
+        var provider=mock(ExternalHttp.class);
+        doReturn(Map.of("openid","fixture-wechat-student","session_key","fixture-provider-session","errcode",0))
+                .when(provider).get(any(java.net.URI.class));
+        var service=new AuthService(users,sql,provider,clock,false,"fixture-wechat-signing-material-32-chars","fixture-appid","fixture-app-secret");
+        long before=sql.count("SELECT COUNT(*) FROM app_user");
+        var first=service.wechat("fixture-code-a");
+        var second=service.wechat("fixture-code-b");
+        var firstUser=(Map<?,?>)first.get("user");
+        assertThat(firstUser.get("id")).isEqualTo(((Map<?,?>)second.get("user")).get("id"));
+        assertThat(sql.count("SELECT COUNT(*) FROM app_user")).isEqualTo(before+1);
+        assertThat(firstUser.get("admin")).isEqualTo(false); assertThat(firstUser.get("workbench")).isEqualTo(false);
+        for(String privateKey:List.of("openid","session_key","unionid")) assertThat(firstUser.containsKey(privateKey)).isFalse();
+        assertThat(first).containsOnlyKeys("token","user");
+        assertThat(service.authenticate(first.get("token").toString()).admin()).isFalse();
+        assertThat(first.get("token")).isNotEqualTo(second.get("token"));
+        var captured=org.mockito.ArgumentCaptor.forClass(java.net.URI.class);
+        verify(provider,times(2)).get(captured.capture());
+        assertThat(captured.getValue().getHost()).isEqualTo("api.weixin.qq.com");
+        assertThat(captured.getValue().getPath()).isEqualTo("/sns/jscode2session");
+        assertThat(captured.getValue().getQuery()).contains("js_code=fixture-code-b");
+    }
+    @Test void concurrentWechatLoginsShareOneOrdinaryAccount() throws Exception {
+        var provider=mock(ExternalHttp.class);
+        var arrive=new CyclicBarrier(2);
+        doAnswer(call->{arrive.await(5,TimeUnit.SECONDS);return Map.of("openid","fixture-concurrent-wx","errcode",0);}).when(provider).get(any(java.net.URI.class));
+        var service=new AuthService(users,sql,provider,clock,false,"fixture-concurrent-signing-material-32-chars","fixture-appid","fixture-secret");
+        var result=concurrently(()->service.wechat("fixture-fresh-code-a"),()->service.wechat("fixture-fresh-code-b"));
+        assertThat(result).allMatch(Map.class::isInstance);
+        assertThat(sql.count("SELECT COUNT(*) FROM app_user WHERE openid='fixture-concurrent-wx'")).isEqualTo(1);
+        for(var session:result) assertThat(service.authenticate(((Map<?,?>)session).get("token").toString()).admin()).isFalse();
+    }
     @Test void httpIdentityProfileAndFreshSessionPermissions() throws Exception {
         assertThat(http(null,"GET","/health",null,200).path("name").asText()).isEqualTo("青野");
         assertThat(http(null,"GET","/auth/options",null,200).path("demoUsers").size()).isEqualTo(5);
+        assertThat(http(null,"GET","/auth/options",null,200).path("wechatEnabled").asBoolean()).isFalse();
+        http(null,"POST","/auth/wechat",new Forms.WxLogin(""),400);
         assertThat(http(null,"POST","/auth/demo",new Forms.DemoLogin(student.id()),200).path("user").path("id").asLong()).isEqualTo(student.id());
         http(null,"POST","/auth/demo",new Forms.DemoLogin(999999),403);
         http(null,"POST","/auth/wechat",new Forms.WxLogin("local-no-provider"),503);

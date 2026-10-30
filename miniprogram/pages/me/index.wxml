@@ -4,6 +4,7 @@
     <view class="profile-content">
       <view class="profile-name" bindtap="rename"><text>{{user.name}}</text><image src="/assets/icons/edit-line-muted.png" /></view>
       <text class="muted">把校园生活，过成喜欢的样子。</text>
+      <view wx:if="{{user.id}}" class="muted">账号 ID：{{user.id}}</view>
     </view>
   </view>
   <view class="profile-stats">

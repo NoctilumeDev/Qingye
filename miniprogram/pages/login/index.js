@@ -1,7 +1,7 @@
 const { request } = require('../../utils/request')
 const { failure } = require('../../utils/request-error')
 Page({
-  data: { accounts: [], busy: false, failure: null },
+  data: { accounts: [], demoEnabled: false, wechatEnabled: false, optionsLoaded: false, busy: false, failure: null },
   onLoad() { return this.loadAccounts() },
   async loadAccounts() {
     if (this.data.busy) return
@@ -10,14 +10,16 @@ Page({
     try {
       const data = await request('/auth/options', 'GET', undefined, { silent: true })
       if (!data || !Array.isArray(data.demoUsers)) throw Object.assign(new Error('Incomplete options'), { kind: 'INVALID_RESPONSE' })
-      this.setData({ accounts: data.demoUsers, failure: null })
+      if (typeof data.demoEnabled !== 'boolean' || typeof data.wechatEnabled !== 'boolean') throw Object.assign(new Error('Incomplete login options'), { kind: 'INVALID_RESPONSE' })
+      this.setData({ accounts: data.demoEnabled ? data.demoUsers : [], demoEnabled: data.demoEnabled, wechatEnabled: data.wechatEnabled, optionsLoaded: true, failure: null })
     } catch (error) { this.setData({ failure: failure(error) }) }
     finally { this.setData({ busy: false }) }
   },
   async demo(e) { await this.login('/auth/demo', { userId: Number(e.currentTarget.dataset.id) }) },
   wechat() {
+    if (!this.data.wechatEnabled) return
     return this.runLogin(async () => {
-      const result = await new Promise((resolve, reject) => wx.login({ success: resolve, fail: () => reject(Object.assign(new Error('WeChat unavailable'), { kind: 'WECHAT' })) }))
+      const result = await new Promise((resolve, reject) => wx.login({ timeout: 10000, success: resolve, fail: () => reject(Object.assign(new Error('WeChat unavailable'), { kind: 'WECHAT' })) }))
       if (!result.code) throw Object.assign(new Error('Missing login code'), { kind: 'WECHAT' })
       return request('/auth/wechat', 'POST', { code: result.code }, { silent: true })
     })

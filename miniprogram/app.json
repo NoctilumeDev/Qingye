@@ -12,7 +12,8 @@
     "pages/assistant/index",
     "pages/club-detail/index",
     "pages/activities/index",
-    "pages/assistant-manual/index"
+    "pages/assistant-manual/index",
+    "pages/accounts/index"
   ],
   "window": {
     "navigationBarTitleText": "青野",

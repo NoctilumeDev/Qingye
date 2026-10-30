@@ -10,4 +10,9 @@ function remember(value) {
   return rows
 }
 function clear() { try { wx.removeStorageSync(key()) } catch (e) {} return [] }
-module.exports = { read, remember, clear }
+function remove(value) {
+  const rows = read().filter(text => text !== value)
+  try { wx.setStorageSync(key(), rows) } catch (e) {}
+  return rows
+}
+module.exports = { read, remember, clear, remove }

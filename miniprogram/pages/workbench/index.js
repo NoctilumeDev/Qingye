@@ -2,6 +2,7 @@ const { request, guard, confirm } = require('../../utils/request')
 const { activity, record, states } = require('../../utils/view')
 const { refreshTabBar } = require('../../utils/navigation')
 Page({
+  accounts() { if (this.data.user.admin) wx.navigateTo({ url: '/pages/accounts/index' }) },
   data: { user: {}, tab: 'activities', tabs: [{ key: 'activities', name: '活动' }, { key: 'loans', name: '器材借用' }, { key: 'members', name: '社团成员' }], activities: [], activityClubs: [], activityClubNames: ['全部社团'], activityClubIndex: 0, loans: [], clubs: [], members: [], membersExpanded: true, membersLoading: false, clubIndex: 0, busy: false, loading: false },
   async onShow() {
     if (!guard()) return

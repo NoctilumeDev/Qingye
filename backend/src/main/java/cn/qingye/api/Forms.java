@@ -22,6 +22,8 @@ public final class Forms {
     }
     public record WxLogin(@NotBlank @Size(max=200) String code) {
     }
+    public record Administrator(@NotNull Boolean admin) {
+    }
     public record DemoLogin(@Positive long userId) {
     }
     public record Question(@NotBlank @Size(max=300) String question) {

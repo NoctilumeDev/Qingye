@@ -24,7 +24,8 @@ public class Api {
     private final LlmPlanner planner;
     private final Clock clock;
     private final Access access;
-    public Api(AuthService auth,ClubService clubs,ActivityService activities,LoanService loans,UserStore users,MessageStore messages,Recommendation recommendation,AssistantService assistant,QueryCache cache,RabbitBridge rabbit,LlmPlanner planner,Clock clock,Access access) {
+    private final AccountService accounts;
+    public Api(AuthService auth,ClubService clubs,ActivityService activities,LoanService loans,UserStore users,MessageStore messages,Recommendation recommendation,AssistantService assistant,QueryCache cache,RabbitBridge rabbit,LlmPlanner planner,Clock clock,Access access,AccountService accounts) {
         this.auth=auth;
         this.clubs=clubs;
         this.activities=activities;
@@ -38,6 +39,7 @@ public class Api {
         this.planner=planner;
         this.clock=clock;
         this.access=access;
+        this.accounts=accounts;
     }
     private Map<String,Object> data(Object value) {
         return Map.of("code",0,"data",value);
@@ -53,7 +55,7 @@ public class Api {
         return data(Map.of("name","青野","time",LocalDateTime.now(clock)));
     }
     @GetMapping("/auth/options") Object options() {
-        return data(Map.of("demoUsers",auth.demoUsers()));
+        return data(auth.options());
     }
     @PostMapping("/auth/demo") Object demo(@Valid @RequestBody Forms.DemoLogin input) {
         return data(auth.demo(input.userId()));
@@ -71,6 +73,13 @@ public class Api {
     @GetMapping("/users") Object users(@RequestAttribute Actor actor) {
         access.admin(actor);
         return data(users.users());
+    }
+    @GetMapping("/admin/users") Object accounts(@RequestAttribute Actor actor,@RequestParam(defaultValue="") String keyword,@RequestParam(defaultValue="0") int page) {
+        return data(accounts.search(actor,keyword,page));
+    }
+    @PatchMapping("/admin/users/{id}/administrator") Object administrator(@RequestAttribute Actor actor,@PathVariable long id,@Valid @RequestBody Forms.Administrator input) {
+        accounts.administrator(actor,id,input.admin());
+        return ok();
     }
     @GetMapping("/clubs") Object clubs(@RequestAttribute Actor actor) {
         return data(clubs.list(actor));

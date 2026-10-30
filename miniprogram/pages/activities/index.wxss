@@ -8,7 +8,9 @@
 .search-history { margin-bottom:26rpx; padding:22rpx; border:1rpx solid #e3ece7; border-radius:24rpx; background:#fff; }
 .history-title { font-size:26rpx; font-weight:650; }
 .history-tags { display:flex; flex-wrap:wrap; gap:14rpx; margin-top:20rpx; }
-.history-tag { padding:14rpx 22rpx; background:#eef5f1; border-radius:28rpx; font-size:25rpx; word-break:break-all; }
+.history-tag { display:flex; align-items:stretch; max-width:100%; background:#eef5f1; border-radius:28rpx; font-size:25rpx; }
+.history-word { display:flex; align-items:center; padding:14rpx 0 14rpx 22rpx; min-width:0; word-break:break-all; }
+.history-remove { display:flex; align-items:center; justify-content:center; width:80rpx; min-height:80rpx; flex-shrink:0; color:#65767d; font-size:32rpx; }
 .history-close { padding-top:20rpx; text-align:right; font-size:24rpx; color:#65767d; }
 .list-heading { font-size:30rpx; font-weight:650; margin:26rpx 0; }
 .chips {

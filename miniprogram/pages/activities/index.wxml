@@ -3,7 +3,7 @@
   <view wx:if="{{searchFocused}}" class="search-history">
     <view class="row"><text class="history-title">最近搜索</text><view wx:if="{{history.length}}" class="link" bindtap="clearHistory" aria-role="button">清空</view></view>
     <view wx:if="{{!history.length}}" class="muted gap">还没有搜索记录</view>
-    <view class="history-tags"><view wx:for="{{history}}" wx:key="*this" class="history-tag" data-keyword="{{item}}" bindtap="useHistory">{{item}}</view></view>
+    <view class="history-tags"><view wx:for="{{history}}" wx:key="*this" class="history-tag"><view class="history-word" data-keyword="{{item}}" bindtap="useHistory" aria-role="button">{{item}}</view><view class="history-remove" data-keyword="{{item}}" catchtap="removeHistory" aria-role="button" aria-label="删除搜索记录：{{item}}">×</view></view></view>
     <view class="history-close" bindtap="closeHistory">收起</view>
   </view>
   <scroll-view class="chips" scroll-x="true"><view class="chip {{category === item.key ? 'selected' : ''}}" wx:for="{{categories}}" wx:key="key" data-key="{{item.key}}" bindtap="category">{{item.name}}</view></scroll-view>

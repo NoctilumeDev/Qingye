@@ -1,0 +1,5 @@
+.accounts-page { padding-bottom:calc(40rpx + env(safe-area-inset-bottom)); }
+.account-search { display:flex; align-items:center; gap:18rpx; margin:24rpx 0; }
+.account-search .field { flex:1; min-width:0; margin:0; }
+.account-name { min-width:0; flex:1; font-size:29rpx; font-weight:650; overflow-wrap:anywhere; }
+.account-action { margin-top:18rpx; }

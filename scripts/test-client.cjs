@@ -5,8 +5,8 @@ const vm = require('node:vm')
 const fs = require('node:fs')
 const path = require('node:path')
 const client = path.resolve(__dirname, '../miniprogram')
-function page(name, request, wx = {}, confirmation = async () => true) {
-  let instance; const app = { globalData: {} }
+function page(name, request, wx = {}, confirmation = async () => true, appOverrides = {}) {
+  let instance; const app = { globalData: {}, ...appOverrides }
   const native = { stopPullDownRefresh() {}, getWindowInfo: () => ({ windowHeight: 800 }), ...wx }
   const layout = { module: { exports: {} }, wx: native, setTimeout, clearTimeout }
   vm.runInNewContext(fs.readFileSync(path.join(client, 'utils/keyboard.js'), 'utf8'), layout)
@@ -33,6 +33,47 @@ function page(name, request, wx = {}, confirmation = async () => true) {
   return instance
 }
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
+test('account management requires current admin role and cancellation makes no mutation', async () => {
+  const calls = []; let backs = 0
+  const student = page('accounts', async url => { calls.push(url); return { id: 7, admin: false } }, { navigateBack() { backs++ } })
+  await student.onShow(); assert.equal(backs, 1); assert.deepEqual(calls, ['/me'])
+  const writes = [], manager = page('accounts', async (url, method, data) => {
+    if (url === '/me') return { id: 1, admin: true }
+    if (method === 'PATCH') writes.push({ url, data })
+    return [{ id: 2, name: '同学', admin: false, enabled: true }]
+  }, { getStorageSync: () => 'session' }, async () => false)
+  await manager.onShow(); await manager.changeRole({ currentTarget: { dataset: { id: 2 } } })
+  assert.equal(writes.length, 0); assert.equal(manager.data.busy, false)
+})
+test('role change submits explicit role once and never uses a switched account after confirmation', async () => {
+  const pending = deferred(), writes = []; let session = 'admin-a'
+  const manager = page('accounts', async (url, method, data) => {
+    if (url === '/me') return { id: 1, admin: true }
+    if (method === 'PATCH') writes.push({ url, data })
+    return [{ id: 2, name: '同学', admin: false, enabled: true }]
+  }, { getStorageSync: () => session }, () => pending.promise)
+  await manager.onShow(); const event = { currentTarget: { dataset: { id: 2 } } }
+  const first = manager.changeRole(event); await manager.changeRole(event)
+  session = 'admin-b'; pending.resolve(true); await first; assert.equal(writes.length, 0)
+  await manager.changeRole(event)
+  assert.equal(writes.length, 1); assert.equal(writes[0].url, '/admin/users/2/administrator')
+  assert.deepEqual(JSON.parse(JSON.stringify(writes[0].data)), { admin: true })
+})
+test('admin account search paginates and self revocation refreshes identity then leaves', async () => {
+  const calls = []; let changed = false, backs = 0
+  const manager = page('accounts', async (url, method) => {
+    calls.push(url)
+    if (url === '/me') return { id: 1, admin: !changed }
+    if (method === 'PATCH') { changed = true; return {} }
+    if (url.includes('page=1')) return [{ id: 21, enabled: true }]
+    return Array.from({ length: 20 }, (_, i) => ({ id: i + 1, name: '同学', admin: i === 0, enabled: true }))
+  }, { getStorageSync: () => 'same', navigateBack() { backs++ } })
+  await manager.onShow(); await manager.onReachBottom(); assert.equal(manager.data.items.length, 21)
+  assert.equal(manager.data.finished, true)
+  manager.input({ detail: { value: ' 同学 ' } }); await manager.search()
+  assert.equal(manager.data.items.length, 20); assert.ok(calls.includes('/admin/users?page=0&keyword=' + encodeURIComponent('同学')))
+  await manager.changeRole({ currentTarget: { dataset: { id: 1 } } }); assert.equal(backs, 1); assert.equal(changed, true)
+})
 const feedbackEvent = index => ({ currentTarget: { dataset: { index } } })
 const feedbackResult = { status: 'QUERY', intent: 'EQUIPMENT', items: [{ id: 1, name: '相机' }], feedbackToken: 'result-receipt' }
 test('negative click, cancellation and leaving do not submit feedback or trigger a query', async () => {
@@ -1054,6 +1095,51 @@ test('recent searches retain five distinct submitted terms, survive reload and c
   assert.match(urls.at(-1), /keyword=%E8%93%9D%E6%99%92/); assert.equal(listing.data.history[0], '蓝晒')
   listing.input({ detail: { value: '未提交' } }); assert.equal(listing.data.history.includes('未提交'), false)
   listing.clearHistory(); returned.focusSearch(); assert.equal(returned.data.history.length, 0)
+})
+
+test('deleting one recent search persists without searching or changing the active results', async () => {
+  const storage = new Map(), native = { getStorageSync: k => storage.get(k), setStorageSync: (k,v) => storage.set(k,v) }
+  const calls = [], listing = page('activities', async url => { calls.push(url); return [{ id: 9, title: '摄影活动' }] }, native)
+  for (const value of ['摄影', '音乐', '蓝晒']) await listing.search({ detail: { value } })
+  listing.focusSearch(); const before = calls.length
+  listing.removeHistory({ currentTarget: { dataset: { keyword: '音乐' } } })
+  assert.equal(calls.length, before); assert.equal(listing.data.keyword, '蓝晒'); assert.equal(listing.data.items[0].id, 9)
+  assert.equal(listing.data.searchFocused, true); assert.deepEqual(Array.from(listing.data.history), ['蓝晒', '摄影'])
+  const returned = page('activities', async () => [], native); returned.focusSearch()
+  assert.deepEqual(Array.from(returned.data.history), ['蓝晒', '摄影'])
+})
+
+test('login availability comes from the server and formal mode never exposes demo identities', async () => {
+  const login = page('login', async () => ({ demoEnabled: false, wechatEnabled: true, demoUsers: [{ id: 1 }] }))
+  await login.onLoad()
+  assert.equal(login.data.wechatEnabled, true); assert.equal(login.data.accounts.length, 0); assert.equal(login.data.demoEnabled, false)
+  const unavailable = page('login', async () => ({ demoEnabled: false, wechatEnabled: false, demoUsers: [] }), { login: () => assert.fail('unconfigured login must not request a code') })
+  await unavailable.onLoad(); await unavailable.wechat(); assert.equal(unavailable.data.optionsLoaded, true)
+})
+
+test('WeChat retry obtains a new code, submits no identity, and stores only a valid application session', async () => {
+  const codes = [], requests = [], sessions = [], destinations = []
+  const login = page('login', async (url, verb, body) => {
+    if (url === '/auth/options') return { demoEnabled: false, wechatEnabled: true, demoUsers: [] }
+    requests.push({ url, body })
+    if (requests.length === 1) throw Object.assign(new Error('expired'), { status: 401 })
+    return { token: 'fixture-app-session', user: { id: 7, name: '青野同学', admin: false } }
+  }, { login: options => { const code = 'fixture-code-' + (codes.length + 1); codes.push(code); options.success({ code }) }, switchTab: options => destinations.push(options.url) }, undefined, { setSession: session => sessions.push(session) })
+  await login.onLoad(); await login.wechat(); assert.equal(sessions.length, 0); assert.ok(login.data.failure)
+  await login.retry()
+  assert.deepEqual(codes, ['fixture-code-1', 'fixture-code-2'])
+  assert.deepEqual(Object.keys(requests[1].body), ['code']); assert.equal(requests[1].body.code, codes[1])
+  assert.equal(sessions.length, 1); assert.equal(sessions[0].user.id, 7); assert.equal(destinations[0], '/pages/home/index')
+})
+
+test('WeChat double tap and invalid provider or application responses cannot establish a session', async () => {
+  let callback, count = 0; const sessions = []
+  const login = page('login', async () => { count++; return {} }, { login: options => { callback = options.success } }, undefined, { setSession: session => sessions.push(session) })
+  login.setData({ wechatEnabled: true })
+  const first = login.wechat(); await login.wechat(); callback({ code: '' }); await first
+  assert.equal(count, 0); assert.equal(sessions.length, 0); assert.equal(login.data.busy, false)
+  const second = login.wechat(); callback({ code: 'fixture-valid-code' }); await second
+  assert.equal(count, 1); assert.equal(sessions.length, 0); assert.equal(login.data.failure.code, '响应异常')
 })
 
 test('manual correction carries all drafts without confirmation tokens and checks the originating session', () => {

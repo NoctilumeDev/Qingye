@@ -40,6 +40,7 @@ Page({
   },
   useHistory(e) { return this.search({ detail: { value: e.currentTarget.dataset.keyword } }) },
   clearHistory() { this.setData({ history: history.clear() }) },
+  removeHistory(e) { this.setData({ history: history.remove(e.currentTarget.dataset.keyword) }) },
   clearSearch() { this.setData({ keyword: '', searchText: '', searchFocused: false, items: [], page: 0, finished: false }); return this.load(true) },
   retry() { return this.load(true, true) },
   open(e) { wx.navigateTo({ url: '/pages/activity/index?id=' + e.detail.id }) }
