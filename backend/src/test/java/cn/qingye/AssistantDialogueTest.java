@@ -136,4 +136,29 @@ class AssistantDialogueTest {
   @SuppressWarnings("unchecked") var sections=(List<Map<String,Object>>)result.get("sections");assertThat(sections).hasSize(2).allSatisfy(r->assertThat(r).containsEntry("status","QUERY"));
   verify(loans).assistantMine(eq(me.id()),eq(b),isNull(),isNull(),any(),eq(0));verify(activities).assistant(eq(me),eq(a),any(),any(),any(),eq(0));verifyNoInteractions(planner);
  }
+ @Test void qualificationFailureAsksForMissingMeaningThenActuallyUsesTheReply(){
+  when(planner.locate(anyString())).thenReturn(Optional.of(new AssistantHint("LOCATE","ACTIVITIES",null,null,
+    List.of(new AssistantHint.Selection("TIME","PAST","昨天")))),Optional.of(AssistantHint.locate("ACTIVITIES","摄影社")));
+  var first=service.ask(me,"昨天有什么活动","s");
+  assertThat(first).containsEntry("status","CLARIFY").containsEntry("qualificationFailure","UNSUPPORTED_SELECTION")
+    .doesNotContainKeys("retryToken","protocolFailure");verifyNoInteractions(activities,loans,capacity);
+  var second=service.clarify(me,token(first),"改查摄影社的全部时间活动","s");
+  assertThat(second).containsEntry("status","QUERY").containsEntry("gateRound",2).containsEntry("taskId",first.get("taskId"));
+  verify(activities).assistant(eq(me),any(),isNull(),isNull(),any(),eq(0));
+ }
+ @Test void unverifiedSecondCandidateStopsWithoutDroppingItsConditionsOrRepeatingPrompts(){
+  when(planner.locate(anyString())).thenReturn(Optional.of(AssistantHint.clarify(null,null)),
+    Optional.of(new AssistantHint("LOCATE","ACTIVITIES","摄影",null,List.of(new AssistantHint.Selection("CATEGORY","ART","摄影")))));
+  var first=service.ask(me,"摄影的","s");var last=service.clarify(me,token(first),"摄影活动","s");
+  assertThat(last).containsEntry("status","UNKNOWN").containsEntry("qualificationFailure","UNSUPPORTED_SELECTION")
+    .containsEntry("reason","GATE_ROUND_LIMIT").doesNotContainKeys("retryToken","clarificationToken");
+  verifyNoInteractions(activities,loans,capacity);
+ }
+ @Test void transportFaultsHaveSeparateSafeDiagnosticsAndNeverQuery(){
+  when(planner.locate(anyString())).thenThrow(new LlmPlanner.Unavailable(LlmPlanner.TransportFailure.TIMEOUT));
+  var failure=service.ask(me,"查一下相机","s");
+  assertThat(failure).containsEntry("reason","MODEL_UNAVAILABLE").containsEntry("transportFailure","TIMEOUT")
+    .containsKey("retryToken").doesNotContainKey("protocolFailure");
+  verifyNoInteractions(activities,loans,capacity);
+ }
 }

@@ -135,3 +135,11 @@ PR #6 当时**没有**接入持续完整依赖扫描，账册校验不能代替�
 首次静态检查因构造函数新增 AccountService，报告 spotbugs-001 的身份从 `fb5810a29a9a4e89ad3149f9165b71a7` 变为 `54562539ec38b5149059fb05ed1b98cd`。逐项核对仍是同一个 Api.messages 注入赋值，EI_EXPOSE_REP2、priority 2、rank 18 均未变。账册保留旧身份及说明，只迁移此条身份；继续保持 UNRESOLVED、risk_accepted=false，没有将其记作已修复。首败记录保留在本轮工作证据目录的 wechat-admin-quick-first.log。
 
 随后依赖检查指出 Forms.java 也属于引用输入。本次唯一改动为新增 `Administrator(@NotNull Boolean admin)`，逻辑 SHA-256 为 `e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402`。逐项核对引用它的十一条 JSON 依赖公告，未引入 DataInput、浮点/BigDecimal 转换、多态/对象身份、视图/忽略属性注解、XML、InetAddress 或 Path 类型；保持原 NOT_APPLICABLE 状态。保留这次首败，更新 Forms 输入绑定后重新运行相同依赖门禁。
+
+## Assistant transport maintenance 20261030
+
+本次以 `1d11d68c15d890920c7f51981aa52df406113e97` 为基线，仅调整模型截止预算、受限传输故障分类与来源核验的状态交接。ExternalHttp 保留响应字节和字符上限、完整响应体截止与取消；LlmPlanner 仍将 String/Map 交给原有限解码器。对引用这两处源码的十一项 JSON 公告逐项复核，未引入 DataInput、浮点或 BigDecimal 强转、对象身份、视图、忽略属性、多态、XML、InetAddress 或 Path 解析，保持原 NOT_APPLICABLE 状态并更新输入绑定。首败保留在本轮证据的 dependencies.log。
+
+静态检查中 spotbugs-026 因构造器增加超时参数更换了指纹，原 ObjectMapper 注入赋值未变。保留旧指纹，迁移到 `47a6a3ec06a095f17eb6de2882afea17`；类型 EI_EXPOSE_REP2、priority 2、rank 18 及 UNRESOLVED 状态不变。构造期间校验配置产生的两条新增告警已通过调用前校验消除，未加入基线。
+
+配置文件仅新增 `qingye.llm-timeout-ms`。引用 application.yml 的六项公告已复核：未新增 SSE、XSLT、DIGEST、FORM、servlet 约束、HTTP/2 或 TLS/SNI 配置，保留原分诊及部署条件未知项。第二次输入变化拒绝保留在 dependencies-rechecked.log。

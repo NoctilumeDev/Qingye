@@ -13,6 +13,12 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class ExternalHttp {
+    public static final class ResponseFailure extends IllegalStateException {
+        private static final long serialVersionUID=1L;
+        private final int status;
+        public ResponseFailure(int status){super(status==0?"RESPONSE_TOO_LARGE":"HTTP_STATUS_"+status);this.status=status;}
+        public int status(){return status;}
+    }
     // Independent wire budget: preserve the existing character limit for multibyte responses.
     private static final int MAX_RESPONSE_BYTES=1_048_576;
     private final ObjectMapper json;
@@ -35,7 +41,8 @@ public class ExternalHttp {
         try { result=pending.get(request.timeout().orElse(Duration.ofSeconds(8)).toMillis(),TimeUnit.MILLISECONDS); }
         catch(InterruptedException e) { Thread.currentThread().interrupt();throw e; }
         finally { if(!pending.isDone()) pending.cancel(true); }
-        if (result.statusCode()!=200 || result.body().length()>100_000) throw new IllegalStateException("外部服务不可用");
+        if (result.statusCode()!=200) throw new ResponseFailure(result.statusCode());
+        if (result.body().length()>100_000) throw new ResponseFailure(0);
         return json.readValue(result.body(),Map.class);
     }
 
@@ -65,7 +72,7 @@ public class ExternalHttp {
                     done=true;
                     chunk=null;
                     upstream.cancel();
-                    delegate.onError(new IllegalStateException("外部服务不可用"));
+                    delegate.onError(new ResponseFailure(0));
                     return;
                 }
                 received+=buffer.remaining();

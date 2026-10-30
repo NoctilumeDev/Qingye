@@ -88,12 +88,17 @@ public final class AssistantContract {
         return query.valid()?DirectoryCompilation.accepted(query):DirectoryCompilation.failed(DirectoryFailure.INVALID_QUERY);
     }
     private static boolean matchesUniqueCue(Map<String,List<String>> options,String value,String source){
-        record Match(String value,String cue){}
-        var matches=options.entrySet().stream()
-            .flatMap(e->e.getValue().stream().filter(source::contains).map(cue->new Match(e.getKey(),cue)))
-            .toList();
-        int longest=matches.stream().mapToInt(m->m.cue().length()).max().orElse(0);
-        return longest>0&&matches.stream().filter(m->m.cue().length()==longest).allMatch(m->m.value().equals(value));
+        record Match(String value,int start,int end){}
+        var matches=new ArrayList<Match>();
+        options.forEach((option,cues)->cues.forEach(cue->{
+            for(int at=source.indexOf(cue);at>=0;at=source.indexOf(cue,at+1))
+                matches.add(new Match(option,at,at+cue.length()));
+        }));
+        // A registered compound overrides only matches contained in that same span.
+        // A longer cue elsewhere must not hide an independent, conflicting condition.
+        var remaining=matches.stream().filter(m->matches.stream().noneMatch(other->
+            other.start()<=m.start()&&other.end()>=m.end()&&other.end()-other.start()>m.end()-m.start())).toList();
+        return !remaining.isEmpty()&&remaining.stream().allMatch(m->m.value().equals(value));
     }
     private static boolean sameDate(String value,String source){
         try{
