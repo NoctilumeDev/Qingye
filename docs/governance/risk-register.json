@@ -646,7 +646,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-p6pp-m3f8-5c89",
@@ -728,7 +737,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-5gvw-p9qm-jgwh",
@@ -810,7 +828,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-5jmj-h7xm-6q6v",
@@ -892,7 +919,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-cxp5-3px4-pw24",
@@ -974,7 +1010,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-gx83-3vf8-gh7j",
@@ -1056,7 +1101,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-mhm7-754m-9p8w",
@@ -1136,7 +1190,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-q4xh-88c3-wmh7",
@@ -1218,7 +1281,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-vvgp-rfg2-7rr6",
@@ -1300,7 +1372,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-wjgm-6hv5-3cvf",
@@ -1382,7 +1463,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-wv8q-qhhj-9h54",
@@ -1464,7 +1554,16 @@
         "status_unchanged": "NOT_APPLICABLE",
         "evidence": "docs/four-gate-integration.md",
         "scope": "Rechecked the changed parsing/controller inputs against the retained advisory preconditions; no new general vulnerability verdict."
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "064cad64a85d8709c9f323a5bb0119d695569b52",
+          "source_path": "backend/src/main/java/cn/qingye/api/Forms.java",
+          "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
+          "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
+          "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        }
+      ]
     },
     {
       "id": "GHSA-qv9r-c865-cp47",

@@ -133,3 +133,5 @@ PR #6 当时**没有**接入持续完整依赖扫描，账册校验不能代替�
 本次以 `ba1cd59927d1ceb2434e45d03760dfc2d6421d9e` 为改动前坐标，核对新增的登录可用性和账号授权 REST 接口。Api.java 的逻辑 UTF-8 SHA-256 为 `c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d`。接口仍返回数据，未引入 SSE、XSLT、DIGEST、FORM 或 servlet security-constraint；五条引用 Api 的既有依赖适用性判断保持原状态。仅更新该文件的输入摘要，没有放宽依赖门禁。
 
 首次静态检查因构造函数新增 AccountService，报告 spotbugs-001 的身份从 `fb5810a29a9a4e89ad3149f9165b71a7` 变为 `54562539ec38b5149059fb05ed1b98cd`。逐项核对仍是同一个 Api.messages 注入赋值，EI_EXPOSE_REP2、priority 2、rank 18 均未变。账册保留旧身份及说明，只迁移此条身份；继续保持 UNRESOLVED、risk_accepted=false，没有将其记作已修复。首败记录保留在本轮工作证据目录的 wechat-admin-quick-first.log。
+
+随后依赖检查指出 Forms.java 也属于引用输入。本次唯一改动为新增 `Administrator(@NotNull Boolean admin)`，逻辑 SHA-256 为 `e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402`。逐项核对引用它的十一条 JSON 依赖公告，未引入 DataInput、浮点/BigDecimal 转换、多态/对象身份、视图/忽略属性注解、XML、InetAddress 或 Path 类型；保持原 NOT_APPLICABLE 状态。保留这次首败，更新 Forms 输入绑定后重新运行相同依赖门禁。
