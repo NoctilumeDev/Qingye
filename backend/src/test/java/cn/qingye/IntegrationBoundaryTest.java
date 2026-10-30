@@ -77,7 +77,7 @@ class IntegrationBoundaryTest {
             for(String bad:List.of("[]","null","{}","{\"action\":\"LOCATE\",\"action\":\"REJECT\",\"intent\":\"ACTIVITIES\",\"search\":null,\"reason\":null}","{} {}","not JSON")){
                 payload.set(bad);assertThatThrownBy(()->planner.locate("在哪里")).isInstanceOf(AssistantHintDecoder.ProtocolViolation.class);
             }
-            payload.set(json.writeValueAsString(AssistantHint.locate("ACTIVITIES","陌生名称")));code.set(503);assertThat(planner.locate("在哪里")).isEmpty();
+            payload.set(json.writeValueAsString(AssistantHint.locate("ACTIVITIES","陌生名称")));code.set(503);assertThatThrownBy(()->planner.locate("在哪里")).isInstanceOfSatisfying(LlmPlanner.Unavailable.class,e->assertThat(e.category()).isEqualTo(LlmPlanner.TransportFailure.HTTP_STATUS));
         }finally{server.stop(0);}
     }
     @Test void modelTimeoutFallsBackWithinTheClientDeadline() throws Exception {
@@ -92,10 +92,10 @@ class IntegrationBoundaryTest {
         server.start();
         try {
             var json=new ObjectMapper().findAndRegisterModules();
-            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/slow","test-fixture","test-model");
+            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/slow","test-fixture","test-model",300);
             long started=System.nanoTime();
-            assertThat(planner.locate("查相机器材")).isEmpty();
-            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(14),Duration.ofMillis(18500));
+            assertThatThrownBy(()->planner.locate("查相机器材")).isInstanceOfSatisfying(LlmPlanner.Unavailable.class,e->assertThat(e.category()).isEqualTo(LlmPlanner.TransportFailure.TIMEOUT));
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofMillis(200),Duration.ofSeconds(3));
         }
         finally { server.stop(0);executor.shutdownNow(); }
     }
@@ -111,9 +111,9 @@ class IntegrationBoundaryTest {
         });server.start();
         try {
             var json=new ObjectMapper().findAndRegisterModules();
-            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/stalled-body","test-fixture","test-model");
-            long started=System.nanoTime();assertThat(planner.locate("查相机")).isEmpty();
-            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofSeconds(14),Duration.ofMillis(18500));
+            var planner=new LlmPlanner(new ExternalHttp(json),json,Clock.systemUTC(),"http://127.0.0.1:"+server.getAddress().getPort()+"/stalled-body","test-fixture","test-model",300);
+            long started=System.nanoTime();assertThatThrownBy(()->planner.locate("查相机")).isInstanceOfSatisfying(LlmPlanner.Unavailable.class,e->assertThat(e.category()).isEqualTo(LlmPlanner.TransportFailure.TIMEOUT));
+            assertThat(Duration.ofNanos(System.nanoTime()-started)).isBetween(Duration.ofMillis(200),Duration.ofSeconds(3));
         } finally { server.stop(0);executor.shutdownNow(); }
     }
 }

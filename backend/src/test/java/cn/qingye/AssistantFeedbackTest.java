@@ -70,7 +70,7 @@ class AssistantFeedbackTest {
     }
     @Test void ungroundedModelSearchCannotBecomeANewCondition(){
         when(planner.locate(anyString())).thenReturn(Optional.of(AssistantHint.locate("ACTIVITIES","不存在于当前请求的名称")));
-        assertThat(service.ask(me,"帮我找一个活动","s")).containsEntry("reason","INVALID_PROTOCOL");verifyNoInteractions(activities,loans,capacity);
+        assertThat(service.ask(me,"帮我找一个活动","s")).containsEntry("status","CLARIFY").containsEntry("qualificationFailure","SEARCH_SOURCE_MISMATCH");verifyNoInteractions(activities,loans,capacity);
     }
     @Test void structuredConditionsSurviveANameOnlyCorrection()throws Exception{
         var plan=new QueryPlan("QUERY","MY_REGISTRATIONS","摄影社",null,"TOMORROW",null,"NON_CANCELLED","东门",null);

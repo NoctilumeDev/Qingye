@@ -36,5 +36,6 @@ qingye:
   llm-url: ${QINGYE_LLM_URL:}
   llm-key: ${QINGYE_LLM_KEY:}
   llm-model: ${QINGYE_LLM_MODEL:}
+  llm-timeout-ms: ${QINGYE_LLM_TIMEOUT_MS:18000}
   feedback-url: ${QINGYE_FEEDBACK_URL:}
   feedback-key: ${QINGYE_FEEDBACK_KEY:}

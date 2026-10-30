@@ -38,6 +38,19 @@ class BusinessDirectoryContractTest {
         assertThat(accepted(with("EQUIPMENT","相机","TIME","CURRENT","当前"),"查相机当前库存").timeOption()).isEqualTo("CURRENT");
         assertThat(accepted(with("MY_REGISTRATIONS",null,"STATE","ANY","状态为全部"),"查我的报名记录，状态为全部").status()).isEqualTo("ANY");
     }
+    @Test void finiteAliasesResolveCompoundCuesButNeverHideIndependentConstraints(){
+        for(String phrase:List.of("这周末","本周末","周末"))
+            assertThat(accepted(with("ACTIVITIES",null,"TIME","WEEKEND",phrase),phrase+"有什么活动").timeOption()).isEqualTo("WEEKEND");
+        assertThat(accepted(with("ACTIVITIES",null,"TIME","TOMORROW","明儿个"),"明儿个有哪些活动").timeOption()).isEqualTo("TOMORROW");
+        assertThat(accepted(with("MY_REGISTRATIONS",null,"STATE","NON_CANCELLED","没取消"),"没取消的报名").status()).isEqualTo("NON_CANCELLED");
+        assertThat(accepted(with("MY_LOANS","相机","STATE","CHECKED_OUT","还没还"),"还没还的相机").status()).isEqualTo("CHECKED_OUT");
+        for(String phrase:List.of("今天和明儿个","本周末和下周","这周和这周末"))
+            rejected(with("ACTIVITIES",null,"TIME","WEEKEND",phrase),phrase);
+        rejected(with("ACTIVITIES",null,"TIME","TOMORROW","今天和明儿个"),"今天和明儿个");
+        rejected(with("MY_LOANS",null,"STATE","CHECKED_OUT","已领取未归还和已归还"),"已领取未归还和已归还");
+        rejected(with("MY_REGISTRATIONS",null,"STATE","NON_CANCELLED","没取消的报名，候补也算"),"没取消的报名，候补也算");
+        rejected(with("ACTIVITIES",null,"TIME","WEEKEND","这周末"),"下周有什么活动");
+    }
     @Test void exactBusinessOptionLabelsNormalizeWithoutReinterpretingTheQuestion(){
         assertThat(accepted(with("ACTIVITIES","摄影社","TIME","明天","明天"),"明天摄影社在哪里").timeOption()).isEqualTo("TOMORROW");
         assertThat(accepted(with("MY_LOANS",null,"STATE","已领取未归还","已领取未归还"),"只看已领取未归还").status()).isEqualTo("CHECKED_OUT");

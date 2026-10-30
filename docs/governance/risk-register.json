@@ -654,6 +654,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -745,6 +759,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -836,6 +864,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -927,6 +969,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1018,6 +1074,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1109,6 +1179,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1198,6 +1282,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1289,6 +1387,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1380,6 +1492,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1471,6 +1597,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1562,6 +1702,20 @@
           "source_sha256": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "Only Administrator(@NotNull Boolean admin) added. No DataInput, floating/BigDecimal, polymorphic or identity DTOs, view/ignored-property annotations, XML, InetAddress or Path types introduced. Existing applicability disposition retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/ExternalHttp.java",
+          "source_sha256": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/java/cn/qingye/integration/LlmPlanner.java",
+          "source_sha256": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Timeout budget and typed transport failure classification only. JSON remains String to untyped Map and finite records. No new DataInput, floating or BigDecimal coercion, identity, views, ignored properties, polymorphism, XML, InetAddress or Path parsing. Retain prior applicability status."
         }
       ]
     },
@@ -1836,6 +1990,13 @@
           "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/resources/application.yml",
+          "source_sha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Only qingye.llm-timeout-ms added. No SSE, XSLT, DIGEST, FORM, servlet constraints, HTTP/2 or TLS/SNI configuration changes. Retain prior applicability status including unresolved deployment-dependent risk."
         }
       ]
     },
@@ -1914,6 +2075,13 @@
           "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/resources/application.yml",
+          "source_sha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Only qingye.llm-timeout-ms added. No SSE, XSLT, DIGEST, FORM, servlet constraints, HTTP/2 or TLS/SNI configuration changes. Retain prior applicability status including unresolved deployment-dependent risk."
         }
       ]
     },
@@ -1996,6 +2164,13 @@
           "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/resources/application.yml",
+          "source_sha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Only qingye.llm-timeout-ms added. No SSE, XSLT, DIGEST, FORM, servlet constraints, HTTP/2 or TLS/SNI configuration changes. Retain prior applicability status including unresolved deployment-dependent risk."
         }
       ]
     },
@@ -2078,6 +2253,13 @@
           "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/resources/application.yml",
+          "source_sha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Only qingye.llm-timeout-ms added. No SSE, XSLT, DIGEST, FORM, servlet constraints, HTTP/2 or TLS/SNI configuration changes. Retain prior applicability status including unresolved deployment-dependent risk."
         }
       ]
     },
@@ -2160,6 +2342,13 @@
           "source_sha256": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
           "evidence": "docs/governance/risk-register.md#wechat-account-maintenance-20261030",
           "decision": "REST login readiness and administrator-role endpoints add no SSE, XSLT, DIGEST, FORM or servlet security-constraint configuration; five existing dispositions retained."
+        },
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/resources/application.yml",
+          "source_sha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Only qingye.llm-timeout-ms added. No SSE, XSLT, DIGEST, FORM, servlet constraints, HTTP/2 or TLS/SNI configuration changes. Retain prior applicability status including unresolved deployment-dependent risk."
         }
       ]
     },
@@ -2244,7 +2433,16 @@
       "scan_evidence": {
         "run": "https://github.com/NoctilumeDev/Qingye/actions/runs/40838839920",
         "local_report_sha256": "85ddd08a2f0b06686e368a6e59c686ff36ca869df8351b4684a9e69d24bf4b26"
-      }
+      },
+      "maintenance_reviews": [
+        {
+          "base_revision": "1d11d68c15d890920c7f51981aa52df406113e97",
+          "source_path": "backend/src/main/resources/application.yml",
+          "source_sha256": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
+          "evidence": "docs/governance/risk-register.md#assistant-transport-maintenance-20261030",
+          "decision": "Only qingye.llm-timeout-ms added. No SSE, XSLT, DIGEST, FORM, servlet constraints, HTTP/2 or TLS/SNI configuration changes. Retain prior applicability status including unresolved deployment-dependent risk."
+        }
+      ]
     }
   ],
   "static_findings": [
@@ -2818,7 +3016,7 @@
     },
     {
       "id": "spotbugs-026",
-      "hash": "ec787d612e050d336618bbd927099c57",
+      "hash": "47a6a3ec06a095f17eb6de2882afea17",
       "occurrence": 0,
       "type": "EI_EXPOSE_REP2",
       "priority": 2,
@@ -2833,10 +3031,11 @@
       "evidence": [
         "backend/src/main/java/cn/qingye/integration/LlmPlanner.java:20"
       ],
-      "summary": "new cn.qingye.integration.LlmPlanner(ExternalHttp, ObjectMapper, Clock, String, String, String) may expose internal representation by storing an externally mutable object into LlmPlanner.json",
-      "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
+      "summary": "new cn.qingye.integration.LlmPlanner(ExternalHttp, ObjectMapper, Clock, String, String, String, long) may expose internal representation by storing an externally mutable object into LlmPlanner.json",
+      "rationale": "Same ObjectMapper injection assignment; constructor gained timeout parameter. Previous fingerprint ec787d612e050d336618bbd927099c57 retained. Type, priority and rank unchanged. Still unresolved; no risk acceptance.",
       "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
-      "risk_accepted": false
+      "risk_accepted": false,
+      "previous_hash": "ec787d612e050d336618bbd927099c57"
     },
     {
       "id": "spotbugs-027",

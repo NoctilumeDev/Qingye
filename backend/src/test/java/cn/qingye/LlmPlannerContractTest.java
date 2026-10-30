@@ -72,4 +72,33 @@ class LlmPlannerContractTest {
             assertThat(AssistantContract.directoryQuery(candidate,choice.source()).accepted()).isFalse();
         }
     }
+    @Test void timeoutConfigurationIsBoundedBelowTheClientAndNeverRetries()throws Exception{
+        var json=new ObjectMapper();var budget=new AtomicReference<java.time.Duration>();
+        var calls=new java.util.concurrent.atomic.AtomicInteger();
+        var http=new ExternalHttp(json){@Override public Map<?,?> post(java.net.URI uri,String key,Map<String,Object> body,java.time.Duration deadline)throws Exception{
+            budget.set(deadline);calls.incrementAndGet();throw new java.net.SocketTimeoutException("private transport detail");
+        }};
+        var planner=new LlmPlanner(http,json,Clock.systemUTC(),"http://localhost/fixture","fixture","test",750);
+        assertThatThrownBy(()->planner.locate("查相机")).isInstanceOfSatisfying(LlmPlanner.Unavailable.class,e->{
+            assertThat(e.category()).isEqualTo(LlmPlanner.TransportFailure.TIMEOUT);assertThat(e.getMessage()).isEqualTo("TIMEOUT");
+        });
+        assertThat(calls.get()).isEqualTo(1);assertThat(budget.get()).isEqualTo(java.time.Duration.ofMillis(750));
+        for(long value:new long[]{0,99,18001})assertThatThrownBy(()->new LlmPlanner(http,json,Clock.systemUTC(),"http://localhost","fixture-key","fixture-model",value).locate("查相机"))
+            .isInstanceOf(LlmPlanner.Unavailable.class).hasMessage("CONFIGURATION");
+        assertThat(calls.get()).isEqualTo(1);
+    }
+    @Test void connectionAndProviderFailuresKeepDistinctDiagnosticsWithoutBodiesOrSecrets(){
+        var json=new ObjectMapper();
+        Map<Exception,LlmPlanner.TransportFailure> cases=Map.of(
+            new java.net.ConnectException("private endpoint"),LlmPlanner.TransportFailure.CONNECT,
+            new java.net.UnknownHostException("private host"),LlmPlanner.TransportFailure.DNS,
+            new javax.net.ssl.SSLHandshakeException("private certificate"),LlmPlanner.TransportFailure.TLS,
+            new ExternalHttp.ResponseFailure(429),LlmPlanner.TransportFailure.HTTP_STATUS,
+            new ExternalHttp.ResponseFailure(0),LlmPlanner.TransportFailure.RESPONSE_TOO_LARGE);
+        cases.forEach((error,category)->{
+            var http=new ExternalHttp(json){@Override public Map<?,?> post(java.net.URI uri,String key,Map<String,Object> body,java.time.Duration deadline)throws Exception{throw new java.util.concurrent.ExecutionException(error);}};
+            var planner=new LlmPlanner(http,json,Clock.systemUTC(),"http://localhost/fixture","fixture","test");
+            assertThatThrownBy(()->planner.locate("查相机")).isInstanceOfSatisfying(LlmPlanner.Unavailable.class,e->assertThat(e.category()).isEqualTo(category));
+        });
+    }
 }

@@ -101,6 +101,10 @@ public class AssistantService {
         final Optional<AssistantHint> remote;
         try{remote=locate(actor.id(),input);}
         catch(ProtocolViolation failure){return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL",failure.category().name());}
+        catch(LlmPlanner.Unavailable failure){
+            var result=new LinkedHashMap<>(parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"MODEL_UNAVAILABLE",null));
+            result.put("transportFailure",failure.category().name());return result;
+        }
         if(remote.isEmpty())return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"MODEL_UNAVAILABLE",null);
         var hint=remote.get();
         if(!hint.valid())return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","INVALID_HINT_VALUE");
@@ -111,9 +115,20 @@ public class AssistantService {
             String source=String.join("\n",turns);
             if(explicit!=null)try{source+="\n"+JSON.writeValueAsString(explicit);}catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
             var compiled=AssistantContract.directoryQuery(hint,source);
-            if(compiled.accepted())return executePlan(actor,session,requestId,retainExplicit(compiled.query(),explicit,hint),"BUSINESS_DIRECTORY");
-            return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","BUSINESS_CONTRACT_"+compiled.failure().name());
+            if(compiled.accepted()){
+                var plan=retainExplicit(compiled.query(),explicit,hint);
+                return executePlan(actor,session,requestId,plan,"BUSINESS_DIRECTORY");
+            }
+            // A well-formed candidate with unverified meaning has no query authority.
+            // Keep its diagnostic; offer a real bounded clarification instead of a parse retry.
+            String questionKey=compiled.failure()==AssistantContract.DirectoryFailure.SEARCH_SOURCE_MISMATCH?"OBJECT_NAME":"HARD_CONDITION";
+            var result=new LinkedHashMap<>(clarification(actor,session,requestId,turns,questions,candidates,replies,gateRound,
+                AssistantHint.clarify(hint.intent(),hint.search(),questionKey)));
+            result.put("qualificationFailure",compiled.failure().name());return result;
         }
+        return clarification(actor,session,requestId,turns,questions,candidates,replies,gateRound,hint);
+    }
+    private Map<String,Object> clarification(Actor actor,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,int gateRound,AssistantHint hint) {
         String questionKey=hint.question()!=null?hint.question():"MULTIPLE_REQUESTS".equals(hint.reason())?"REQUEST_CHOICE":"BUSINESS_OBJECT";
         String question=AssistantContract.clarificationQuestions().get(questionKey);
         String candidate;
@@ -124,7 +139,7 @@ public class AssistantService {
         for(int i=0;i<questions.size();i++)if(questions.get(i).equals(question)&&candidates.get(i).equals(candidate)){repeated=true;break;}
         if(replies>0&&("NOT_UNDERSTOOD".equals(hint.reason())||repeated))return paused("NO_CLARIFICATION_PROGRESS",turns,replies,question);
         var result=new LinkedHashMap<>(stopped("CLARIFY",hint.reason(),"MODEL_LOCATOR"));
-        result.put("originalRequest",original);result.put("userTurns",List.copyOf(turns));
+        result.put("originalRequest",turns.isEmpty()?"":turns.get(0));result.put("userTurns",List.copyOf(turns));
         result.put("question",question);
         if(replies<AssistantContract.MAX_CLARIFICATIONS) {
             var nextQuestions=new ArrayList<>(questions);nextQuestions.add(question);
@@ -272,6 +287,7 @@ public class AssistantService {
         if (!planning.add(user)) { modelSlots.release(); return Optional.empty(); }
         try { return planner.locate(question); }
         catch(ProtocolViolation invalid){throw invalid;}
+        catch(LlmPlanner.Unavailable unavailable){throw unavailable;}
         catch(RuntimeException unavailable){return Optional.empty();}
         finally { planning.remove(user);modelSlots.release(); }
     }
