@@ -9,7 +9,9 @@ import java.time.format.DateTimeParseException;
 public final class AssistantContract {
     private static final Map<String,Object> SPEC=AssistantContractData.BUSINESS;
     public static final String VERSION=(String)SPEC.get("version");
-    public static final int MAX_QUERIES=(Integer)SPEC.get("maxQueries"), MAX_CLARIFICATIONS=(Integer)SPEC.get("maxClarifications");
+    public static final String FLOW_VERSION=(String)SPEC.get("flowVersion");
+    public static final int MAX_GATE_ROUNDS=(Integer)SPEC.get("maxGateRounds");
+    public static final int MAX_QUERIES=(Integer)SPEC.get("maxQueries"), MAX_CLARIFICATIONS=Math.min((Integer)SPEC.get("maxClarifications"),MAX_GATE_ROUNDS-1);
     public static final List<String> INTENTS=list("intents"),TIMES=list("times"),CATEGORIES=list("categories");
     public static final List<String> REGISTRATION_STATES=states("MY_REGISTRATIONS"),LOAN_STATES=states("MY_LOANS");
     public static final Set<String> CLARIFICATIONS=Set.copyOf(list("clarifications"));

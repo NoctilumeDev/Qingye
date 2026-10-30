@@ -1,13 +1,11 @@
 package cn.qingye.business;
 import cn.qingye.db.*;
 import cn.qingye.integration.LlmPlanner;
-import cn.qingye.integration.AssistantLearning;
 import cn.qingye.integration.AssistantHintDecoder.ProtocolViolation;
 import cn.qingye.model.*;
 import org.springframework.stereotype.Service;
 import java.time.*;
 import java.util.*;
-import java.text.Normalizer;
 import java.util.concurrent.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import static cn.qingye.db.Rows.*;
@@ -20,9 +18,6 @@ public class AssistantService {
     private final LlmPlanner planner;
     private final Clock clock;
     private final AssistantConfirmations confirmations;
-    private AssistantLearning learning;
-    @org.springframework.beans.factory.annotation.Autowired
-    public void configureLearning(AssistantLearning learning){this.learning=learning;}
     private static final ObjectMapper JSON=new ObjectMapper();
     private static final ObjectMapper FACTS_JSON=new ObjectMapper().findAndRegisterModules()
         .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -40,32 +35,68 @@ public class AssistantService {
         return ask(actor,question,null);
     }
     public Map<String,Object> ask(Actor actor,String question,String session) {
-        String requestId=confirmations.begin(actor.id(),session);
+        String requestId=confirmations.begin(actor==null?0:actor.id(),session);
         question=normalize(question);
-        if(question.isEmpty()||question.length()>300)return stopped("SYSTEM_ERROR","INVALID_REQUEST","LOCAL");
-        confirmations.remember(actor.id(),session,requestId,List.of(question),List.of());
-        var command=AssistantContract.entryCommand(question);
-        if(command.isPresent())return preview(actor,session,requestId,command.get(),"BUSINESS_ENTRY");
-        return interpret(actor,session,requestId,List.of(question),List.of(),List.of(),0);
+        return enter(actor,session,requestId,List.of(question),List.of(),List.of(),0,requestId,1,null,false);
     }
-    private static String normalize(String text){return text==null?"":Normalizer.normalize(text,Normalizer.Form.NFKC).replaceAll("\\p{Cf}","").strip();}
+    private static String normalize(String text){return text==null?"":java.text.Normalizer.normalize(text,java.text.Normalizer.Form.NFKC).replaceAll("\\p{Cf}", "").strip();}
+
+    /** Every initial request, supplement and correction starts at Gate 1. */
+    private Map<String,Object> enter(Actor actor,String session,String requestId,List<String> turns,List<String> questions,
+        List<String> candidates,int replies,String taskId,int gateRound,QueryPlan explicit,boolean structured) {
+        String rejection=AssistantIntake.reject(actor,session,turns,explicit);
+        if(rejection!=null) return trace(stopped(Set.of("SESSION_REQUIRED","WRITE_OPERATION").contains(rejection)?"REJECT":
+            "UNSUPPORTED_CAPABILITY".equals(rejection)?"UNSUPPORTED":"SYSTEM_ERROR",rejection,"INTAKE"),taskId,gateRound,1);
+        if(requestId==null)return trace(stopped("SYSTEM_ERROR","CONFIRMATION_UNAVAILABLE","INTAKE"),taskId,gateRound,1);
+        confirmations.remember(actor.id(),session,requestId,turns,questions,taskId,gateRound,explicit);
+        if(gateRound>AssistantContract.MAX_GATE_ROUNDS)
+            return trace(stopped("UNKNOWN","GATE_ROUND_LIMIT","LOCAL"),taskId,AssistantContract.MAX_GATE_ROUNDS,1);
+        Map<String,Object> result;
+        if(structured) result=structured(actor,explicit,session,requestId);
+        else {
+            // Only complete, registered root commands bypass the optional model.
+            // A follow-up is never treated as an independent command that erases earlier conditions.
+            var command=turns.size()==1&&explicit==null?AssistantContract.entryCommand(turns.get(0)):Optional.<QueryPlan>empty();
+            result=command.isPresent()?executePlan(actor,session,requestId,command.get(),"BUSINESS_ENTRY"):
+                interpret(actor,session,requestId,turns,questions,candidates,replies,gateRound,explicit);
+        }
+        return trace(result,taskId,gateRound,4);
+    }
+    private Map<String,Object> trace(Map<String,Object> result,String taskId,int round,int gates) {
+        var response=new LinkedHashMap<>(result);
+        if(taskId!=null)response.put("taskId",taskId);
+        response.put("gateRound",round);response.put("maxGateRounds",AssistantContract.MAX_GATE_ROUNDS);
+        response.put("flowVersion",AssistantContract.FLOW_VERSION);
+        response.put("gateTrace",List.of("BUSINESS_BOUNDARY","CAPABILITY_MATCH","READ_ONLY_CONTRACT","RESULT_RELEASE").subList(0,gates));
+        response.put("businessRead", "QUERY".equals(result.get("status")));
+        response.put("fallbackNeeded", "GATE_ROUND_LIMIT".equals(result.get("reason")));
+        return response;
+    }
     public Map<String,Object> clarify(Actor actor,String token,String answer,String session) {
         answer=normalize(answer);
         if(answer.isEmpty()||answer.length()>300)return stopped("SYSTEM_ERROR","INVALID_REQUEST","LOCAL");
         var dialogue=confirmations.reply(actor.id(),session,token,false);
         if(dialogue.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
         var d=dialogue.get();var turns=new ArrayList<>(d.turns());turns.add(answer);
-        return interpret(actor,session,d.requestId(),turns,d.questions(),d.candidates(),d.replies()+1);
+        var c=d.context();
+        return enter(actor,session,d.requestId(),turns,d.questions(),d.candidates(),d.replies()+1,c.taskId(),c.gateRound()+1,c.explicitSelection(),false);
     }
     public Map<String,Object> retry(Actor actor,String token,String session) {
         var dialogue=confirmations.reply(actor.id(),session,token,true);
         if(dialogue.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
-        var d=dialogue.get();return interpret(actor,session,d.requestId(),d.turns(),d.questions(),d.candidates(),d.replies());
+        var d=dialogue.get();var c=d.context();
+        return enter(actor,session,d.requestId(),d.turns(),d.questions(),d.candidates(),d.replies(),c.taskId(),c.gateRound(),c.explicitSelection(),false);
     }
-    private Map<String,Object> interpret(Actor actor,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies) {
-        confirmations.remember(actor.id(),session,requestId,turns,questions);
-        String input=turns.get(0);
-        if(turns.size()>1)try {input=JSON.writeValueAsString(Map.of("originalRequest",turns.get(0),"clarificationAnswers",turns.subList(1,turns.size()),"clarificationQuestions",questions));}
+    private Map<String,Object> interpret(Actor actor,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,int gateRound,QueryPlan explicit) {
+        String original=explicit==null?turns.get(0):"";
+        String input=original;
+        if(turns.size()>1||explicit!=null)try {
+            var context=new LinkedHashMap<String,Object>();context.put("originalRequest",original);
+            context.put("clarificationAnswers",explicit==null?turns.subList(1,turns.size()):turns);
+            context.put("clarificationQuestions",questions);
+            if(explicit!=null)context.put("explicitSelection",explicit);
+            input=JSON.writeValueAsString(context);
+        }
         catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
         final Optional<AssistantHint> remote;
         try{remote=locate(actor.id(),input);}
@@ -77,8 +108,10 @@ public class AssistantService {
         if(hint.action().equals("REJECT"))return stopped("UNSUPPORTED_CAPABILITY".equals(hint.reason())?"UNSUPPORTED":"REJECT",hint.reason(),"MODEL_LOCATOR");
         boolean located=hint.action().equals("LOCATE");
         if(located){
-            var compiled=AssistantContract.directoryQuery(hint,String.join("\n",turns));
-            if(compiled.accepted())return preview(actor,session,requestId,compiled.query(),"BUSINESS_DIRECTORY");
+            String source=String.join("\n",turns);
+            if(explicit!=null)try{source+="\n"+JSON.writeValueAsString(explicit);}catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
+            var compiled=AssistantContract.directoryQuery(hint,source);
+            if(compiled.accepted())return executePlan(actor,session,requestId,retainExplicit(compiled.query(),explicit,hint),"BUSINESS_DIRECTORY");
             return parsingFailed(actor,session,requestId,turns,questions,candidates,replies,"INVALID_PROTOCOL","BUSINESS_CONTRACT_"+compiled.failure().name());
         }
         String questionKey=hint.question()!=null?hint.question():"MULTIPLE_REQUESTS".equals(hint.reason())?"REQUEST_CHOICE":"BUSINESS_OBJECT";
@@ -86,12 +119,12 @@ public class AssistantService {
         String candidate;
         try{candidate=JSON.writeValueAsString(Arrays.asList(hint.action(),hint.intent(),hint.search(),hint.reason(),hint.selections()));}
         catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
-        if(replies>=AssistantContract.MAX_CLARIFICATIONS)return paused("CLARIFICATION_LIMIT",turns,replies,question);
+        if(gateRound>=AssistantContract.MAX_GATE_ROUNDS)return paused("GATE_ROUND_LIMIT",turns,replies,question);
         boolean repeated=false;
         for(int i=0;i<questions.size();i++)if(questions.get(i).equals(question)&&candidates.get(i).equals(candidate)){repeated=true;break;}
         if(replies>0&&("NOT_UNDERSTOOD".equals(hint.reason())||repeated))return paused("NO_CLARIFICATION_PROGRESS",turns,replies,question);
         var result=new LinkedHashMap<>(stopped("CLARIFY",hint.reason(),"MODEL_LOCATOR"));
-        result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));
+        result.put("originalRequest",original);result.put("userTurns",List.copyOf(turns));
         result.put("question",question);
         if(replies<AssistantContract.MAX_CLARIFICATIONS) {
             var nextQuestions=new ArrayList<>(questions);nextQuestions.add(question);
@@ -111,28 +144,38 @@ public class AssistantService {
         var receipt=confirmations.feedback(actor.id(),session,token);
         if(receipt.isEmpty())return stopped("CLARIFY","CONFIRMATION_EXPIRED","LOCAL");
         var f=receipt.get();var o=f.offer();var context=o.context();
-        var turns=new ArrayList<String>(context==null?List.of(scope(o.plan(),o.period())):context.turns());
+        var turns=new ArrayList<String>(context==null?List.of():context.turns());
         var questions=new ArrayList<String>(context==null?List.of():context.questions());
         String source=String.join("\n",turns);
         if(source.length()+correction.length()>8000)return stopped("CLARIFICATION_PAUSED","FEEDBACK_CONTEXT_LIMIT","LOCAL");
-        // Explicit user continuation starts a new request. No previous consent can execute it.
+        // New generation, same original task and bounded cycle. External learning is outside this run.
         String requestId=confirmations.begin(actor.id(),session);
-        String saved=learning==null?"DISABLED":learning.submit(actor.id(),token,source,correction,o.plan().intent(),f.snapshot());
         turns.add(correction);questions.add("上次查询哪里没对上？请说明本次需要补充或改正的条件。");
-        var result=new LinkedHashMap<>(interpret(actor,session,requestId,turns,questions,Collections.nCopies(questions.size(),""),0));
-        result.put("feedbackState",saved);
+        var result=new LinkedHashMap<>(enter(actor,session,requestId,turns,questions,Collections.nCopies(questions.size(),""),0,
+            context==null?o.requestId():context.taskId(),context==null?2:context.gateRound()+1,
+            context==null?o.plan():context.explicitSelection(),false));
+        result.put("feedbackState","NOT_COLLECTED");
         return result;
     }
+    private QueryPlan retainExplicit(QueryPlan query,QueryPlan explicit,AssistantHint hint) {
+        if(explicit==null||!query.intent().equals(explicit.intent()))return query;
+        var changed=hint.selections().stream().map(AssistantHint.Selection::field).collect(java.util.stream.Collectors.toSet());
+        boolean time=changed.contains("TIME")||changed.contains("DATE");
+        return new QueryPlan("QUERY",query.intent(),hint.search()==null?explicit.entity():query.entity(),
+            changed.contains("CATEGORY")?query.category():explicit.category(),time?query.timeOption():explicit.timeOption(),
+            time?query.date():explicit.date(),changed.contains("STATE")?query.status():explicit.status(),
+            changed.contains("LOCATION")?query.location():explicit.location(),null);
+    }
     private Map<String,Object> parsingFailed(Actor actor,String session,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,String reason,String category){
-        var result=new LinkedHashMap<>(stopped("SYSTEM_ERROR",reason,category==null?"LOCAL":"MODEL_LOCATOR"));
-        result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));result.put("clarificationsAnswered",replies);
+        var result=new LinkedHashMap<>(stopped("MODEL_UNAVAILABLE".equals(reason)?"UNKNOWN":"SYSTEM_ERROR",reason,category==null?"LOCAL":"MODEL_LOCATOR"));
+        result.put("originalRequest",turns.isEmpty()?"":turns.get(0));result.put("userTurns",List.copyOf(turns));result.put("clarificationsAnswered",replies);
         if(category!=null)result.put("protocolFailure",category);
         confirmations.clarify(actor.id(),session,requestId,turns,questions,candidates,replies,true).ifPresent(i->result.put("retryToken",i.token()));
         return result;
     }
     private Map<String,Object> paused(String reason,List<String> turns,int replies,String unresolved) {
-        var result=new LinkedHashMap<>(stopped("CLARIFICATION_PAUSED",reason,"MODEL_LOCATOR"));
-        result.put("originalRequest",turns.get(0));result.put("userTurns",List.copyOf(turns));
+        var result=new LinkedHashMap<>(stopped("UNKNOWN",reason,"MODEL_LOCATOR"));
+        result.put("originalRequest",turns.isEmpty()?"":turns.get(0));result.put("userTurns",List.copyOf(turns));
         result.put("unresolvedQuestion",unresolved);result.put("clarificationsAnswered",replies);result.put("maxClarifications",AssistantContract.MAX_CLARIFICATIONS);
         result.put("answer",result.get("answer")+"\n仍待明确："+unresolved);
         return result;
@@ -143,7 +186,10 @@ public class AssistantService {
     }
     /** Explicit local facets remain usable when the model is unavailable or uncertain. */
     public Map<String,Object> query(Actor actor,QueryPlan plan,String session) {
-        String requestId=confirmations.begin(actor.id(),session);
+        String requestId=confirmations.begin(actor==null?0:actor.id(),session);
+        return enter(actor,session,requestId,List.of(),List.of(),List.of(),0,requestId,1,plan,true);
+    }
+    private Map<String,Object> structured(Actor actor,QueryPlan plan,String session,String requestId) {
         var incomplete=AssistantQualification.incompleteDraft(plan);
         if(incomplete.isPresent()) {
             var draft=incomplete.get();var response=new LinkedHashMap<>(stopped("CLARIFY",draft.reason(),"FACETS"));
@@ -153,19 +199,20 @@ public class AssistantService {
         if (plan==null || !plan.valid() || !"QUERY".equals(plan.action())) return stopped("CLARIFY","PLAN_INVALID","FACETS");
         if(plan.batch()) {
             for(var q:plan.queries())if(!timeSupported(q))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER","FACETS");
-            return Map.of("status","CONFIRM_SCOPE","intent","BATCH","items",List.of(),"sections",plan.queries().stream().map(q->preview(actor,session,requestId,q,"FACETS")).toList(),"answer","请逐项核对并确认这些独立查询。","plan",plan,"contractVersion",AssistantContract.VERSION);
+            return Map.of("status","QUERY","intent","BATCH","items",List.of(),"sections",plan.queries().stream().map(q->executePlan(actor,session,requestId,q,"FACETS")).toList(),"answer","以下是各项查询结果。","plan",plan,"contractVersion",AssistantContract.VERSION);
         }
-        return preview(actor,session,requestId,plan,"FACETS");
+        return executePlan(actor,session,requestId,plan,"FACETS");
     }
-    private Map<String,Object> preview(Actor actor,String session,String requestId,QueryPlan plan,String mode) {
+    private Map<String,Object> executePlan(Actor actor,String session,String requestId,QueryPlan plan,String mode) {
+        if(plan==null||!plan.valid()||!"QUERY".equals(plan.action()))return stopped("UNKNOWN","PLAN_INVALID",mode);
         var period=AssistantTime.resolve(plan,clock);
         if(!timeSupported(plan))return stopped("UNSUPPORTED","UNSUPPORTED_FILTER",mode);
         var issued=confirmations.issue(actor.id(),session,requestId,plan,period,mode,0);
         if (issued.isEmpty()) return stopped("CLARIFY","CONFIRMATION_UNAVAILABLE",mode);
-        return Map.ofEntries(Map.entry("status","CONFIRM_SCOPE"),Map.entry("intent",plan.intent()),Map.entry("items",List.of()),Map.entry("mode",mode),
-            Map.entry("answer",scope(plan,period)+"\n每页10条，可继续加载。未查业务记录；请核对条件后确认，不对就修改。"),
-            Map.entry("interpretation","待确认的查询范围（不是对原意正确性的保证）"),Map.entry("plan",plan),
-            Map.entry("confirmationToken",issued.get().token()),Map.entry("confirmationExpiresAt",issued.get().expiresAt().toString()),Map.entry("contractVersion",AssistantContract.VERSION));
+        // Freeze and consume the same authorized plan internally. Querying does not require another user click.
+        var offer=confirmations.consume(actor.id(),session,issued.get().token(),false);
+        if(offer.isEmpty())return stopped("UNKNOWN","CONFIRMATION_UNAVAILABLE",mode);
+        return execute(actor,offer.get(),session);
     }
     private boolean timeSupported(QueryPlan plan){var p=AssistantTime.resolve(plan,clock);return !plan.intent().equals("EQUIPMENT")||p.end()==null||p.end().isAfter(p.anchor())&&!p.end().isAfter(p.anchor().plusYears(1));}
     public Map<String,Object> confirm(Actor actor,String token,String session) {
@@ -181,7 +228,7 @@ public class AssistantService {
     private Map<String,Object> execute(Actor actor,AssistantConfirmations.Offer offer,String session) {
         var plan=offer.plan();var period=offer.period();String mode=offer.mode();int offset=offer.offset();
         List<Map<String,Object>> rows;
-        // Gate 4 closes the selected capability with fixed SQL and the session-bound consent.
+        // Gate 4 closes the selected capability with fixed SQL and the session-bound plan.
         switch(plan.intent()) {
             case "ACTIVITIES", "MY_REGISTRATIONS" -> rows=activities.assistant(actor,plan,period.start(),period.end(),period.anchor(),offset);
             case "MY_LOANS" -> rows=loans.assistantMine(actor.id(),plan,period.start(),period.end(),period.anchor(),offset);
@@ -223,7 +270,7 @@ public class AssistantService {
     private Optional<AssistantHint> locate(long user,String question) {
         if (!modelSlots.tryAcquire()) return Optional.empty();
         if (!planning.add(user)) { modelSlots.release(); return Optional.empty(); }
-        try { return planner.locate(learning==null?question:learning.assist(user,question)); }
+        try { return planner.locate(question); }
         catch(ProtocolViolation invalid){throw invalid;}
         catch(RuntimeException unavailable){return Optional.empty();}
         finally { planning.remove(user);modelSlots.release(); }
@@ -268,8 +315,10 @@ public class AssistantService {
             case "UNKNOWN_ENTITY" -> "对象不确定，请在下方分区中选择查询对象并填写条件。不会改查全部。";
             case "MULTIPLE_REQUESTS" -> "请说明这些查询是否相互独立；最多支持四项独立查询，不支持关联推断。";
             case "UNSUPPORTED_FILTER" -> "当前能力不能完整表达这些条件或缺少相应事实字段，未查询，也不会忽略条件。可以修改条件，或明确选择支持的部分；这不等于原需求已完成。";
-            case "CONFIRMATION_EXPIRED" -> "查询范围确认已过期、已使用或会话已变化，请重新提问并核对范围。";
-            case "CONFIRMATION_UNAVAILABLE" -> "暂时无法建立范围确认，请重新提问，或使用明确的本人记录入口。";
+            case "CONFIRMATION_EXPIRED" -> "这次查询已过期、已使用或登录状态已变化，请重新查询。";
+            case "CONFIRMATION_UNAVAILABLE" -> "这次查询已被更新的请求替代，或暂时无法继续，请重新查询。";
+            case "SESSION_REQUIRED" -> "请先登录，再查询。";
+            case "GATE_ROUND_LIMIT" -> "补充后仍无法确定要查的内容，这次先停在这里。";
             case "MODEL_UNAVAILABLE" -> "模型辅助定位暂不可用；业务目录、表单和固定查询仍可使用。这不是你没说清楚。";
             case "FEEDBACK_CONTEXT_LIMIT" -> "这轮补充内容较长，请重新发起查询，或直接选择业务条件。";
             case "PLAN_INVALID", "INVALID_REQUEST" -> "本次查询请求或解析结果无效，请重新发起或手选分区。";
@@ -280,7 +329,7 @@ public class AssistantService {
             case "DATE_MEANING" -> "日期含义尚不明确，请先说明按哪种业务时间查询。";
             default -> "本次无法确定唯一查询，请换个说法，或选择下方明确的查询入口。";
         };
-        String interpretation=switch(status){case "CLARIFY"->"需要补充或澄清";case "CLARIFICATION_PAUSED"->"本轮澄清已暂停，尚未查询";case "UNSUPPORTED"->"理解了需求，但当前能力不支持";case "NOT_UNDERSTOOD"->"本轮仍无法理解，已停止";case "SYSTEM_ERROR"->"系统暂时无法完成解析";default->"请求不允许执行";};
+        String interpretation=switch(status){case "CLARIFY"->"需要补充或澄清";case "UNKNOWN"->"目前还不能确定";case "CLARIFICATION_PAUSED"->"本轮澄清已暂停，尚未查询";case "UNSUPPORTED"->"理解了需求，但当前能力不支持";case "NOT_UNDERSTOOD"->"本轮仍无法理解，已停止";case "SYSTEM_ERROR"->"系统暂时无法完成解析";default->"请求不允许执行";};
         return Map.of("answer",answer,"items",List.of(),"status",status,"intent","","reason",reason,"mode",mode,
             "interpretation",interpretation,"contractVersion",AssistantContract.VERSION);
     }

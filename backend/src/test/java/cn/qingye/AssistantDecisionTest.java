@@ -19,26 +19,25 @@ class AssistantDecisionTest {
     final AssistantService service=new AssistantService(activities,loans,capacity,planner,clock);
     Map<String,Object> run(QueryPlan p,String text) {
         var preview=service.query(student,p,"s");
-        assertThat(preview).containsEntry("status","CONFIRM_SCOPE");return service.confirm(student,preview.get("confirmationToken").toString(),"s");
+        assertThat(preview).containsEntry("status","QUERY");return preview;
     }
     Map<String,Object> equipment(long id,String name){return Map.of("id",id,"name",name,"totalQuantity",5,"borrowedQuantity",0,"enabled",true);}
-    @Test void everyQueryWaitsWithoutReadingFacts() {
-        for(var p:List.of(QueryPlan.query("ACTIVITIES",null,null,"TODAY"),QueryPlan.query("EQUIPMENT","ALL",null,"CURRENT"),QueryPlan.query("MY_REGISTRATIONS",null,null,"ANY"),QueryPlan.query("MY_LOANS",null,null,"ANY"))) {
-
-            assertThat(service.query(student,p,"s")).containsEntry("status","CONFIRM_SCOPE").containsEntry("items",List.of());
-        }
-        verifyNoInteractions(activities,loans,capacity);
+    @Test void definiteQueriesReadImmediatelyWithoutModelOrExtraConfirmation() {
+        for(var p:List.of(QueryPlan.query("ACTIVITIES",null,null,"TODAY"),QueryPlan.query("EQUIPMENT","ALL",null,"CURRENT"),QueryPlan.query("MY_REGISTRATIONS",null,null,"ANY"),QueryPlan.query("MY_LOANS",null,null,"ANY")))
+            assertThat(service.query(student,p,"s")).containsEntry("status","QUERY").containsEntry("gateRound",1).doesNotContainKey("confirmationToken");
+        verifyNoInteractions(planner);verify(activities,times(2)).assistant(eq(student),any(),any(),any(),any(),eq(0));
+        verify(loans).assistantEquipment("ALL",0);verify(loans).assistantMine(eq(student.id()),any(),isNull(),isNull(),any(),eq(0));
     }
-    @Test void sameSubjectSessionPlanOnceAndNoReplanning() {
+    @Test void paginationRemainsSubjectSessionAndPlanBoundWithoutReplanning() {
         var p=QueryPlan.query("MY_LOANS",null,null,"ANY");
-        var preview=service.query(student,p,"s");String token=preview.get("confirmationToken").toString();
-
-        assertThat(service.more(student,token,"s")).containsEntry("status","CLARIFY");
-        assertThat(service.confirm(admin,token,"s")).containsEntry("status","CLARIFY");
-        assertThat(service.confirm(student,token,"another")).containsEntry("status","CLARIFY");
-        assertThat(service.confirm(student,token,"s")).containsEntry("status","QUERY");
-        assertThat(service.confirm(student,token,"s")).containsEntry("status","CLARIFY");
-        verifyNoInteractions(planner);verify(loans).assistantMine(eq(student.id()),eq(p),isNull(),isNull(),any(),eq(0));verify(loans,never()).list(any());
+        when(loans.assistantMine(eq(student.id()),eq(p),isNull(),isNull(),any(),eq(0))).thenReturn(java.util.stream.IntStream.range(0,11).mapToObj(i->Map.<String,Object>of("id",i)).toList());
+        var first=service.query(student,p,"s");String token=first.get("nextToken").toString();
+        assertThat(service.more(admin,token,"s")).containsEntry("reason","CONFIRMATION_EXPIRED");
+        assertThat(service.more(student,token,"another")).containsEntry("reason","CONFIRMATION_EXPIRED");
+        assertThat(service.confirm(student,token,"s")).containsEntry("reason","CONFIRMATION_EXPIRED");
+        assertThat(service.more(student,token,"s")).containsEntry("status","QUERY");
+        assertThat(service.more(student,token,"s")).containsEntry("reason","CONFIRMATION_EXPIRED");
+        verifyNoInteractions(planner);verify(loans).assistantMine(eq(student.id()),eq(p),isNull(),isNull(),any(),eq(10));verify(loans,never()).list(any());
     }
     @Test void duplicatesAreCandidatesAndUnknownEquipmentDoesNotExpandToAll() {
         when(loans.assistantEquipment("相机",0)).thenReturn(List.of(equipment(1,"相机"),equipment(2,"相机")));
@@ -50,7 +49,7 @@ class AssistantDecisionTest {
     }
     @Test void unavailableModelNeverGuessesCanonicalMessagesAndExplicitClarifyIsNeverOverridden() {
         when(planner.locate(anyString())).thenReturn(Optional.empty());
-        for(String q:List.of("查相机？","查那个相机","我的借用记录和器材库存","手机不用管，查相机","查相机，不对，查摄像机")) assertThat(service.ask(student,q,"s")).containsEntry("status","SYSTEM_ERROR").containsEntry("reason","MODEL_UNAVAILABLE").containsKey("retryToken");
+        for(String q:List.of("查相机？","查那个相机","我的借用记录和器材库存","手机不用管，查相机","查相机，不对，查摄像机")) assertThat(service.ask(student,q,"s")).containsEntry("status","UNKNOWN").containsEntry("reason","MODEL_UNAVAILABLE").containsKey("retryToken");
         when(planner.locate(anyString())).thenReturn(Optional.of(AssistantHint.clarify(null,null)));
         assertThat(service.ask(student,"查相机","s")).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);
     }
@@ -58,21 +57,22 @@ class AssistantDecisionTest {
         String q="我之前借用相机，现在只查投影仪库存";run(QueryPlan.query("EQUIPMENT","投影仪",null,"CURRENT"),q);
         verifyNoInteractions(planner);verify(loans).assistantEquipment("投影仪",0);verify(loans,never()).assistantEquipment(eq("相机"),anyInt());
     }
-    @Test void newQuestionAndExactExpiryInvalidateConsent() {
+    @Test void newQuestionAndExactExpiryInvalidateContinuation() {
         var now=new AtomicReference<>(clock.instant());var timed=new AssistantService(activities,loans,capacity,planner,ticking(now));
-
-        var first=timed.query(student,QueryPlan.query("MY_LOANS",null,null,"ANY"),"s");timed.ask(student,"帮我批准器材预约","s");
-        assertThat(timed.confirm(student,first.get("confirmationToken").toString(),"s")).containsEntry("status","CLARIFY");
-        var second=timed.query(student,QueryPlan.query("MY_LOANS",null,null,"ANY"),"s");now.set(now.get().plusSeconds(300));
-        assertThat(timed.confirm(student,second.get("confirmationToken").toString(),"s")).containsEntry("status","CLARIFY");verifyNoInteractions(activities,loans,capacity);
+        var p=QueryPlan.query("MY_LOANS",null,null,"ANY");
+        var first=timed.query(student,p,"s");timed.ask(student,"新的未知请求","s");
+        assertThat(timed.feedback(student,first.get("feedbackToken").toString(),"补充","s")).containsEntry("reason","CONFIRMATION_EXPIRED");
+        var second=timed.query(student,p,"s");now.set(now.get().plusSeconds(300));
+        assertThat(timed.feedback(student,second.get("feedbackToken").toString(),"补充","s")).containsEntry("reason","CONFIRMATION_EXPIRED");
+        verify(loans,times(2)).assistantMine(eq(student.id()),eq(p),isNull(),isNull(),any(),eq(0));
     }
     Clock ticking(AtomicReference<Instant> now){return new Clock(){public ZoneId getZone(){return clock.getZone();}public Clock withZone(ZoneId z){return this;}public Instant instant(){return now.get();}};}
-    @Test void midnightKeepsTheDisplayedDate() {
+    @Test void paginationAcrossMidnightKeepsOriginalDate() {
         var now=new AtomicReference<>(Instant.parse("2026-10-07T15:59:50Z"));var timed=new AssistantService(activities,loans,capacity,planner,ticking(now));
         var p=QueryPlan.query("ACTIVITIES",null,null,"TODAY");
-        var preview=timed.query(student,p,"s");assertThat(preview.get("answer").toString()).contains("2026-10-07");
-        now.set(now.get().plusSeconds(20));timed.confirm(student,preview.get("confirmationToken").toString(),"s");
-        verify(activities).assistant(eq(student),eq(p),eq(LocalDateTime.of(2026,10,7,0,0)),eq(LocalDateTime.of(2026,10,8,0,0)),any(),eq(0));
+        when(activities.assistant(eq(student),eq(p),any(),any(),any(),eq(0))).thenReturn(java.util.stream.IntStream.range(0,11).mapToObj(i->Map.<String,Object>of("id",i)).toList());
+        var first=timed.query(student,p,"s");now.set(now.get().plusSeconds(20));timed.more(student,first.get("nextToken").toString(),"s");
+        verify(activities).assistant(eq(student),eq(p),eq(LocalDateTime.of(2026,10,7,0,0)),eq(LocalDateTime.of(2026,10,8,0,0)),any(),eq(10));
     }
     @Test void lateModelResponseCannotReviveOldConsent() throws Exception {
         var entered=new CountDownLatch(1);var release=new CountDownLatch(1);var pool=Executors.newSingleThreadExecutor();
