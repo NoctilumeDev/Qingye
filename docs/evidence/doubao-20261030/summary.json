@@ -1,0 +1,99 @@
+{
+  "complete": true,
+  "model": "doubao-seed-2-1-pro-260915",
+  "thinking": "DISABLED by documented provider transport option",
+  "tasksCompleted": 391,
+  "tasksExpected": 391,
+  "counts": {
+    "STOP": 168,
+    "CORRECT": 222,
+    "FAULT": 1
+  },
+  "baseCounts": {
+    "STOP": 197,
+    "CORRECT": 191,
+    "FAULT": 1,
+    "WRONG": 2
+  },
+  "byCorpus": {
+    "long-tail-attack": {
+      "STOP": 64,
+      "CORRECT": 59,
+      "FAULT": 1
+    },
+    "business": {
+      "CORRECT": 22,
+      "STOP": 11
+    },
+    "legacy": {
+      "CORRECT": 76,
+      "STOP": 57
+    },
+    "business93": {
+      "CORRECT": 62,
+      "STOP": 31
+    },
+    "feedback8": {
+      "CORRECT": 3,
+      "STOP": 5
+    }
+  },
+  "continuedTasks": 37,
+  "continuationTransitions": {
+    "STOP -> STOP": 5,
+    "STOP -> CORRECT": 30,
+    "WRONG -> CORRECT": 1,
+    "WRONG -> STOP": 1
+  },
+  "securityFailures": [],
+  "stopReasons": {
+    "MISSING_INFO": 17,
+    "GATE_ROUND_LIMIT": 6,
+    "UNSUPPORTED_FILTER": 37,
+    "None": 27,
+    "UNSUPPORTED_CAPABILITY": 3,
+    "MULTIPLE_REQUESTS": 18,
+    "PRIVATE_DATA": 29,
+    "WRITE_OPERATION": 13,
+    "OUTSIDE_DOMAIN": 4,
+    "NOT_UNDERSTOOD": 9,
+    "IDENTITY_CLAIM": 1,
+    "INVALID_REQUEST": 4
+  },
+  "network": {
+    "liveCalls": 436,
+    "replayedFirstCandidates": 37,
+    "http": {
+      "200": 436
+    },
+    "modelsReturned": {
+      "doubao-seed-2-1-pro-260915": 436
+    },
+    "finishReasons": {
+      "stop": 436
+    },
+    "successfulHttpOver18s": 0,
+    "latencySecondsAll": {
+      "p50": 1.854,
+      "p90": 2.536,
+      "p95": 2.802,
+      "max": 8.423205137252808
+    },
+    "usage": {
+      "prompt_tokens": 1554697,
+      "completion_tokens": 15140,
+      "total_tokens": 1569837,
+      "reasoning_tokens": 0
+    }
+  },
+  "nativeFailures": {
+    "ProtocolViolation: INVALID_HINT_VALUE": 1
+  },
+  "notes": [
+    "Each original task counted once, including legal larger sets and successful second-round correction.",
+    "STOP is separate from wrong information. Stop reasons retained; potential unnecessary stops need task-level review.",
+    "Product 18s deadline; upstream observer waits 30s to preserve late responses. Late HTTP 200 does not turn timeout into task success.",
+    "No frontend, prompt edits, semantic safeguards or external learning module. Relay adds thinking.disabled; main product code unchanged.",
+    "Frozen H2 business fixture, synthetic accounts; actual product parser/service/query execution."
+  ]
+}

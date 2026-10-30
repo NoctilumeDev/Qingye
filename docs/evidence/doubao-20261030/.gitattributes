@@ -1,0 +1,5 @@
+# Preserve the archived evidence's original bytes across checkout platforms.
+*.json -text
+*.html -text
+*.zip -text
+verify.py text eol=lf
