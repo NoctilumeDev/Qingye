@@ -41,26 +41,7 @@
 }
 .suggestion > image { width:27rpx; height:27rpx; flex-shrink:0; }
 
-.directory-grid { display:grid; grid-template-columns:1fr 1fr; gap:14rpx; }
 .manual-entry { display:flex; justify-content:space-between; align-items:center; margin-top:28rpx; min-height:88rpx; padding:22rpx 8rpx; color:#187553; font-size:25rpx; }
-.directory-tile {
-  min-width:0;
-  padding:22rpx;
-  background:#fff;
-  border:1rpx solid #dce7e8;
-  color:#244c3b;
-  text-align:left;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:7rpx;
-  font-weight:650;
-  border-radius:18rpx;
-}
-.directory-action { font-size:21rpx; color:#70817a; font-weight:400; }
-.directory-tile-pressed { opacity:.78; }
-.is-disabled { opacity:.5; }
-
 .notice-card {
   margin-top:24rpx;
   padding:26rpx;
@@ -86,11 +67,6 @@
 
 
 .facet-toggle-pressed { background:#e8f3ef; }
-.facets { margin-top:18rpx; }
-.facet-choice { padding:24rpx 12rpx; border-bottom:1rpx solid #e3eae5; font-size:28rpx; height:auto; }
-.facet-action { margin-top:16rpx; }
-.queued-card { margin:16rpx 0; padding:18rpx; background:#f7faf9; border-radius:16rpx; font-size:24rpx; line-height:1.6; }
-.queued-actions { display:flex; gap:12rpx; margin-top:12rpx; }
 
 .results-card { margin-top:24rpx; padding:24rpx; border:1rpx solid #dce7e1; border-radius:28rpx; background:#fff; line-height:1.7; }
 .results-heading { padding:4rpx 4rpx 0; }
@@ -136,13 +112,6 @@
 .context-toggle,.scope-toggle { display:flex; align-items:center; min-height:80rpx; color:#187553; font-size:24rpx; padding:16rpx 4rpx; }
 .finding { display:flex; align-items:center; gap:14rpx; padding:36rpx 8rpx; color:#536d60; font-size:26rpx; }
 .finding-dot { width:16rpx; height:16rpx; border-radius:50%; background:#187553; }
-.manual-page { padding-bottom:calc(40rpx + env(safe-area-inset-bottom)); }
-.manual-page-heading { margin-bottom:28rpx; }
-.manual-title { font-size:42rpx; font-weight:800; line-height:1.4; margin-top:18rpx; letter-spacing:-1rpx; }
-.manual-subtitle { font-size:25rpx; color:#65767d; line-height:1.8; margin-top:8rpx; }
-.manual-return { text-align:center; padding:28rpx 12rpx; color:#187553; font-size:25rpx; }
-.manual-page .facets { padding:24rpx; border-radius:26rpx; background:#fff; border:1rpx solid #e1e9e6; }
 .scope-row { display:flex; justify-content:space-between; gap:24rpx; padding:10rpx 0; font-size:24rpx; }
 .scope-row > text:first-child { flex-shrink:0; color:#65767d; }
 .scope-row > text:last-child { text-align:right; overflow-wrap:anywhere; }
-.batch-toggle { color:#187553; font-size:24rpx; padding:24rpx 0 0; }

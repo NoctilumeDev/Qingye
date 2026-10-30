@@ -1,2 +1,2 @@
-const { createAssistantPage } = require('../../utils/assistant-page')
-Page(createAssistantPage(true))
+const { createManualPage } = require('../../utils/assistant-manual-page')
+Page(createManualPage())
