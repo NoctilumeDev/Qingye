@@ -102,6 +102,10 @@
     .formula { margin: 6px 0; color: var(--orange); font-size: 12px; font-weight: 750; }
     .large-set p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
 
+    .loop { margin-top: 8px; padding: 12px 16px; border: 1px solid #bad5cb; border-radius: 10px; background: white; }
+    .loop strong { color: var(--green); font-size: 14px; }
+    .loop p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
     .foot { display: grid; grid-template-columns: 190px 1fr 250px; gap: 16px; margin-top: 8px; padding: 8px 13px; border: 1px solid #bad5cb; border-radius: 9px; background: rgba(255,255,255,.92); }
     .foot strong { color: var(--green); font-size: 13px; }
     .foot p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
@@ -145,7 +149,7 @@
     <header class="page-head">
       <div class="page-title">
         <h1 id="diagram-title">青野 · 自然语言业务查询的四道门</h1>
-        <p>用户输入 → 业务边界 → 确定或澄清 → 只读计划 → 固定查询</p>
+        <p>正常请求一轮完成；必要补充从第一门重来，最多两轮</p>
       </div>
       <button type="button" onclick="window.print()">打印 / 保存 PDF</button>
     </header>
@@ -153,7 +157,7 @@
     <figure aria-labelledby="diagram-title" aria-describedby="diagram-note" style="margin:0">
       <div class="entry">
         <strong>问问青野</strong>
-        <span>让自然语言进入已有业务格子，而不是让模型直接操作数据库</span>
+        <span>对照已有业务能力理解需求，按同一合同查询真实数据</span>
       </div>
 
       <section class="principles" aria-label="架构目标">
@@ -165,19 +169,19 @@
 
       <section class="flow" aria-label="四道门">
         <article class="gate">
-          <header class="gate-label"><span class="gate-number">1</span><h2>业务边界初筛</h2><p>先核验登录和输入；未知语义不等于域外，初筛不代替最终授权。</p></header>
+          <header class="gate-label"><span class="gate-number">1</span><h2>业务边界初筛</h2><p>区分允许处理的 A 与明确的非 A；每一轮都重新初筛。</p></header>
           <div class="gate-body split-2">
-            <section class="card stop"><span class="status">明确不允许 / 无效输入</span><h3>拒绝或声明不支持</h3><p>未认证或无效输入先停止；语义越界由后续判定，不能仅因名称陌生而拒绝。</p></section>
-            <section class="card good"><span class="status">通过初筛</span><h3>进入查询判定</h3><p>确定入口直接处理；自然语言送辅助判定，初筛放行不等于已授权执行。</p></section>
+            <section class="card stop"><span class="status">明确的非 A</span><h3>拒绝或声明不支持</h3><p>认证失败、无效输入、显式非法操作先拦截；自然语言中的越界意图继续受第二、三门约束。</p></section>
+            <section class="card good"><span class="status">A / 尚待解释</span><h3>进入查询判定</h3><p>固定入口与自然语言进入同一流程。陌生社团、活动或器材名称保留处理机会。</p></section>
           </div>
         </article>
 
         <article class="gate">
-          <header class="gate-label"><span class="gate-number">2</span><h2><span>查询意图判定</span><span>与补全</span></h2><p>本地确定优先；模型只辅助解释，不替系统拥有业务事实。</p></header>
+          <header class="gate-label"><span class="gate-number">2</span><h2><span>查询意图判定</span><span>与补全</span></h2><p>需求理解 ↔ 业务格子：对照活动、器材、本人报名、本人借用能力判断能否满足。</p></header>
           <div class="gate-body split-3">
-            <section class="card good"><span class="status">确定 A</span><h3>结构化入口已确定</h3><p>已有表单、结构化选择和有限完整入口直接形成计划，无需调用模型。</p></section>
-            <section class="card warn"><span class="status">不确定 A → 补全 → 确定 A / 仍不确定</span><h3>补全，而不是猜测</h3><p>自然语言由模型辅助定位；必要时定向追问，最多五次，可用结构化选择补全。</p></section>
-            <section class="card unknown"><span class="status">补全后仍不确定</span><h3>保留“不知道”</h3><p>无进展或五次后仍不清楚则暂停；模型故障与未知分开，已有查询入口继续可用。</p></section>
+            <section class="card good"><span class="status">确定 A</span><h3>结构化入口已确定</h3><p>完整固定命令、表单与结构化选择直接形成待校验计划；无需模型再解释。</p></section>
+            <section class="card warn"><span class="status">不确定 A</span><h3>补全，而不是猜测</h3><p>模型参考业务格子定位需求。能用相关集合满足就直接查；缺少必要信息才询问。</p></section>
+            <section class="card unknown"><span class="status">其他 / 仍无法落实</span><h3>保留“不知道”</h3><p>能补全则返回确定分支；危险或不支持则停止。仍无法确定就保留未知，不猜成答案。</p></section>
           </div>
         </article>
 
@@ -185,30 +189,36 @@
           <header class="gate-label"><span class="gate-number">3</span><h2><span>统一只读计划</span><span>与授权校验</span></h2><p>本地入口、模型澄清和用户选择，最终都进入同一合同。</p></header>
           <div class="gate-body">
             <div class="contract">
-              <section class="json"><strong>统一生成只读 JSON</strong><p>来源可以不同，执行合同必须一致。</p><p><code>模型：action · intent · search · reason · selections · question</code></p><p>服务器按合同编译为 QueryPlan；JSON 合法不等于语义理解正确。</p></section>
+              <section class="json"><strong>候选受限，执行权留在服务器</strong><p>本地计划和模型候选都按同一业务合同校验。</p><p><code>模型：action · intent · search · reason · selections · question</code></p><p>校验字段、来源、状态与能力，再编译为只读计划。身份取自登录会话。</p></section>
               <section class="checks" aria-label="授权校验内容"><div class="check">身份</div><div class="check">权限</div><div class="check">业务规则</div><div class="check">字段白名单</div></section>
             </div>
             <div class="results">
               <div class="result good"><strong>合法且确定</strong><br>进入固定查询。</div>
-              <div class="result stop"><strong>越权、写入或非法协议</strong><br>初筛通过仍须校验，不合规不执行。</div>
-              <div class="result unknown"><strong>结构不完整</strong><br>返回结构化选择，补全后重试。</div>
+              <div class="result stop"><strong>危险或不可执行</strong><br>越权、写入、未知及不支持分别截停；协议或服务异常单独报告。</div>
+              <div class="result unknown"><strong>必要信息不足</strong><br>保留上下文；有补充空间才询问，回答重新从第一门进入。</div>
             </div>
           </div>
         </article>
 
         <article class="gate">
-          <header class="gate-label"><span class="gate-number">4</span><h2><span>固定查询执行</span><span>与结果放行</span></h2><p>不重新解释语义，不偷偷改题，只执行已经通过校验的计划。</p></header>
+          <header class="gate-label"><span class="gate-number">4</span><h2><span>固定查询执行</span><span>与结果放行</span></h2><p>业务格子对应固定查询；数据库提供事实，结果按授权字段展示。</p></header>
           <div class="gate-body gate-body--execution split-2">
-            <section class="card good"><span class="status">固定执行</span><h3>按业务格子执行只读查询</h3><p>范围确认后执行同一计划，展示数据库事实及分页；不重新调用模型改写。</p></section>
-            <section class="large-set"><strong>大集合查询原则</strong><div class="formula">允许扩大范围 = 目标不变 ∧ 权限不变 ∧ 硬条件不变</div><p>仅使用已有目录和相关候选；没有通用 allowExpand 开关，未知条件不自动扩大。</p></section>
+            <section class="card good"><span class="status">固定执行</span><h3>按业务格子执行只读查询</h3><p>已确定且通过校验就直接查询，不额外要求确认范围。完整详情或相关集合均可满足需求，分页沿用同一计划。</p></section>
+            <section class="large-set"><strong>大集合查询原则</strong><div class="formula">允许扩大范围 = 目标不变 ∧ 权限不变 ∧ 硬条件不变</div><p>问地点可以返回完整活动；名称不明可返回已确定的同类集合。不能查摄影却给音乐，也不能丢已明确条件。</p></section>
           </div>
         </article>
       </section>
 
+      <section class="loop" aria-label="两轮回流">
+        <strong>第一轮 → 查对则结束；必要补充或结果纠正 → 第一门 → 第二轮</strong>
+        <p>补充保留原任务及已明确条件，重新核验输入和权限。第二轮仍无法确定则停止并说明；技术重试与分页不增加业务轮次。</p>
+        <p>外部对账尚未接入。四道门限制执行权；模型仍可能误解或遗漏条件，本轮保留 1 次查错和 46 次技术故障。</p>
+      </section>
+
       <figcaption class="foot" id="diagram-note">
         <strong>无模型时仍然成立</strong>
-        <p>确定入口直接使用；不确定请求可由用户结构化补全。模型仅辅助自然语言；没有模型不代表业务不可用。</p>
-        <p>模型不代替业务；模型只让模糊语言更容易进入已有业务格子。</p>
+        <p>已有命令、目录和表单照常查询；需要模型解释却无法理解时，明确返回不知道或模型不可用。</p>
+        <p>新增社团、活动或器材只增加业务数据，不增加格子规则。</p>
       </figcaption>
     </figure>
   </main>

@@ -17,7 +17,8 @@ class GeneratedAssistantContractTest {
             assertThat(json.<com.fasterxml.jackson.databind.JsonNode>valueToTree(AssistantLocatorProtocol.describe())).isEqualTo(json.readTree(locator));
         }
         assertThat(AssistantContract.MAX_QUERIES).isEqualTo(4);
-        assertThat(AssistantContract.MAX_CLARIFICATIONS).isEqualTo(5);
+        assertThat(AssistantContract.MAX_GATE_ROUNDS).isEqualTo(2);
+        assertThat(AssistantContract.MAX_CLARIFICATIONS).isEqualTo(1);
     }
 
     @Test @SuppressWarnings("unchecked") void callersCannotChangeNestedCapabilitiesOrProtocol() {

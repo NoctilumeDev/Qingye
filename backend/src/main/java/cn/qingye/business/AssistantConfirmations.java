@@ -6,15 +6,15 @@ import java.security.*;
 import java.time.*;
 import java.util.*;
 
-/** Short-lived, session-bound consent to exactly one immutable plan. No database or model access. */
+/** Session-bound task, immutable execution and continuation records. No database or model access. */
 final class AssistantConfirmations {
-    record Context(List<String> turns,List<String> questions) {
+    record Context(List<String> turns,List<String> questions,String taskId,int gateRound,QueryPlan explicitSelection) {
         Context { turns=List.copyOf(turns);questions=List.copyOf(questions); }
     }
     record Offer(long user,String sessionHash,String requestId,QueryPlan plan,AssistantTime period,String mode,int offset,Instant expiresAt,Context context) {}
     record Feedback(Offer offer,String snapshot) {}
     record Issued(String token,Instant expiresAt) {}
-    record Dialogue(long user,String sessionHash,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,boolean retry,LocalDate day,Instant expiresAt) {}
+    record Dialogue(long user,String sessionHash,String requestId,List<String> turns,List<String> questions,List<String> candidates,int replies,boolean retry,LocalDate day,Instant expiresAt,Context context) {}
     private record Owner(long user,String sessionHash) {}
     private record Request(String id,Instant expiresAt) {}
     private final Clock clock;
@@ -48,9 +48,18 @@ final class AssistantConfirmations {
         return request.id();
     }
     synchronized void remember(long user,String session,String requestId,List<String> turns,List<String> questions) {
+        remember(user,session,requestId,turns,questions,requestId,1,null);
+    }
+    synchronized void remember(long user,String session,String requestId,List<String> turns,List<String> questions,String taskId,int gateRound,QueryPlan explicitSelection) {
         if(session==null||requestId==null)return;
         var current=requests.get(new Owner(user,hash(session)));
-        if(current!=null&&current.id().equals(requestId))contexts.put(requestId,new Context(turns,questions));
+        if(current!=null&&current.id().equals(requestId))contexts.put(requestId,new Context(turns,questions,taskId,gateRound,explicitSelection));
+    }
+    synchronized Optional<Context> context(long user,String session,String requestId) {
+        if(session==null||requestId==null)return Optional.empty();
+        var current=requests.get(new Owner(user,hash(session)));
+        return current!=null&&current.id().equals(requestId)&&clock.instant().isBefore(current.expiresAt())
+            ?Optional.ofNullable(contexts.get(requestId)):Optional.empty();
     }
     synchronized String result(Offer offer,String snapshot) {
         purgeExpired();
@@ -73,7 +82,7 @@ final class AssistantConfirmations {
         var owner=new Owner(user,hash(session));var current=requests.get(owner);
         if(current==null||!current.id().equals(requestId))return Optional.empty();
         String token=UUID.randomUUID().toString();var expires=current.expiresAt();
-        dialogues.put(token,new Dialogue(user,owner.sessionHash(),requestId,List.copyOf(turns),List.copyOf(questions),List.copyOf(candidates),replies,retry,LocalDate.now(clock.withZone(ZoneId.of("Asia/Shanghai"))),expires));
+        dialogues.put(token,new Dialogue(user,owner.sessionHash(),requestId,List.copyOf(turns),List.copyOf(questions),List.copyOf(candidates),replies,retry,LocalDate.now(clock.withZone(ZoneId.of("Asia/Shanghai"))),expires,contexts.get(requestId)));
         return Optional.of(new Issued(token,expires));
     }
     synchronized Optional<Dialogue> reply(long user,String session,String token,boolean retry) {
