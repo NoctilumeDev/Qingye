@@ -17,17 +17,19 @@
       <text class="section-title">这次我们做什么</text>
     </view>
     <text class="description" selectable="true">{{item.description}}</text>
-    <view wx:if="{{item.canManage}}" class="actions">
-      <qy-action variant="secondary" size="compact" bindactivate="participants">查看报名名单</qy-action>
+    <view id="participants-actions" wx:if="{{item.canManage}}" class="actions">
+      <qy-action wx:if="{{!participantsExpanded}}" id="participants-toggle" variant="secondary" size="compact" bindactivate="toggleParticipants">查看报名名单</qy-action>
       <qy-action wx:if="{{item.status === 'PENDING' || item.status === 'REJECTED'}}" variant="secondary" size="compact" bindactivate="edit">调整活动</qy-action>
     </view>
-    <view wx:if="{{participants}}" class="card gap">
+    <view id="participants-list" wx:if="{{item.canManage && participantsExpanded}}" class="card gap">
       <view class="section-title">报名名单</view>
+      <view wx:if="{{participantsLoading}}" class="loading">正在读取报名名单…</view>
       <view wx:for="{{participants}}" wx:key="id" class="participant">
         <text>{{item.name}}</text>
         <text class="muted">{{item.status === 'REGISTERED' ? '正式报名' : '候补'}}</text>
       </view>
-      <view wx:if="{{!participants.length}}" class="empty">还没有同学报名。</view>
+      <view wx:if="{{!participantsLoading && !participants.length}}" class="empty">还没有同学报名。</view>
+      <view class="gap"><qy-action variant="secondary" bindactivate="toggleParticipants">收起报名名单</qy-action></view>
     </view>
     <view class="signup card">
       <block wx:if="{{registrationText}}">

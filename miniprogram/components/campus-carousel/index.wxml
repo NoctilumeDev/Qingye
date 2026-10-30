@@ -1,0 +1,7 @@
+<wxs module="motion" src="./motion.wxs" />
+<view bindtouchstart="pause">
+  <swiper class="hero-carousel" style="height:{{height}}rpx" data-width="{{width}}" current="{{current}}" autoplay="{{active && visible && playing && images.length > 1}}" circular="{{images.length > 1}}" interval="5000" duration="450" easing-function="easeOutCubic" bindchange="change" bindtransition="{{motion.move}}" bindanimationfinish="{{motion.finish}}">
+    <swiper-item wx:for="{{images}}" wx:key="*this"><view class="hero-card"><image class="hero-image" src="{{item}}" mode="aspectFill" /></view></swiper-item>
+  </swiper>
+  <view wx:if="{{images.length > 1}}" class="hero-controls"><view wx:for="{{images}}" wx:key="*this" class="dot {{current % images.length === index ? 'active' : ''}}" /></view>
+</view>

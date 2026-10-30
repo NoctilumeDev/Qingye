@@ -1,32 +1,6 @@
 .club-heading {
   display:flex;
   align-items:center;
-  gap:8rpx;
-  margin:-22rpx 0 0 -20rpx;
-}
-
-.club-back {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
-  width:88rpx;
-  height:88rpx;
-  min-width:44px;
-  min-height:44px;
-  margin:0;
-  padding:0;
-  background:transparent;
-}
-
-.club-back > image {
-  width:48rpx;
-  height:48rpx;
-  transform:rotate(180deg);
-}
-
-.back-pressed {
-  background:#e8f3ef;
 }
 
 .title {
@@ -47,6 +21,8 @@
   align-items:flex-start;
   gap:22rpx;
 }
+.club-main-pressed { opacity:.7; }
+.club-detail-hint { color:#187553; font-size:22rpx; margin-top:10rpx; }
 
 .club-cover {
   width:160rpx;

@@ -1,8 +1,54 @@
 {
-  "pages": ["pages/login/index", "pages/home/index", "pages/clubs/index", "pages/me/index", "pages/activity/index", "pages/equipment/index", "pages/editor/index", "pages/workbench/index", "pages/notifications/index", "pages/assistant/index"],
-  "window": { "navigationBarTitleText": "青野", "navigationBarBackgroundColor": "#f7fafb", "navigationBarTextStyle": "black", "backgroundColor": "#f7fafb" },
-  "tabBar": { "custom": true, "list": [{ "pagePath": "pages/home/index", "text": "发现" }, { "pagePath": "pages/clubs/index", "text": "社团" }, { "pagePath": "pages/me/index", "text": "我的" }] },
-  "usingComponents": { "qy-action": "/components/qy-action/index" },
+  "pages": [
+    "pages/login/index",
+    "pages/home/index",
+    "pages/clubs/index",
+    "pages/me/index",
+    "pages/activity/index",
+    "pages/equipment/index",
+    "pages/editor/index",
+    "pages/workbench/index",
+    "pages/notifications/index",
+    "pages/assistant/index",
+    "pages/club-detail/index",
+    "pages/activities/index",
+    "pages/assistant-manual/index",
+    "pages/accounts/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "青野",
+    "navigationBarBackgroundColor": "#f7fafb",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f7fafb"
+  },
+  "tabBar": {
+    "custom": true,
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "发现"
+      },
+      {
+        "pagePath": "pages/clubs/index",
+        "text": "社团"
+      },
+      {
+        "pagePath": "pages/assistant/index",
+        "text": "问青野"
+      },
+      {
+        "pagePath": "pages/workbench/index",
+        "text": "工作台"
+      },
+      {
+        "pagePath": "pages/me/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {
+    "qy-action": "/components/qy-action/index"
+  },
   "sitemapLocation": "sitemap.json",
   "style": "v2",
   "lazyCodeLoading": "requiredComponents"

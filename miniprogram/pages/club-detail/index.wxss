@@ -1,0 +1,8 @@
+.cover { width:100%; height:330rpx; border-radius:26rpx; display:block; background:#edf2f4; }
+.members { margin:14rpx 0 24rpx; }
+.intro { padding:26rpx; }
+.description { margin-top:16rpx; color:#65767d; font-size:27rpx; line-height:1.7; white-space:pre-wrap; }
+.leader { margin-top:16rpx; font-size:27rpx; color:#284a3c; }
+.leader text { margin-left:12rpx; color:#71817e; font-size:22rpx; }
+.created { margin-top:20rpx; color:#65767d; font-size:24rpx; }
+.membership { display:flex; align-items:center; gap:16rpx; margin-top:24rpx; }

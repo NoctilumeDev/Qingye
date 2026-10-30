@@ -4,6 +4,7 @@ import cn.qingye.business.AuthService;
 import cn.qingye.db.ActivityStore;
 import cn.qingye.db.LoanStore;
 import cn.qingye.db.Sql;
+import cn.qingye.db.UserStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 @SpringBootTest(properties={"qingye.demo-enabled=true","qingye.worker-enabled=false",
         "qingye.redis-enabled=false","qingye.mq-enabled=false","qingye.llm-url=",
@@ -37,6 +39,7 @@ class AuthorityRevocationTest {
     @Autowired Clock clock;
     @MockitoSpyBean ActivityStore activities;
     @MockitoSpyBean LoanStore loans;
+    @MockitoSpyBean UserStore users;
     long admin,manager,club,activity;
 
     @BeforeEach void fixture() {
@@ -54,6 +57,28 @@ class AuthorityRevocationTest {
                 club,manager,"owned contention",now.plusDays(2),now.plusDays(2).plusHours(2),now.plusDays(1),1,"PENDING");
     }
 
+    @Test void queuedRoleGrantRechecksAuthorityAfterAdministratorLock() throws Exception {
+        long replacement=sql.insert("INSERT INTO app_user(openid,name,admin) VALUES ('demo:replacement','replacement',TRUE)");
+        String token=auth.demo(admin).get("token").toString();
+        var reached=new CountDownLatch(1);
+        doAnswer(call->{reached.countDown();return call.callRealMethod();}).when(users).lockAdministrators();
+        var pool=Executors.newSingleThreadExecutor();
+        try(var held=datasource.getConnection()) {
+            held.setAutoCommit(false);
+            try(var lock=held.prepareStatement("SELECT id FROM app_user WHERE id=? FOR UPDATE")) {
+                lock.setLong(1,admin);try(var row=lock.executeQuery()){assertThat(row.next()).isTrue();}
+            }
+            var response=pool.submit(()->mvc.perform(patch("/api/admin/users/"+manager+"/administrator")
+                    .header("Authorization","Bearer "+token).contentType("application/json").content("{\"admin\":true}")).andReturn());
+            assertThat(reached.await(5,TimeUnit.SECONDS)).isTrue();
+            assertThat(response.isDone()).isFalse();
+            try(var revoke=held.prepareStatement("UPDATE app_user SET admin=FALSE WHERE id=?")){revoke.setLong(1,admin);revoke.executeUpdate();}
+            held.commit();
+            assertThat(response.get(5,TimeUnit.SECONDS).getResponse().getStatus()).isEqualTo(403);
+            assertThat(users.currentAdministrator(manager)).isFalse();
+            assertThat(users.currentAdministrator(replacement)).isTrue();
+        } finally {pool.shutdownNow();assertThat(pool.awaitTermination(5,TimeUnit.SECONDS)).isTrue();}
+    }
     @Test void queuedDecisionCannotUseRevokedAdministratorSnapshot() throws Exception {
         queued(admin,"decision","UPDATE app_user SET admin=FALSE WHERE id="+admin,403);
     }

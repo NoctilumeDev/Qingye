@@ -1,0 +1,30 @@
+<view class="page manual-page">
+  <view class="manual-page-heading"><view class="eyebrow">FIND IT YOUR WAY</view><view class="title">自己选，直接找。</view><view class="subtitle">活动、器材，还有你自己的记录。</view></view>
+    <view wx:if="{{directoryOpen}}" class="directory-grid">
+      <view wx:for="{{objects}}" wx:key="*this" class="directory-tile {{busy ? 'is-disabled' : ''}}" data-index="{{index}}" bindtap="openDirectory" hover-class="directory-tile-pressed" aria-role="button" aria-disabled="{{busy}}"><text>{{item}}</text><text class="directory-action">选择条件 ›</text></view>
+    </view>
+  <view wx:if="{{facetOpen}}" class="facets">
+    <view class="muted">{{entityPending ? '请填写名称，或主动选择不限定名称。' : '名称可不填，查看所选范围内的记录。'}}</view>
+    <picker range="{{objects}}" value="{{objectIndex < 0 ? 0 : objectIndex}}" data-field="objectIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">查什么：{{objectIndex < 0 ? '请选择' : objects[objectIndex]}}</view></picker>
+    <picker range="{{times}}" value="{{timeIndex < 0 ? 0 : timeIndex}}" data-field="timeIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">{{objectIndex === 3 ? '计划使用时间' : objectIndex === 1 ? '库存时间' : '活动时间'}}：{{timeIndex < 0 ? '请选择' : times[timeIndex]}}</view></picker>
+    <picker wx:if="{{timeKeys[timeIndex] === 'DATE'}}" mode="date" value="{{date}}" data-field="date" bindchange="facetField" disabled="{{busy}}"><view class="facet-choice">日期：{{date || '请选择'}}</view></picker>
+    <view class="muted">{{objectIndex === 3 ? '日期按计划借用时段查询。' : objectIndex === 1 ? '可查看当前库存或具体时段的预约可用量。' : '日期按活动举办时间查询。'}}</view>
+    <input class="facet-choice" value="{{entity}}" maxlength="80" data-field="entity" bindinput="facetField" disabled="{{busy}}" placeholder="{{objectIndex === 1 || objectIndex === 3 ? '器材名称，留空查全部' : '活动名称或社团名称，留空查全部'}}" />
+    <view wx:if="{{entityPending}}" class="facet-action"><qy-action variant="secondary" bindactivate="chooseAllEntities" disabled="{{busy}}">不限定名称</qy-action></view>
+    <picker wx:if="{{objectIndex === 0 || objectIndex === 2}}" range="{{categories}}" value="{{categoryIndex}}" data-field="categoryIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">分类：{{categories[categoryIndex]}}</view></picker>
+    <input wx:if="{{objectIndex === 0 || objectIndex === 2}}" class="facet-choice" value="{{location}}" maxlength="100" data-field="location" bindinput="facetField" disabled="{{busy}}" placeholder="地点，留空不限" />
+    <picker wx:if="{{objectIndex === 2 || objectIndex === 3 || stateIndex < 0}}" range="{{states}}" value="{{stateIndex < 0 ? 0 : stateIndex}}" data-field="stateIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">状态：{{stateIndex < 0 ? '请选择' : states[stateIndex]}}</view></picker>
+    <view class="facet-action"><qy-action variant="primary" bindactivate="searchFacets" loading="{{busy}}" disabled="{{busy}}">{{editingIndex >= 0 ? '修改后查找' : '查看结果'}}</qy-action></view>
+    <view class="batch-toggle" bindtap="toggleBatch" aria-role="button">{{batchOpen ? '收起多类查找 ∧' : '想同时查几类？ ∨'}}</view>
+    <block wx:if="{{batchOpen}}">
+    <view class="muted">例如同时查看活动和器材。先保存当前条件，再选择另一类。</view>
+    <view class="facet-action"><qy-action variant="secondary" bindactivate="addFacet" disabled="{{busy}}">保存这一项</qy-action></view>
+    <view wx:for="{{queuedQueries}}" wx:key="_key" class="queued-card"><text>第 {{index + 1}} 项：{{queuedSummaries[index]}}</text><view class="queued-actions"><qy-action variant="neutral" size="compact" data-index="{{index}}" bindactivate="editQueued" disabled="{{busy}}">修改</qy-action><qy-action variant="neutral" size="compact" data-index="{{index}}" bindactivate="removeQueued" disabled="{{busy}}">移除</qy-action></view></view>
+    <view wx:if="{{queuedQueries.length}}" class="facet-action"><qy-action variant="primary" bindactivate="previewQueued" disabled="{{busy}}">一起查这 {{queuedQueries.length}} 项</qy-action></view>
+    </block>
+  </view>
+
+  <block wx:if="{{!directoryOpen && !facetOpen}}"><include src="../../views/assistant-results.wxml" /><view class="manual-return" bindtap="toggleDirectory" aria-role="button">重新选择查找内容</view></block>
+  <view wx:if="{{facetOpen}}" class="manual-return" bindtap="closeManual" aria-role="button">返回选择查找内容</view>
+  <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
+</view>

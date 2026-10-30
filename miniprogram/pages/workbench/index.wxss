@@ -27,6 +27,7 @@
   box-shadow:0 4rpx 10rpx #29352308
 }
 
+
 .record-title {
   font-size:31rpx;
   font-weight:750;

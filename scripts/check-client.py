@@ -24,7 +24,7 @@ def main():
                 raise RuntimeError(f"Missing native page file: {page + suffix}")
     for file in CLIENT.rglob("*.js"):
         subprocess.run(["node", "--check", str(file)], check=True, capture_output=True)
-    native = {"view", "text", "image", "scroll-view", "input", "textarea", "button", "picker", "switch", "checkbox", "block", "slot"}
+    native = {"view", "text", "image", "scroll-view", "swiper", "swiper-item", "input", "textarea", "button", "picker", "switch", "checkbox", "block", "slot", "wxs", "include"}
     component_names = set(app.get("usingComponents", {}))
     for file in CLIENT.rglob("*.json"):
         component_names.update(json.loads(file.read_text(encoding="utf-8")).get("usingComponents", {}))
@@ -43,11 +43,17 @@ def main():
         for node in tree.iter():
             if node.tag != "root" and node.tag not in allowed:
                 raise RuntimeError(f"Unsupported native tag {node.tag} in {file}")
+            if node.tag in {"wxs", "include"} and node.get("src"):
+                source_path = (file.parent / node.get("src")).resolve()
+                if not source_path.is_relative_to(CLIENT.resolve()) or not source_path.is_file():
+                    raise RuntimeError(f"Missing or external template/script source in {file}")
     if args.compiler_dir:
         compiler = Path(args.compiler_dir)
         with tempfile.TemporaryDirectory(prefix="qingye-compile-") as out:
             for suffix, exe in ((".wxml", "wcc.exe"), (".wxss", "wcsc.exe")):
                 files = [str(p.relative_to(CLIENT)).replace("\\", "/") for p in CLIENT.rglob("*" + suffix)]
+                if suffix == ".wxml":
+                    files.extend(str(p.relative_to(CLIENT)).replace("\\", "/") for p in CLIENT.rglob("*.wxs"))
                 result = subprocess.run([str(compiler / exe), "-o", str(Path(out) / (exe + ".js")), *files], cwd=CLIENT, capture_output=True)
                 if result.returncode:
                     raise RuntimeError(result.stderr.decode("utf-8", errors="replace"))

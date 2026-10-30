@@ -151,19 +151,7 @@
   font-size:21rpx;
 }
 
-.campus-footer {
-  margin-top:25rpx;
-  height:460rpx;
-  border-radius:26rpx;
-  overflow:hidden;
-  background:#e1eff6;
-}
-
-.campus-footer > image {
-  width:100%;
-  height:100%;
-  display:block;
-}
+.campus-footer { margin-top:25rpx; }
 
 .profile-edit-mask {
   position:fixed;

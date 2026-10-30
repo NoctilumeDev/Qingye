@@ -1,0 +1,18 @@
+<view class="page club-detail">
+  <block wx:if="{{item}}">
+    <image class="cover" src="{{item.cover}}" mode="aspectFill" />
+    <view class="title gap">{{item.name}}</view>
+    <view class="muted members">{{item.memberCount}} 位同学</view>
+    <view class="card intro"><view class="section-title">关于社团</view><view class="description">{{item.description || '这个社团还没有填写简介。'}}</view></view>
+    <view class="card intro"><view class="section-title">社团负责人</view><view wx:for="{{leaders}}" wx:key="index" class="leader">{{item.name}} <text>负责人</text></view><view wx:if="{{!leaders.length}}" class="description">{{leadersFailed ? '暂时无法加载负责人信息。' : '暂无负责人信息。'}}</view></view>
+    <view wx:if="{{item.createdDate}}" class="created">成立时间 · {{item.createdDate}}</view>
+    <view class="membership">
+      <text wx:if="{{item.myStatus === 'ACTIVE'}}" class="badge">{{item.myRole === 'MANAGER' ? '我是负责人' : '已加入'}}</text>
+      <text wx:elif="{{item.myStatus === 'PENDING'}}" class="badge orange">入社申请审核中</text>
+      <qy-action wx:else="" variant="primary" disabled="{{busy}}" bindactivate="join">申请加入</qy-action>
+      <qy-action wx:if="{{item.myStatus === 'ACTIVE' && item.myRole !== 'MANAGER'}}" variant="secondary" disabled="{{busy}}" bindactivate="leave">退出社团</qy-action>
+    </view>
+  </block>
+  <view wx:if="{{loading}}" class="loading">正在查看社团…</view>
+  <view wx:if="{{!loading && !item}}" class="empty">{{failed ? '暂时无法加载社团，请稍后重试。' : '当前社团暂不可查看。'}}<view wx:if="{{failed}}" class="gap"><qy-action variant="secondary" bindactivate="load">重试</qy-action></view></view>
+</view>

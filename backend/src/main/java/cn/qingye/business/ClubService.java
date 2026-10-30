@@ -56,6 +56,7 @@ public class ClubService {
         access.manager(actor,id);
         return clubs.members(id);
     }
+    public List<Map<String,Object>> publicLeaders(long id) { return clubs.publicLeaders(id); }
     public void decide(Actor actor,long club,long user,Forms.Member input) {
         clubs.lock(club);
         access.managerMutation(actor,club);

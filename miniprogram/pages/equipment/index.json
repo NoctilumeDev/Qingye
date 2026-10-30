@@ -1,1 +1,1 @@
-{ "navigationBarTitleText": "借点好装备", "enablePullDownRefresh": true }
+{ "navigationBarTitleText": "借点好装备", "enablePullDownRefresh": true, "usingComponents": { "qingye-tab-bar": "/custom-tab-bar/index" } }

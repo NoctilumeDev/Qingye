@@ -43,17 +43,30 @@ public class AuthService {
     public List<Map<String,Object>> demoUsers() {
         return demo?sql.list("SELECT id,name,admin FROM app_user WHERE openid LIKE 'demo:%' AND enabled=TRUE ORDER BY id"):List.of();
     }
+    public Map<String,Object> options() {
+        return Map.of("demoEnabled",demo,"demoUsers",demoUsers(),"wechatEnabled",wechatEnabled());
+    }
+    private boolean wechatEnabled() {
+        return !appid.isBlank() && !secret.isBlank();
+    }
     public Map<String,Object> demo(long id) {
         if (!demo) throw Problem.forbidden();
         if (sql.count("SELECT COUNT(*) FROM app_user WHERE id=? AND openid LIKE 'demo:%' AND enabled=TRUE",id)==0) throw Problem.forbidden();
         return session(id);
     }
     public Map<String,Object> wechat(String code) {
-        if (appid.isBlank() || secret.isBlank()) throw new Problem(503,"尚未配置微信 AppID 和服务端密钥，请使用本地演示入口");
+        if (!wechatEnabled()) throw new Problem(503,"微信登录尚未开通，请联系管理员");
         try {
             var result=http.get(URI.create("https://api.weixin.qq.com/sns/jscode2session?appid="+URLEncoder.encode(appid,StandardCharsets.UTF_8)+"&secret="+URLEncoder.encode(secret,StandardCharsets.UTF_8)+"&js_code="+URLEncoder.encode(code,StandardCharsets.UTF_8)+"&grant_type=authorization_code"));
+            Object error=result.get("errcode");
+            if (error!=null && !Integer.valueOf(0).equals(error)) {
+                if (Integer.valueOf(40029).equals(error)) throw new Problem(401,"微信登录凭证已失效，请重新登录");
+                if (Integer.valueOf(45011).equals(error)) throw new Problem(429,"微信登录请求过于频繁，请稍后重试");
+                if (Integer.valueOf(40226).equals(error)) throw new Problem(403,"微信暂不允许此账号登录");
+                throw new Problem(503,"微信登录暂不可用，请稍后重试");
+            }
             Object openid=result.get("openid");
-            if (!(openid instanceof String identity) || identity.isBlank()) throw new Problem(401,"微信登录凭证无效，请重试");
+            if (!(openid instanceof String identity) || identity.isBlank() || identity.length()>128) throw new Problem(503,"微信登录响应不完整，请重试");
             var user=users.byOpenid(identity);
             if (user==null) {
                 try {
@@ -63,7 +76,7 @@ public class AuthService {
                 }
                 user=users.byOpenid(identity);
             }
-            if (!flag(user,"enabled")) throw Problem.forbidden();
+            if (!flag(user,"enabled")) throw new Problem(403,"此账号已停用，请联系管理员");
             return session(id(user,"id"));
         }
         catch(Problem e) {

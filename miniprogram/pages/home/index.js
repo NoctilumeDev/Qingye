@@ -1,38 +1,28 @@
 const { request, guard } = require('../../utils/request')
 const { activity } = require('../../utils/view')
-const { switchTab } = require('../../utils/navigation')
+const { switchTab, refreshTabBar } = require('../../utils/navigation')
 Page({
-  data: { items: [], recommendations: [], category: '', keyword: '', page: 0, loading: false, finished: false, categories: [{ key: '', name: '全部' }, { key: 'SPORT', name: '运动' }, { key: 'ART', name: '艺术' }, { key: 'TECH', name: '科技' }, { key: 'VOLUNTEER', name: '志愿' }] },
-  onShow() { if (!guard()) return; if (this.getTabBar()) this.getTabBar().setData({ selected: 0 }); return this.load(true, true) },
-  async load(reset = false, preservePages = false) {
-    if (this.data.loading) { if (reset) this.refreshPending = !preservePages || this.refreshPending === 'reset' ? 'reset' : 'preserve'; return }
-    if (!reset && this.data.finished) return
-    this.setData({ loading: true })
-    const page = reset ? 0 : this.data.page
-    const { category, keyword } = this.data
+  data: { recommendations: [], recommendationPages: [], recommendationIndex: 0, visible: false, loading: false, failed: false, recommendationsPlaying: true,
+    heroImages: ['/assets/campus/campus-hero-v1.jpg', '/assets/campus/campus-friends-v1.jpg'] },
+  onShow() { if (!guard()) return; refreshTabBar(this, '/pages/home/index'); this.setData({ visible: true }); return this.load() },
+  onHide() { this.setData({ visible: false }) },
+  pauseRecommendations() { this.setData({ recommendationsPlaying: false }) },
+  recommendationChange(e) { this.setData({ recommendationIndex: e.detail.current }) },
+  async load() {
+    if (this.data.loading) return
+    this.setData({ loading: true, failed: false })
     try {
-      const count = reset && preservePages ? Math.max(1, this.data.page) : 1
-      const rows = []; let nextPage = page, finished = false
-      // Refresh the loaded range in one update, so returning does not collapse the list.
-      for (let index = 0; index < count; index++) {
-        const batch = await request(`/activities?scope=public&page=${nextPage}&category=${category}&keyword=${encodeURIComponent(keyword)}`)
-        if (this.refreshPending) return
-        rows.push(...batch); nextPage++; finished = batch.length < 20
-        if (finished) break
-      }
-      if (this.refreshPending) return
-      this.setData({ items: reset ? rows.map(activity) : this.data.items.concat(rows.map(activity)), page: nextPage, finished })
-      if (reset && !category && !keyword) { const rows = await request('/recommendations'); if (!this.refreshPending) this.setData({ recommendations: rows.slice(0, 2).map(activity) }) }
-      else if (reset) this.setData({ recommendations: [] })
-    } catch (e) {} finally { this.setData({ loading: false }); wx.stopPullDownRefresh(); if (this.refreshPending) { const preserve = this.refreshPending === 'preserve'; this.refreshPending = false; await this.load(true, preserve) } }
+      const recommendations = (await request('/recommendations')).map(activity), recommendationPages = []
+      for (let i = 0; i < recommendations.length; i += 2) recommendationPages.push(recommendations.slice(i, i + 2))
+      this.setData({ recommendations, recommendationPages, recommendationIndex: Math.max(0, Math.min(this.data.recommendationIndex, recommendationPages.length - 1)) })
+    } catch (e) { this.setData({ failed: true }) }
+    finally { this.setData({ loading: false }); wx.stopPullDownRefresh() }
   },
-  onPullDownRefresh() { this.load(true) }, onReachBottom() { this.load() },
-  category(e) { this.setData({ category: e.currentTarget.dataset.key }); this.load(true) },
-  search(e) { this.setData({ keyword: e.detail.value }); this.load(true) },
-  clearSearch() { this.setData({ keyword: '' }); return this.load(true) },
+  onPullDownRefresh() { return this.load() },
   open(e) { wx.navigateTo({ url: '/pages/activity/index?id=' + e.detail.id }) },
-  equipment() { wx.navigateTo({ url: '/pages/equipment/index' }) },
-  assistant() { wx.navigateTo({ url: '/pages/assistant/index' }) },
+  assistant() { switchTab('/pages/assistant/index') },
   clubs() { switchTab('/pages/clubs/index') },
-  activities() { wx.pageScrollTo({ selector: '#activity-list', duration: 250 }) }
+  myActivities() { const app = getApp(); app.globalData.openMyActivities = true; wx.switchTab({ url: '/pages/me/index', fail() { app.globalData.openMyActivities = false } }) },
+  activities() { wx.navigateTo({ url: '/pages/activities/index' }) },
+  search() { wx.navigateTo({ url: '/pages/activities/index?search=1' }) }
 })

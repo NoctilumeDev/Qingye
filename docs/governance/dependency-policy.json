@@ -778,10 +778,10 @@
   "applicability_inputs": {
     "backend/pom.xml": "cc269ba307855f1049d011eb7c16a99e5f817e645f6fbc0e7013ad5fef222808",
     "backend/src/main/java/cn/qingye/QingyeApplication.java": "57e235aa2e4104436707671d2e27793d735c7e39696c95dbdf1da81596f80779",
-    "backend/src/main/java/cn/qingye/api/Api.java": "bfbfd961070fb5a05fdb84c2a227a8b725474e44d9019cb72dd819d272c795fe",
+    "backend/src/main/java/cn/qingye/api/Api.java": "c01e78591df94ba03856ab17548711bed9e1dacdedaf13b8c9c185c5525f674d",
     "backend/src/main/java/cn/qingye/api/AuthFilter.java": "72e6fcdc47dd540947f2ac9036d5c4e8fc44426faa2c9ce43fb37b11d9d3bf11",
     "backend/src/main/java/cn/qingye/api/Errors.java": "45cc6dcd06f91cc3e36573606e53c7ae977c653b7013867915cad9763fb1bdb7",
-    "backend/src/main/java/cn/qingye/api/Forms.java": "3d721783f89969ed7f7476c77c75dac0e142e0c5d7006cad7d176852227530f9",
+    "backend/src/main/java/cn/qingye/api/Forms.java": "e4db2e8e0929bc379984903432558966abf33ad5cfc052bb562f4a9474e70402",
     "backend/src/main/java/cn/qingye/integration/ExternalHttp.java": "a302696b2b605b1295a304d12c5d5dff17caafce5ca505c50d66f2b6ab2eb20e",
     "backend/src/main/java/cn/qingye/integration/LlmPlanner.java": "47a6da2c2c000fc340253ec4abc6e6c7778cecea9bda92bf2e5d6bb48c47d805",
     "backend/src/main/java/cn/qingye/integration/QueryCache.java": "1ad48b0901a2470229e65d8b7b72dc9752f2a700b437bae87f4c631e532d0808",

@@ -11,8 +11,9 @@
   <view class="headline">把青春，留在校园里。</view>
   <view class="subtitle">遇见同好，参加活动。<view>一起把课后的生活过得有声有色。</view></view>
   <view class="gap login-actions">
-    <qy-action variant="primary" loading="{{busy}}" disabled="{{busy}}" bindactivate="wechat">微信登录，开启校园生活</qy-action>
-    <qy-action wx:if="{{!accounts.length}}" variant="secondary" disabled="{{busy}}" bindactivate="loadAccounts">重新载入体验身份</qy-action>
+    <qy-action variant="primary" loading="{{busy}}" disabled="{{busy || !wechatEnabled}}" bindactivate="wechat">微信登录，开启校园生活</qy-action>
+    <view wx:if="{{optionsLoaded && !wechatEnabled}}" class="footnote">微信登录暂未开通{{accounts.length ? '，可先选择下方身份体验。' : '，请联系管理员。'}}</view>
+    <qy-action wx:if="{{demoEnabled && !accounts.length}}" variant="secondary" disabled="{{busy}}" bindactivate="loadAccounts">重新载入体验身份</qy-action>
   </view>
   <view wx:if="{{accounts.length}}" class="demo">
     <view class="row"><text class="section-title">体验青野</text><text class="muted">本地演示</text></view>

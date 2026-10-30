@@ -9,11 +9,13 @@
       <qy-action variant="primary" size="compact" bindactivate="createActivity">＋ 发起活动</qy-action>
       <qy-action variant="secondary" size="compact" bindactivate="equipment">共享器材室 ↗</qy-action>
       <qy-action wx:if="{{user.admin}}" variant="secondary" size="compact" bindactivate="createClub">＋ 创建社团</qy-action>
+      <qy-action wx:if="{{user.admin}}" variant="secondary" size="compact" bindactivate="accounts">账号管理</qy-action>
     </view>
     <view class="tabs">
       <view wx:for="{{tabs}}" wx:key="key" class="tab {{tab === item.key ? 'selected' : ''}}" data-key="{{item.key}}" bindtap="tab">{{item.name}}</view>
     </view>
     <block wx:if="{{tab === 'activities'}}">
+      <view class="field"><picker range="{{activityClubNames}}" value="{{activityClubIndex}}" bindchange="selectActivityClub"><view class="picker">{{activityClubNames[activityClubIndex]}} ▾</view></picker></view>
       <view wx:for="{{activities}}" wx:key="id" class="card">
         <view class="row">
           <text class="badge {{item.tone}}">{{item.phase}}</text>
@@ -31,7 +33,7 @@
         </view>
       </view>
       <qy-action wx:if="{{more}}" variant="secondary" bindactivate="more">查看更多活动</qy-action>
-      <view wx:if="{{!activities.length && !loading}}" class="empty">还没有可管理的活动，先发起一场吧。</view>
+      <view wx:if="{{!activities.length && !loading}}" class="empty">{{activityClubIndex ? '这个社团暂无可管理的活动。' : '还没有可管理的活动，先发起一场吧。'}}</view>
     </block>
     <block wx:if="{{tab === 'loans'}}">
       <view wx:for="{{loans}}" wx:key="id" class="card">
@@ -58,13 +60,13 @@
       <view wx:if="{{!loans.length && !loading}}" class="empty">还没有器材申请，去器材室看看吧。</view>
     </block>
     <block wx:if="{{tab === 'members'}}">
-      <view class="field">
+      <view id="members-heading" class="field">
         <picker range="{{clubNames}}" value="{{clubIndex}}" bindchange="club">
           <view class="picker">{{clubNames[clubIndex] || '暂无社团'}} ▾</view>
         </picker>
       </view>
       <qy-action wx:if="{{clubs.length}}" variant="secondary" size="compact" bindactivate="editClub">编辑社团资料</qy-action>
-      <view class="gap">
+      <view wx:if="{{membersExpanded}}" class="gap">
         <view wx:for="{{members}}" wx:key="id" class="card">
           <view class="row">
             <text class="record-name">{{item.name}}</text>
@@ -80,7 +82,9 @@
           </view>
         </view>
       </view>
-      <view wx:if="{{!members.length && !loading}}" class="empty">暂时没有成员申请。</view>
+      <view wx:if="{{membersLoading}}" class="loading">正在读取成员名单…</view>
+      <view wx:if="{{membersExpanded && !members.length && !loading && !membersLoading}}" class="empty">暂时没有成员记录。</view>
+      <view wx:if="{{clubs.length}}" class="gap"><qy-action variant="secondary" bindactivate="toggleMembers">{{membersExpanded ? '收起成员名单' : '查看成员名单'}}</qy-action></view>
     </block>
     <view wx:if="{{loading}}" class="loading">正在整理工作台…</view>
   </view>
