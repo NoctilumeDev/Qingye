@@ -1,30 +1,45 @@
-<view class="page manual-page">
-  <view class="manual-page-heading"><view class="eyebrow">FIND IT YOUR WAY</view><view class="manual-title">自己选，直接找。</view><view class="manual-subtitle">活动、器材，还有你自己的记录。</view></view>
-    <view wx:if="{{directoryOpen}}" class="directory-grid">
-      <view wx:for="{{objects}}" wx:key="*this" class="directory-tile {{busy ? 'is-disabled' : ''}}" data-index="{{index}}" bindtap="openDirectory" hover-class="directory-tile-pressed" aria-role="button" aria-disabled="{{busy}}"><text>{{item}}</text><text class="directory-action">选择条件 ›</text></view>
+<view class="lookup-page">
+  <block wx:if="{{directoryOpen}}">
+    <view class="lookup-eyebrow">自己找，也很简单</view>
+    <view class="lookup-title">想查些什么？</view>
+    <view class="lookup-subtitle">可以多选，进去后分别查看和筛选。</view>
+    <view class="lookup-choices">
+      <view wx:for="{{choices}}" wx:key="intent" class="lookup-choice {{item.selected ? 'lookup-choice-selected' : ''}}" data-intent="{{item.intent}}" bindtap="toggleChoice" hover-class="lookup-pressed" aria-role="checkbox" aria-checked="{{item.selected}}" aria-label="{{item.title}}">
+        <view class="lookup-choice-top"><image class="lookup-icon" src="/assets/icons/{{item.icon}}.png" /><view class="lookup-check" aria-hidden="true">{{item.selected ? '✓' : ''}}</view></view>
+        <view class="lookup-choice-title">{{item.title}}</view>
+        <view class="lookup-choice-description">{{item.description}}</view>
+      </view>
     </view>
-  <view wx:if="{{facetOpen}}" class="facets">
-    <view class="muted">{{entityPending ? '请填写名称，或主动选择不限定名称。' : '名称可不填，查看所选范围内的记录。'}}</view>
-    <picker range="{{objects}}" value="{{objectIndex < 0 ? 0 : objectIndex}}" data-field="objectIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">查什么：{{objectIndex < 0 ? '请选择' : objects[objectIndex]}}</view></picker>
-    <picker range="{{times}}" value="{{timeIndex < 0 ? 0 : timeIndex}}" data-field="timeIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">{{objectIndex === 3 ? '计划使用时间' : objectIndex === 1 ? '库存时间' : '活动时间'}}：{{timeIndex < 0 ? '请选择' : times[timeIndex]}}</view></picker>
-    <picker wx:if="{{timeKeys[timeIndex] === 'DATE'}}" mode="date" value="{{date}}" data-field="date" bindchange="facetField" disabled="{{busy}}"><view class="facet-choice">日期：{{date || '请选择'}}</view></picker>
-    <view class="muted">{{objectIndex === 3 ? '日期按计划借用时段查询。' : objectIndex === 1 ? '可查看当前库存或具体时段的预约可用量。' : '日期按活动举办时间查询。'}}</view>
-    <input class="facet-choice" value="{{entity}}" maxlength="80" data-field="entity" bindinput="facetField" disabled="{{busy}}" placeholder="{{objectIndex === 1 || objectIndex === 3 ? '器材名称，留空查全部' : '活动名称或社团名称，留空查全部'}}" />
-    <view wx:if="{{entityPending}}" class="facet-action"><qy-action variant="secondary" bindactivate="chooseAllEntities" disabled="{{busy}}">不限定名称</qy-action></view>
-    <picker wx:if="{{objectIndex === 0 || objectIndex === 2}}" range="{{categories}}" value="{{categoryIndex}}" data-field="categoryIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">分类：{{categories[categoryIndex]}}</view></picker>
-    <input wx:if="{{objectIndex === 0 || objectIndex === 2}}" class="facet-choice" value="{{location}}" maxlength="100" data-field="location" bindinput="facetField" disabled="{{busy}}" placeholder="地点，留空不限" />
-    <picker wx:if="{{objectIndex === 2 || objectIndex === 3 || stateIndex < 0}}" range="{{states}}" value="{{stateIndex < 0 ? 0 : stateIndex}}" data-field="stateIndex" bindchange="facetPick" disabled="{{busy}}"><view class="facet-choice">状态：{{stateIndex < 0 ? '请选择' : states[stateIndex]}}</view></picker>
-    <view class="facet-action"><qy-action variant="primary" bindactivate="searchFacets" loading="{{busy}}" disabled="{{busy}}">{{editingIndex >= 0 ? '修改后查找' : '查看结果'}}</qy-action></view>
-    <view class="batch-toggle" bindtap="toggleBatch" aria-role="button">{{batchOpen ? '收起多类查找 ∧' : '想同时查几类？ ∨'}}</view>
-    <block wx:if="{{batchOpen}}">
-    <view class="muted">例如同时查看活动和器材。先保存当前条件，再选择另一类。</view>
-    <view class="facet-action"><qy-action variant="secondary" bindactivate="addFacet" disabled="{{busy}}">保存这一项</qy-action></view>
-    <view wx:for="{{queuedQueries}}" wx:key="_key" class="queued-card"><text>第 {{index + 1}} 项：{{queuedSummaries[index]}}</text><view class="queued-actions"><qy-action variant="neutral" size="compact" data-index="{{index}}" bindactivate="editQueued" disabled="{{busy}}">修改</qy-action><qy-action variant="neutral" size="compact" data-index="{{index}}" bindactivate="removeQueued" disabled="{{busy}}">移除</qy-action></view></view>
-    <view wx:if="{{queuedQueries.length}}" class="facet-action"><qy-action variant="primary" bindactivate="previewQueued" disabled="{{busy}}">一起查这 {{queuedQueries.length}} 项</qy-action></view>
-    </block>
-  </view>
-
-  <block wx:if="{{!directoryOpen && !facetOpen}}"><include src="../../views/assistant-results.wxml" /><view class="manual-return" bindtap="toggleDirectory" aria-role="button">重新选择查找内容</view></block>
-  <view wx:if="{{facetOpen}}" class="manual-return" bindtap="closeManual" aria-role="button">返回选择查找内容</view>
-  <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
+    <view wx:if="{{pendingMessage}}" class="lookup-hint" aria-live="polite">{{pendingMessage}}</view>
+    <view class="lookup-start"><qy-action bindactivate="startLookup" disabled="{{!selectedCount}}">{{selectedCount ? '开始查找（已选 ' + selectedCount + ' 类）' : '先选想查的内容'}}</qy-action></view>
+  </block>
+  <block wx:else>
+    <view class="lookup-back"><qy-action variant="neutral" size="compact" bindactivate="backToChoices" disabled="{{busy}}">‹ 选择查找内容</qy-action></view>
+    <view class="lookup-title">{{activeTitle}}</view>
+    <scroll-view wx:if="{{tabs.length > 1}}" class="lookup-tabs" scroll-x="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" scroll-into-view="tab-{{activeKey}}">
+      <view wx:for="{{tabs}}" wx:key="key" id="tab-{{item.key}}" class="lookup-tab {{activeKey === item.key ? 'lookup-tab-selected' : ''}}" data-key="{{item.key}}" bindtap="switchDirectory" aria-role="tab" aria-selected="{{activeKey === item.key}}">{{item.title}}</view>
+    </scroll-view>
+    <view class="lookup-search">
+      <view class="lookup-search-field"><image src="/assets/icons/search-line-muted.png" /><input value="{{nameInput}}" data-field="entity" bindinput="field" bindconfirm="search" confirm-type="search" disabled="{{busy}}" maxlength="80" placeholder="{{form.intent === 'EQUIPMENT' || form.intent === 'MY_LOANS' ? '按器材名称查找' : '按活动或社团名称查找'}}" aria-label="查找名称" /></view>
+      <qy-action size="compact" bindactivate="search" disabled="{{busy}}">查找</qy-action>
+    </view>
+    <view class="lookup-toolbar"><text class="lookup-summary">{{appliedSummary || '选好条件就可以查找'}}</text><qy-action variant="secondary" size="compact" bindactivate="openFilters" disabled="{{busy || filterOpen}}">筛选</qy-action></view>
+    <view wx:if="{{filterOpen}}" class="lookup-filters">
+      <view class="lookup-filter-heading">筛选{{activeTitle}}</view>
+      <picker range="{{timeChoices}}" range-key="label" value="{{timeIndex}}" data-field="timeOption" bindchange="pick" disabled="{{busy}}"><view class="lookup-filter-row"><text>{{form.intent === 'MY_LOANS' ? '计划使用时间' : form.intent === 'EQUIPMENT' ? '库存时间' : '活动时间'}}</text><view>{{timeText}} <text class="lookup-chevron">⌄</text></view></view></picker>
+      <picker wx:if="{{form.timeOption === 'DATE'}}" mode="date" value="{{form.date}}" data-field="date" bindchange="field" disabled="{{busy}}"><view class="lookup-filter-row"><text>具体日期</text><view>{{form.date || '请选择'}} <text class="lookup-chevron">⌄</text></view></view></picker>
+      <picker wx:if="{{stateChoices.length > 1 || stateIndex < 0}}" range="{{stateChoices}}" range-key="label" value="{{stateIndex}}" data-field="status" bindchange="pick" disabled="{{busy}}"><view class="lookup-filter-row"><text>{{form.intent === 'MY_LOANS' ? '借用状态' : '报名状态'}}</text><view>{{stateText}} <text class="lookup-chevron">⌄</text></view></view></picker>
+      <block wx:if="{{form.intent === 'ACTIVITIES' || form.intent === 'MY_REGISTRATIONS' || form.category || form.location}}">
+        <picker range="{{categoryChoices}}" value="{{categoryIndex}}" data-field="category" bindchange="pick" disabled="{{busy}}"><view class="lookup-filter-row"><text>活动分类</text><view>{{categoryText}} <text class="lookup-chevron">⌄</text></view></view></picker>
+        <view class="lookup-filter-row"><text>地点</text><input value="{{form.location}}" data-field="location" bindinput="field" disabled="{{busy}}" maxlength="100" placeholder="不限地点" aria-label="活动地点" /></view>
+      </block>
+      <view wx:if="{{nameRequired}}" class="lookup-hint">填写上方名称，或<text class="lookup-inline-action" bindtap="chooseAllNames" aria-role="button">不限名称</text>。</view>
+      <view wx:if="{{pendingMessage}}" class="lookup-hint" aria-live="polite">{{pendingMessage}}</view>
+      <view class="lookup-filter-actions"><qy-action variant="secondary" bindactivate="cancelFilters" disabled="{{busy}}">取消</qy-action><qy-action bindactivate="search" disabled="{{busy}}">查看结果</qy-action></view>
+      <view class="lookup-reset" bindtap="resetFilters" aria-role="button">清除筛选条件</view>
+    </view>
+    <view wx:elif="{{formDirty}}" class="lookup-hint">条件已更改，点“查找”更新结果。</view>
+    <view wx:if="{{busy && busyAction !== 'more'}}" class="finding" aria-live="polite"><view class="finding-dot" /><text>正在查找…</text></view>
+    <block wx:if="{{!filterOpen && !formDirty}}"><include src="../../views/assistant-results.wxml" /></block>
+  </block>
 </view>

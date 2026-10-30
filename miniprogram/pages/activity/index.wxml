@@ -16,7 +16,7 @@
     <view class="section">
       <text class="section-title">这次我们做什么</text>
     </view>
-    <text class="description" selectable="true">{{item.description}}</text>
+    <text class="description" user-select="{{true}}">{{item.description}}</text>
     <view id="participants-actions" wx:if="{{item.canManage}}" class="actions">
       <qy-action wx:if="{{!participantsExpanded}}" id="participants-toggle" variant="secondary" size="compact" bindactivate="toggleParticipants">查看报名名单</qy-action>
       <qy-action wx:if="{{item.status === 'PENDING' || item.status === 'REJECTED'}}" variant="secondary" size="compact" bindactivate="edit">调整活动</qy-action>
