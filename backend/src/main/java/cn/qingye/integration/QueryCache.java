@@ -18,41 +18,46 @@ public class QueryCache {
     private volatile long bypassUntil=0;
     private volatile String mode="DISABLED";
     private final Set<String> keys=new HashSet<>();
+    private long generation;
     public QueryCache(StringRedisTemplate redis,ObjectMapper json,@Value("${qingye.redis-enabled}") boolean enabled) {
         this.redis=redis;
         this.json=json;
         this.enabled=enabled;
     }
     @SuppressWarnings("unchecked")
-    public synchronized List<Map<String,Object>> publicList(String key,Supplier<List<Map<String,Object>>> query) {
+    public List<Map<String,Object>> publicList(String key,Supplier<List<Map<String,Object>>> query) {
         if (!enabled) return query.get();
-        if (System.currentTimeMillis()<bypassUntil) return query.get();
-        // Bound arbitrary search keys; one application instance owns these cache entries.
-        if (!keys.contains(key) && keys.size()>=256) return query.get();
-        keys.add(key);
-        try {
-            String cached=redis.opsForValue().get("qingye:v1:"+key);
-            mode="REDIS";
-            if (cached!=null) return json.readValue(cached,List.class);
+        long observed=-1;
+        synchronized(this) {
+            // Bound arbitrary keys. Invalidation is local; Redis remains opt-in.
+            if (System.currentTimeMillis()>=bypassUntil && (keys.contains(key) || keys.size()<256)) {
+                keys.add(key);
+                try {
+                    String cached=redis.opsForValue().get("qingye:v1:"+key);
+                    mode="REDIS";
+                    if (cached!=null) return json.readValue(cached,List.class);
+                    observed=generation;
+                }
+                catch(Exception e) { degraded(); }
+            }
         }
-        catch(Exception e) {
-            degraded();
-            return query.get();
-        }
+        // Database work must not serialize unrelated readers or invalidations.
         var rows=query.get();
-        try {
-            redis.opsForValue().set("qingye:v1:"+key,json.writeValueAsString(rows),Duration.ofSeconds(15));
-        }
-        catch(Exception e) {
-            degraded();
+        synchronized(this) {
+            // A query started before invalidation may finish, but cannot refill the cache.
+            if (observed==generation && System.currentTimeMillis()>=bypassUntil) {
+                try { redis.opsForValue().set("qingye:v1:"+key,json.writeValueAsString(rows),Duration.ofSeconds(15)); }
+                catch(Exception e) { degraded(); }
+            }
         }
         return rows;
     }
     private void degraded() {
         mode="DB_FALLBACK";
-        bypassUntil=System.currentTimeMillis()+5000;
+        bypassUntil=Math.max(bypassUntil,System.currentTimeMillis()+5000);
     }
     public synchronized void invalidate() {
+        generation++;
         if (!enabled || keys.isEmpty()) return;
         try {
             redis.delete(keys.stream().map(key->"qingye:v1:"+key).toList());

@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "source_base": "bf7a4984facedb78fad3be5c92384435c316fa14",
+  "source_state": "announcements working tree candidate, uncommitted during measurement",
+  "backend_jar_sha256": "014a99f21ca9796ddc4f0100a600b3d24e24cb2799e6c8aa5530e5f2e8f7408b",
+  "backend_jar_bytes": 38199926,
+  "backend_instances": 1,
+  "http_port": 8087,
+  "mysql_port": 19324,
+  "mysql_database": "qingye_test",
+  "mysql_version": "8.0.44",
+  "redis_enabled": false,
+  "model_calls": false,
+  "database_pool_maximum_from_config": 8,
+  "cpu": [
+    {
+      "Name": "Intel(R) Core(TM) i7-14650HX",
+      "NumberOfCores": 16,
+      "NumberOfLogicalProcessors": 24
+    }
+  ],
+  "total_physical_memory_bytes": 16944848896,
+  "before": {
+    "observedAt": "2026-11-04T10:32:58.6106789Z",
+    "processors": [
+      {
+        "Name": "Intel(R) Core(TM) i7-14650HX",
+        "NumberOfCores": 16,
+        "NumberOfLogicalProcessors": 24
+      }
+    ],
+    "totalPhysicalMemory": 16944848896,
+    "processes": [
+      {
+        "Id": 29864,
+        "ProcessName": "java",
+        "CPU": 22.484375,
+        "WorkingSet64": 190939136,
+        "PrivateMemorySize64": 504401920,
+        "StartTime": "2026-11-04T18:16:04.1234872+08:00"
+      },
+      {
+        "Id": 14448,
+        "ProcessName": "mysqld",
+        "CPU": 27.84375,
+        "WorkingSet64": 67223552,
+        "PrivateMemorySize64": 719822848,
+        "StartTime": "2026-11-04T17:10:01.8260506+08:00"
+      }
+    ]
+  },
+  "after": {
+    "observedAt": "2026-11-04T10:35:20.9155327Z",
+    "processes": [
+      {
+        "Id": 29864,
+        "ProcessName": "java",
+        "CPU": 174.765625,
+        "WorkingSet64": 407179264,
+        "PrivateMemorySize64": 554242048,
+        "StartTime": "2026-11-04T18:16:04.1234872+08:00"
+      },
+      {
+        "Id": 14448,
+        "ProcessName": "mysqld",
+        "CPU": 755.5,
+        "WorkingSet64": 83087360,
+        "PrivateMemorySize64": 730099712,
+        "StartTime": "2026-11-04T17:10:01.8260506+08:00"
+      }
+    ],
+    "exitCode": 0
+  },
+  "process_deltas": [
+    {
+      "pid": 29864,
+      "name": "java",
+      "cpu_seconds_delta": 152.28125,
+      "working_set_mib_before": 182.094,
+      "working_set_mib_after": 388.316,
+      "private_mib_before": 481.035,
+      "private_mib_after": 528.566
+    },
+    {
+      "pid": 14448,
+      "name": "mysqld",
+      "cpu_seconds_delta": 727.65625,
+      "working_set_mib_before": 64.109,
+      "working_set_mib_after": 79.238,
+      "private_mib_before": 686.477,
+      "private_mib_after": 696.277
+    }
+  ],
+  "evidence_sha256": {
+    "load-read-20261104.json": "6d2d16b5f581116bb30ccd8dcdfba4f9ba8074d6ef09a4a99032de53cd4d70c1",
+    "load-seed-applied-20261104.json": "63fed1ad3403a8fc1c7cfd74a4868655ff60d05b7a61ff28dde95dd927b83b81",
+    "load-seed-readback-20261104.json": "fdea6ddb1ec826e7a6b9529ac39d6ec8f91d56e159b23eb575891627c8a2322a"
+  },
+  "script_sha256": {
+    "load-test.py": "0d237aa293b5e2ecb9c082295641eed578126819f69647e558297b2b8e5b2a1a",
+    "seed-load-test.py": "bcc07b51f83268cc3a4eb6f360b02c43dc903ce5b972ff5d0adc0057b093ce9d"
+  },
+  "notes": [
+    "CPU counters are cumulative process CPU seconds, not wall-clock utilization.",
+    "Before/after working sets are endpoint samples, not peaks or proof against leaks.",
+    "Client, Java and MySQL share one desktop host; other processes were not controlled."
+  ]
+}

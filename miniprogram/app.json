@@ -13,7 +13,10 @@
     "pages/club-detail/index",
     "pages/activities/index",
     "pages/assistant-manual/index",
-    "pages/accounts/index"
+    "pages/accounts/index",
+    "pages/announcements/index",
+    "pages/announcement/index",
+    "pages/announcement-editor/index"
   ],
   "window": {
     "navigationBarTitleText": "青野",

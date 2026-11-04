@@ -21,6 +21,7 @@ Page({
   onPullDownRefresh() { return this.load() },
   open(e) { wx.navigateTo({ url: '/pages/activity/index?id=' + e.detail.id }) },
   assistant() { switchTab('/pages/assistant/index') },
+  announcements() { wx.navigateTo({ url: '/pages/announcements/index' }) },
   clubs() { switchTab('/pages/clubs/index') },
   myActivities() { const app = getApp(); app.globalData.openMyActivities = true; wx.switchTab({ url: '/pages/me/index', fail() { app.globalData.openMyActivities = false } }) },
   activities() { wx.navigateTo({ url: '/pages/activities/index' }) },

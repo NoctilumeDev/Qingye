@@ -79,3 +79,21 @@ CREATE TABLE IF NOT EXISTS message_task (
  FOREIGN KEY(notification_id) REFERENCES notification(id),
  INDEX idx_task_due(status,available_at,id)
 );
+CREATE TABLE IF NOT EXISTS announcement (
+ id BIGINT AUTO_INCREMENT PRIMARY KEY, builtin_key VARCHAR(60) UNIQUE, builtin_revision INT NOT NULL DEFAULT 0,
+ title VARCHAR(80) NOT NULL, body VARCHAR(5000) NOT NULL, category VARCHAR(20) NOT NULL,
+ version BIGINT NOT NULL DEFAULT 1, created_by BIGINT,
+ created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), deleted_at TIMESTAMP(6),
+ INDEX idx_announcement_active(deleted_at,id)
+);
+CREATE TABLE IF NOT EXISTS announcement_state (
+ user_id BIGINT NOT NULL, announcement_id BIGINT NOT NULL, archived BOOLEAN NOT NULL DEFAULT FALSE,
+ PRIMARY KEY(user_id,announcement_id), FOREIGN KEY(user_id) REFERENCES app_user(id) ON DELETE CASCADE,
+ FOREIGN KEY(announcement_id) REFERENCES announcement(id)
+);
+CREATE TABLE IF NOT EXISTS announcement_audit (
+ id BIGINT AUTO_INCREMENT PRIMARY KEY, actor_id BIGINT NOT NULL, announcement_id BIGINT NOT NULL,
+ action VARCHAR(20) NOT NULL, previous_title VARCHAR(80), previous_body VARCHAR(5000), previous_version BIGINT,
+ changed_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+);

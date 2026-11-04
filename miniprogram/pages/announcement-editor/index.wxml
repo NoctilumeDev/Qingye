@@ -1,0 +1,12 @@
+<view class="page announcement-editor">
+  <block wx:if="{{ready}}">
+    <view class="field"><text class="label">公告标题</text><input class="input" value="{{title}}" data-field="title" bindinput="field" maxlength="80" placeholder="用一句话说明这次要告诉大家什么" /></view>
+    <view class="field"><text class="label">公告类型</text><picker range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="category"><view class="picker">{{categoryNames[categoryIndex]}} ▾</view></picker></view>
+    <view class="field"><text class="label">正文</text><textarea class="textarea announcement-input" value="{{body}}" data-field="body" bindinput="field" maxlength="5000" placeholder="说明有什么变化、什么时候生效，以及需要大家做什么。" /></view>
+    <view wx:if="{{conflict}}" class="card conflict"><view>这条公告已被其他管理员更新。</view><view class="footnote">你的文字还在上方。复制需要保留的内容，再打开最新公告。</view><qy-action variant="secondary" bindactivate="reload">打开最新公告</qy-action></view>
+    <qy-action bindactivate="save" loading="{{busy}}" disabled="{{busy || loading || conflict}}">{{id ? '保存修改' : '发布公告'}}</qy-action>
+    <view class="footnote">发布后，所有登录用户都能看到。</view>
+  </block>
+  <view wx:if="{{loading}}" class="loading">正在准备公告…</view>
+  <view wx:elif="{{failed}}" class="empty">暂时无法打开<view class="gap"><qy-action variant="secondary" bindactivate="load">重试</qy-action></view></view>
+</view>

@@ -11,7 +11,10 @@ public class UserStore {
         this.sql=sql;
     }
     public Actor actor(long id) {
-        var row=sql.one("SELECT id,name,admin FROM app_user WHERE id=? AND enabled=TRUE",id);
+        return sessionActor(id,true);
+    }
+    public Actor sessionActor(long id,boolean includeDemo) {
+        var row=sql.one("SELECT id,name,admin FROM app_user WHERE id=? AND enabled=TRUE AND (?=TRUE OR openid NOT LIKE 'demo:%')",id,includeDemo);
         return new Actor(id,text(row,"name"),flag(row,"admin"));
     }
     public Map<String,Object> byOpenid(String openid) {
