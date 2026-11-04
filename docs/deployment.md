@@ -1,12 +1,22 @@
-# 青野本地发布候选包
+# 青野部署说明
 
-本地候选包用于核对和部署准备。运行环境为 Java 17、MySQL 8、单个应用实例；Redis 和 RabbitMQ 关闭，数据库通知任务继续运行。运行包不需要 Maven。公开发行待办见包内 PUBLIC_RELEASE_TODO.md。
+运行环境为 Java 17、MySQL 8、单个应用实例；Redis 和 RabbitMQ 关闭，数据库通知任务继续运行。运行包不需要 Maven。下文适用于 GitHub 发布包；末节另说明从源码生成本地候选的流程。
+
+## 下载与校验
+
+从 [v0.1.0 Release](https://github.com/NoctilumeDev/Qingye/releases/tag/v0.1.0) 下载 `Qingye-v0.1.0.zip` 和同名 `.sha256` 文件。发布包对应提交 `7001a232f9b21602b9288bfd889fb0deb77bb424`，ZIP 的 SHA-256 为：
+
+```text
+7ed570916f0a4677e2b26f2c3e5d90acea0c9d5484e01766b99297762c898ad2
+```
+
+可用 `Get-FileHash -LiteralPath .\Qingye-v0.1.0.zip -Algorithm SHA256` 核对。解压后进入包目录再运行以下命令。GitHub 自动生成的 Source code 压缩包只有仓库源码；需要直接运行后端时，使用上面的 `Qingye-v0.1.0.zip` 资产。
 
 ## 文件与配置
 
-`backend/qingye-0.1.0.jar` 为可执行后端；`database/schema.sql` 为同版本建表脚本；`miniprogram/` 为包含图片和组件的微信小程序源码。`SOURCE_MANIFEST.json` 记录 base HEAD、打包时的工作树状态和参与交付的源码散列；允许未提交修改时不把 base HEAD 当成完整源码坐标。`SHA256SUMS` 记录包内文件散列，不包含自身。
+`backend/qingye-0.1.0.jar` 为可执行后端；`database/schema.sql` 为同版本建表脚本；`miniprogram/` 为包含图片和组件的微信小程序源码。`SOURCE_MANIFEST.json` 记录源码提交、源文件和源码归档散列；v0.1.0 从干净的合并提交归档重建 JAR，源码保留在 `source/Qingye-v0.1.0-source.zip`。`SHA256SUMS` 记录包内文件散列，不包含自身。
 
-在当前 PowerShell 会话设置配置，或由部署系统注入环境变量。`config/production.env.example` 只是字段模板，不会被启动脚本执行或自动加载。实际值保存在部署配置中，不写回候选包。
+在当前 PowerShell 会话设置配置，或由部署系统注入环境变量。`config/production.env.example` 只是字段模板，不会被启动脚本执行或自动加载。实际值保存在部署配置中，不写回发布包。
 
 必需项为 `QINGYE_DB_URL`、`QINGYE_DB_USER`、`QINGYE_DB_PASSWORD`、`QINGYE_WX_APPID`、`QINGYE_WX_SECRET` 和 `QINGYE_TOKEN_SECRET`。签名密钥至少 32 字符，使用独立随机值并稳定保存，不能复用微信密钥。AppID 应与小程序实际 AppID 一致。模型配置 `QINGYE_LLM_URL`、`QINGYE_LLM_KEY`、`QINGYE_LLM_MODEL` 是可选项；不配置时保留固定业务查询。
 
@@ -62,21 +72,23 @@ SELECT ROW_COUNT() AS changed_accounts;
 
 只应更新一行；记录维护者、目标账号、时间和结果。这个人工引导不伪造应用审计操作者，后续权限调整通过工作台完成。系统不会把首位注册者自动提权，也没有预置正式管理员密码。
 
-## 候选包检查
+## 部署检查
 
-- 核对 `SOURCE_MANIFEST.json` 和 `SHA256SUMS`；未提交源码候选须保留原工作树并按逐文件散列核对，不能只使用 base HEAD，散列本身不能还原源码。
+- 核对下载校验值、`SOURCE_MANIFEST.json` 和包内 `SHA256SUMS`，确认使用的源码与运行包版本。
 - 无正式参数时入口非零退出；提供实际参数后，`/api/auth/options` 应返回 `demoEnabled=false`、空 `demoUsers` 和 `wechatEnabled=true`，演示登录被拒绝。`wechatEnabled=true` 只表示参数非空，仍需一次实际微信登录验证。
 - `/api/health` 成功只证明 HTTP 服务响应；分别检查目标数据库、首位管理员和一条本地通知投递。Redis/MQ 关闭不应关闭 TaskWorker。
 - 核对小程序实际 AppID、HTTPS 域名、原生编译及真机交互；未完成的项目保持待验证。单实例压测成绩单独绑定运行环境和源码，不从 8 个数据库连接推算在线人数。
 
-`THIRD_PARTY/` 保存实际 JAR 内依赖自带的 LICENSE/NOTICE/COPYING 材料、运行依赖清单、所提供的 SBOM 和仓库依赖许可声明。没有随依赖附带的许可文本、实际嵌入依赖未被所提供 SBOM 覆盖的情况会在清单中标出，不能把“成功采集”当成许可完整性或兼容性结论。`PUBLIC_RELEASE_TODO.md` 保留仓库已有的 Connector/J、多许可依赖及素材权利链待核对项；本地候选包形成不关闭这些项目。
+v0.1.0 的 `THIRD_PARTY/` 保存 57 个嵌入运行依赖及 Spring Boot 启动器的对应版本源码、POM、许可材料和运行 SBOM，具体清单及散列见包内 `THIRD_PARTY/README.md`。小程序图片与图标的来源见 `miniprogram/assets/README.md`。GitHub 发布包已经补齐这批交付材料，不含本地候选的 `PUBLIC_RELEASE_TODO.md`。
 
 ## 从源码准备候选包
 
-先在本轮源码上完成检查和 `mvn -DskipTests package`，再显式选择本轮依赖检查生成的 SBOM。工具只收集现有产物，不执行构建、测试、上传或部署：
+以下工具生成供本地核对的候选目录，不直接生成上述 GitHub 发布包。先在本轮源码上完成检查和 `mvn -DskipTests package`，再显式选择本轮依赖检查生成的 SBOM。工具只收集现有产物，不执行构建、测试、上传或部署：
 
 ```powershell
 python -B scripts/package-release.py --jar backend/target/qingye-0.1.0.jar --sbom backend/target/dependency-audit/<本轮目录>/bom.cdx.json --output <尚不存在的候选目录> --allow-dirty
 ```
 
 `--allow-dirty` 明确允许未提交工作树，并保留状态与源文件散列；省略时非干净工作树会拒绝。输出目录必须不存在。打包器核对 JAR 的应用资源与当前源文件一致，记录 JAR 和源码各自散列；这不独立证明 Java 字节码已由这些源码重建，构建和测试证据仍需保留。
+
+本地候选包含 `PUBLIC_RELEASE_TODO.md`，供核对第三方源码、许可和素材交付项；未提交源码候选还需保留原工作树。v0.1.0 的发布组装过程单独保留在发布包的 `source/assemble-github-release.py`，并以合并提交的源码归档构建。候选目录与公开发布包按各自清单核对。
