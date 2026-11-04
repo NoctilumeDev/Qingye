@@ -96,7 +96,7 @@ def read_source(root, name):
 
 def license_entry(name):
     path = PurePosixPath(name)
-    return (not name.endswith("/") and
+    return (not name.endswith("/") and path.suffix.lower() in {"", ".txt", ".md", ".html", ".htm", ".rst"} and
             (re.match(r"^(LICENSE|LICENCE|NOTICE|COPYING)([._-]|$)", path.name, re.I)
              or any(part.lower() in {"licenses", "licences"} for part in path.parts)))
 

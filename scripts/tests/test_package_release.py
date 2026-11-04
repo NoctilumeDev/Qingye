@@ -18,6 +18,12 @@ SPEC.loader.exec_module(PACK)
 
 
 class PackageReleaseTest(unittest.TestCase):
+    def test_license_collection_excludes_class_files(self):
+        self.assertTrue(PACK.license_entry("META-INF/NOTICE.txt"))
+        self.assertTrue(PACK.license_entry("LICENSE"))
+        self.assertFalse(PACK.license_entry("com/mysql/cj/protocol/x/Notice.class"))
+        self.assertFalse(PACK.license_entry("licenses/Helper.class"))
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="qingye-package-")
         self.addCleanup(self.temporary.cleanup)
