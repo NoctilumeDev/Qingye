@@ -607,7 +607,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -630,9 +630,24 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
-      "rationale": "All explicit inputs are Strings; MVC uses servlet InputStream conversion. No DataInput parser or custom converter is shipped. This is not a claim about all JSON parser bugs.",
+      "rationale": "External String/Servlet InputStream and fixed classpath InputStream parsing do not use the DataInput parser. No DataInput construction is introduced by the announcement or cache change.",
       "unknowns": [
         "Final packaged release and deployment configuration have not been qualified; re-evaluate on dependency, DTO, auto-configuration, deployment or pipeline changes."
       ],
@@ -712,7 +727,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -735,6 +750,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "Exact 2.21.4 source calls the regex from floating, Number and BigDecimal deserializers. Forms use bounded integer/long, String and LocalDateTime types; Map/List/tree keep strings as strings. No affected coercion call is shipped.",
@@ -817,7 +847,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -840,6 +870,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "Closed request DTOs have neither annotation; authentication and authorization are explicit application code, not this view gate.",
@@ -922,7 +967,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -945,6 +990,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "DTOs do not define these property annotations or use ignored-property gates. Alternate case-insensitive flags alone do not create the required annotated property.",
@@ -1027,7 +1087,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1050,6 +1110,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "Closed DTOs have no identity annotations; untyped Map/List parse data directly without identity object-ID resolution.",
@@ -1132,7 +1207,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1155,6 +1230,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "No polymorphic DTO/default typing/mixins are shipped; Boot mapper and explicit parsing targets do not activate the affected type gate.",
@@ -1235,7 +1325,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1258,6 +1348,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "Neither annotation nor active-view reader exists in shipped DTO/controller/parser paths.",
@@ -1340,7 +1445,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1363,6 +1468,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "Request times are java.time.LocalDateTime, not XML types; other parsing is untyped JSON or String-only QueryPlan.",
@@ -1445,7 +1565,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1468,6 +1588,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "DTOs and explicit parser targets contain no InetAddress; polymorphic typing is not enabled.",
@@ -1550,7 +1685,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1573,6 +1708,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "No Path-typed input or polymorphic binding in shipped parser paths; untyped Maps keep URI strings inert.",
@@ -1655,7 +1805,7 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "24-36",
+          "lines": "28-56",
           "detail": "Redis JSON String parsed into untyped List."
         },
         {
@@ -1678,6 +1828,21 @@
           "label": "integration parsing target",
           "path": "backend/src/main/java/cn/qingye/model/QueryPlan.java",
           "detail": "Finite scalar and list records; no dynamic type, view, identity, XML, path, network-address or floating-number binding introduced."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
+        },
+        {
+          "label": "new fixed DTO",
+          "path": "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+          "detail": "Only bounded String, long and Boolean fields; no polymorphic/view/identity/ignored-property configuration."
+        },
+        {
+          "label": "fixed classpath resource",
+          "path": "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+          "detail": "Classpath InputStream to JsonNode during initialization; not DataInput or a remotely supplied resource."
         }
       ],
       "rationale": "No JsonTypeInfo/defaultImpl/default typing or custom modules in current app; fixed DTOs and untyped Map/List/tree do not perform named-type fallback.",
@@ -1803,8 +1968,13 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "14-36",
+          "lines": "28-56",
           "detail": "StringRedisTemplate client reads optional Redis cache, no server pipeline registration."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
         }
       ],
       "rationale": "Only Netty consumer is Lettuce 6.6.0 Redis client. Its inspected ConnectionBuilder installs RESP encoder/command handlers, not Bzip2; no application customizer is shipped.",
@@ -1852,8 +2022,13 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "14-36",
+          "lines": "28-56",
           "detail": "StringRedisTemplate client reads optional Redis cache, no server pipeline registration."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
         }
       ],
       "rationale": "Netty is used as Redis client, not TLS server. Lettuce SSL client handler is not SslClientHelloHandler/SniHandler; HTTP is embedded Tomcat.",
@@ -1901,8 +2076,13 @@
         {
           "label": "source evidence",
           "path": "backend/src/main/java/cn/qingye/integration/QueryCache.java",
-          "lines": "14-36",
+          "lines": "28-56",
           "detail": "StringRedisTemplate client reads optional Redis cache, no server pipeline registration."
+        },
+        {
+          "label": "announcement and cache review",
+          "path": "docs/governance/announcements-release-20261104.md",
+          "detail": "Database supplier moved outside the local cache lock; String to List parsing and Lettuce pipeline unchanged. No disposition change."
         }
       ],
       "rationale": "Same inspected client pipeline contains no SNI server handler; enabling Redis client SSL does not create an inbound TLS server.",
@@ -3319,6 +3499,146 @@
       "rationale": "Detector candidate retained; no individual defect verdict or risk acceptance.",
       "next_action": "Review this source path and its existing callers; fix confirmed defects with a regression, otherwise retain bounded uncertainty.",
       "risk_accepted": false
+    },
+    {
+      "id": "spotbugs-announcement-39",
+      "hash": "48c60db81fd765cf49c2e7702523e9c8",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.api.AnnouncementApi",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/api/AnnouncementApi.java",
+        "docs/governance/announcements-release-20261104.md"
+      ],
+      "summary": "new cn.qingye.api.AnnouncementApi(AnnouncementService) may expose internal representation by storing an externally mutable object into AnnouncementApi.service",
+      "rationale": "Container-owned AnnouncementService is stored privately with no service replacement, accessor or serialization route. HTTP binds only bounded Content/Archive DTOs and the authenticated Actor.",
+      "next_action": "Revisit if third-party beans, dynamic extensions, untrusted injection, dependency exposure or runtime mapper reconfiguration are introduced.",
+      "risk_accepted": false,
+      "maintenance_review": {
+        "base_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+        "source_sha256": "fec2aa37197bc859ef036aaa5f1bfbf3d5f6b2de2006b10c10facbcef0dc39de",
+        "reason": "Individually reviewed new constructor injection; existing candidates unchanged."
+      }
+    },
+    {
+      "id": "spotbugs-announcement-40",
+      "hash": "c11d74cc92fbeea43df3c3ffdf858608",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.business.AnnouncementService",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/business/AnnouncementService.java",
+        "docs/governance/announcements-release-20261104.md"
+      ],
+      "summary": "new cn.qingye.business.AnnouncementService(AnnouncementStore, UserStore, Access) may expose internal representation by storing an externally mutable object into AnnouncementService.store",
+      "rationale": "Container-owned AnnouncementStore is shared intentionally; callers supply business values, not repository instances. No accessor or response exposes the store.",
+      "next_action": "Revisit if third-party beans, dynamic extensions, untrusted injection, dependency exposure or runtime mapper reconfiguration are introduced.",
+      "risk_accepted": false,
+      "maintenance_review": {
+        "base_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+        "source_sha256": "3bf6563a02f7a2c66f55592833f1b737fa6cbdeb06258c53b131953912fbdda6",
+        "reason": "Individually reviewed new constructor injection; existing candidates unchanged."
+      }
+    },
+    {
+      "id": "spotbugs-announcement-41",
+      "hash": "b9652bd1c57cbba967bbfb3dcf41fc6c",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.AnnouncementStore",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/AnnouncementStore.java",
+        "docs/governance/announcements-release-20261104.md"
+      ],
+      "summary": "new cn.qingye.db.AnnouncementStore(Sql) may expose internal representation by storing an externally mutable object into AnnouncementStore.sql",
+      "rationale": "Container-owned Sql is stored privately and used for fixed parameterized queries. Returned row maps do not expose Sql or JdbcTemplate.",
+      "next_action": "Revisit if third-party beans, dynamic extensions, untrusted injection, dependency exposure or runtime mapper reconfiguration are introduced.",
+      "risk_accepted": false,
+      "maintenance_review": {
+        "base_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+        "source_sha256": "f81b0da9371224c009711672ea561f8d89e349ea75a7fb68b1ea28710f4102cf",
+        "reason": "Individually reviewed new constructor injection; existing candidates unchanged."
+      }
+    },
+    {
+      "id": "spotbugs-announcement-42",
+      "hash": "14c75130a40b435f157284de433b657a",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.BuiltinAnnouncements",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+        "docs/governance/announcements-release-20261104.md"
+      ],
+      "summary": "new cn.qingye.db.BuiltinAnnouncements(Sql, ObjectMapper) may expose internal representation by storing an externally mutable object into BuiltinAnnouncements.json",
+      "rationale": "Container-configured ObjectMapper is used during initialization to read a fixed classpath resource. No untrusted mapper injection, exposure or runtime configuration mutation exists in the reviewed application; ObjectMapper is not claimed immutable.",
+      "next_action": "Revisit if third-party beans, dynamic extensions, untrusted injection, dependency exposure or runtime mapper reconfiguration are introduced.",
+      "risk_accepted": false,
+      "maintenance_review": {
+        "base_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+        "source_sha256": "6edf9ac6f3d11146ce4df37cb141caebd218a632175a01675946d97dd502caee",
+        "reason": "Individually reviewed new constructor injection; existing candidates unchanged."
+      }
+    },
+    {
+      "id": "spotbugs-announcement-43",
+      "hash": "453175d1e524f268ec9b1331915bda40",
+      "occurrence": 0,
+      "type": "EI_EXPOSE_REP2",
+      "priority": 2,
+      "rank": 18,
+      "class": "cn.qingye.db.BuiltinAnnouncements",
+      "owner": {
+        "repository": "NoctilumeDev/Qingye",
+        "role": "repository-maintainer"
+      },
+      "status": "NOT_APPLICABLE",
+      "source_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+      "evidence": [
+        "backend/src/main/java/cn/qingye/db/BuiltinAnnouncements.java",
+        "docs/governance/announcements-release-20261104.md"
+      ],
+      "summary": "new cn.qingye.db.BuiltinAnnouncements(Sql, ObjectMapper) may expose internal representation by storing an externally mutable object into BuiltinAnnouncements.sql",
+      "rationale": "Initializer intentionally shares container-owned Sql for fixed builtin registration/update statements. No untrusted dependency replacement or accessor exists.",
+      "next_action": "Revisit if third-party beans, dynamic extensions, untrusted injection, dependency exposure or runtime mapper reconfiguration are introduced.",
+      "risk_accepted": false,
+      "maintenance_review": {
+        "base_revision": "bf7a4984facedb78fad3be5c92384435c316fa14",
+        "source_sha256": "6edf9ac6f3d11146ce4df37cb141caebd218a632175a01675946d97dd502caee",
+        "reason": "Individually reviewed new constructor injection; existing candidates unchanged."
+      }
     }
   ]
 }

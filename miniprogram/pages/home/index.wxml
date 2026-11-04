@@ -7,6 +7,7 @@
     <view class="shortcut" bindtap="activities" hover-class="shortcut-pressed"><view class="shortcut-icon blue"><image src="/assets/icons/calendar-event-line-blue.png" /></view><text>校园活动</text></view>
     <view class="shortcut" bindtap="clubs" hover-class="shortcut-pressed"><view class="shortcut-icon blue"><image src="/assets/icons/team-line-green.png" /></view><text>找同好</text></view>
     <view class="shortcut" bindtap="myActivities" hover-class="shortcut-pressed" aria-role="button" aria-label="查看我的活动"><view class="shortcut-icon green"><image src="/assets/icons/time-line-ink.png" /></view><text>我的活动</text></view>
+    <view class="shortcut" bindtap="announcements" hover-class="shortcut-pressed" aria-role="button" aria-label="查看公告"><view class="shortcut-icon green"><image src="/assets/icons/notification-3-line-ink.png" /></view><text>公告</text></view>
     <view class="shortcut" bindtap="assistant" hover-class="shortcut-pressed"><view class="shortcut-icon orange"><image src="/assets/icons/chat-smile-2-line-orange.png" /></view><text>问问青野</text></view>
   </view>
   <view class="recommendation-panel" wx:if="{{recommendations.length}}" bindtouchstart="pauseRecommendations">

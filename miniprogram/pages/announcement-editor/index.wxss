@@ -1,0 +1,3 @@
+.announcement-editor { padding-top:4rpx; padding-bottom:70rpx }
+.announcement-input { height:460rpx; line-height:1.8 }
+.conflict { border-color:#bdd9cf; line-height:1.8 }

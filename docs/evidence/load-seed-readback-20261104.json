@@ -1,0 +1,44 @@
+{
+  "started_at": "2026-11-04T10:36:02.564239+00:00",
+  "status": "already_present",
+  "host": "127.0.0.1",
+  "port": 19324,
+  "database": "qingye_test",
+  "anchor": "2026-11-04",
+  "prefix": "QY_LOAD_V1_",
+  "expected_added": {
+    "club": 100,
+    "club_member": 100,
+    "activity": 3000,
+    "equipment": 200,
+    "registration": 1000,
+    "loan": 400
+  },
+  "apply": false,
+  "server": {
+    "port": 19324,
+    "version": "8.0.44",
+    "database": "qingye_test"
+  },
+  "before": {
+    "total": {
+      "club": 103,
+      "loan": 403,
+      "activity": 3005,
+      "app_user": 5,
+      "equipment": 204,
+      "club_member": 107,
+      "announcement": 3,
+      "registration": 1004
+    },
+    "fixture": {
+      "club": 100,
+      "loan": 400,
+      "activity": 3000,
+      "equipment": 200,
+      "club_member": 100,
+      "registration": 1000
+    }
+  },
+  "finished_at": "2026-11-04T10:36:02.783188+00:00"
+}

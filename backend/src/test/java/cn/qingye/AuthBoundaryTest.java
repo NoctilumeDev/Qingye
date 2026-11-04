@@ -49,10 +49,11 @@ class AuthBoundaryTest {
     @Test void expirationAndDifferentSigningKeyRejectBeforeUserLookup() {
         var actor = new Actor(7, "fixture", false);
         when(users.actor(7)).thenReturn(actor);
+        when(users.sessionActor(7,true)).thenReturn(actor);
         when(users.profile(7)).thenReturn(Map.of("id", 7));
         when(sql.count(anyString(), eq(7L))).thenReturn(1L);
         String token = auth(true, KEY, NOW).demo(7).get("token").toString();
-        assertThat(auth(false, KEY, Clock.offset(NOW, Duration.ofHours(8).minusSeconds(1))).authenticate(token)).isEqualTo(actor);
+        assertThat(auth(true, KEY, Clock.offset(NOW, Duration.ofHours(8).minusSeconds(1))).authenticate(token)).isEqualTo(actor);
         clearInvocations(users);
         assertThatThrownBy(() -> auth(false, KEY, Clock.offset(NOW, Duration.ofHours(8))).authenticate(token))
                 .isInstanceOf(Problem.class).hasMessageContaining("失效");

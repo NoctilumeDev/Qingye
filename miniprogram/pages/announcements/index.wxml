@@ -1,0 +1,20 @@
+<view class="page announcements">
+  <view class="title">{{management ? '公告管理' : '青野公告'}}</view>
+  <view class="subtitle">使用说明、功能更新和维护消息，都在这里。</view>
+  <view wx:if="{{management}}" class="gap"><qy-action bindactivate="create">发布公告</qy-action><view class="footnote">预置使用说明由青野维护；管理员发布的公告可以修改和删除。</view></view>
+  <view wx:else="" class="announcement-tabs">
+    <view class="announcement-tab {{!archived ? 'active' : ''}}" data-section="inbox" bindtap="section" aria-role="button" aria-label="公告">公告</view>
+    <view class="announcement-tab {{archived ? 'active' : ''}}" data-section="archive" bindtap="section" aria-role="button" aria-label="已归档">已归档</view>
+  </view>
+  <view wx:if="{{!management && archived}}" class="archive-hint">你收好的公告在这里，可以随时打开或恢复。</view>
+  <view class="announcement-list">
+    <view class="card announcement-card" wx:for="{{items}}" wx:key="id" bindtap="open" data-id="{{item.id}}" hover-class="announcement-pressed" aria-role="button" aria-label="{{item.title}}">
+      <view class="row"><text class="badge">{{item.builtin ? '青野使用说明' : item.categoryLabel}}</text><text class="muted">{{item.dateLabel}}</text></view>
+      <view class="announcement-title">{{item.title}}</view><view class="link">阅读公告 ›</view>
+    </view>
+  </view>
+  <view wx:if="{{loading}}" class="loading">正在加载公告…</view>
+  <view wx:elif="{{failed}}" class="empty">公告暂时没加载出来<view class="gap"><qy-action variant="secondary" bindactivate="retry">重试</qy-action></view></view>
+  <view wx:elif="{{!items.length}}" class="empty">{{archived ? '还没有归档的公告' : '这里的公告已看完了'}}<view>{{archived ? '阅读公告后，可以选择归档。' : '可以到“已归档”查看收好的公告。'}}</view></view>
+  <qy-action wx:elif="{{hasMore}}" variant="secondary" bindactivate="onReachBottom">更多公告</qy-action>
+</view>

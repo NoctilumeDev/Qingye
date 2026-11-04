@@ -110,7 +110,7 @@ public class AuthService {
             if (parts.length!=2 || !MessageDigest.isEqual(sign(parts[0]).getBytes(StandardCharsets.UTF_8),parts[1].getBytes(StandardCharsets.UTF_8))) throw new IllegalArgumentException();
             String[] data=new String(Base64.getUrlDecoder().decode(parts[0]),StandardCharsets.UTF_8).split(":");
             if (data.length!=3 || Long.parseLong(data[1])<=clock.instant().getEpochSecond()) throw new IllegalArgumentException();
-            return users.actor(Long.parseLong(data[0]));
+            return users.sessionActor(Long.parseLong(data[0]),demo);
         }
         catch(Exception e) {
             throw new Problem(401,"登录已失效，请重新登录");

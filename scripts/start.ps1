@@ -11,10 +11,13 @@ if ($RealWechat) {
 $env:QINGYE_REDIS = $Redis.IsPresent.ToString().ToLowerInvariant()
 $env:QINGYE_MQ = $Mq.IsPresent.ToString().ToLowerInvariant()
 Push-Location (Join-Path $qingyeDirectory 'backend')
+$qingyeJavaExit = 1
 try {
     if (-not $SkipBuild) {
         & mvn -o -q '-DskipTests' package
         if ($LASTEXITCODE -ne 0) { throw 'Offline Maven build failed; check installed dependency versions.' }
     }
     & java -jar target/qingye-0.1.0.jar
+    $qingyeJavaExit = $LASTEXITCODE
 } finally { Pop-Location }
+exit $qingyeJavaExit

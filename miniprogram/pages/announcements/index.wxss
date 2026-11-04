@@ -1,0 +1,8 @@
+.announcements { padding-bottom:60rpx }
+.announcement-tabs { display:flex; gap:8rpx; padding:8rpx; margin:30rpx 0 22rpx; border-radius:24rpx; background:#e7f2ed }
+.announcement-tab { flex:1; min-width:0; min-height:72rpx; display:flex; align-items:center; justify-content:center; border-radius:18rpx; color:#60736f }
+.announcement-tab.active { background:#fff; color:#187553; font-weight:700 }
+.archive-hint { color:#65767d; font-size:24rpx; line-height:1.7; margin-bottom:22rpx }
+.announcement-list { margin-top:26rpx }
+.announcement-title { font-size:32rpx; font-weight:700; line-height:1.5; margin:24rpx 0; overflow-wrap:anywhere }
+.announcement-pressed { opacity:.7 }

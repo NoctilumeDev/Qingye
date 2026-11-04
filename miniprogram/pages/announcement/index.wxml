@@ -1,0 +1,15 @@
+<view class="page announcement-detail">
+  <view wx:if="{{item}}" class="card">
+    <text class="badge">{{item.builtin ? '青野使用说明' : item.categoryLabel}}</text>
+    <view class="announcement-title">{{item.title}}</view><view class="muted">更新于 {{item.dateLabel}}</view>
+    <text class="announcement-body" user-select="true">{{item.body}}</text>
+    <block wx:if="{{!management}}">
+      <qy-action variant="secondary" bindactivate="archive" loading="{{busy}}" disabled="{{busy || loading}}">{{item.archived ? '恢复到公告' : '归档这条公告'}}</qy-action>
+      <view class="footnote">{{item.archived ? '已归档，你仍可以随时阅读。' : '归档后可在“已归档”中查看。'}}</view>
+    </block>
+    <block wx:elif="{{!item.builtin}}"><view class="actions"><qy-action variant="secondary" size="compact" bindactivate="edit" disabled="{{busy || loading}}">修改公告</qy-action><qy-action variant="danger" size="compact" bindactivate="remove" disabled="{{busy || loading}}">删除公告</qy-action></view></block>
+    <view wx:else="" class="footnote">这条使用说明由青野维护。</view>
+  </view>
+  <view wx:if="{{loading}}" class="loading">正在打开公告…</view>
+  <view wx:elif="{{failed}}" class="empty">{{missing ? '这条公告已被撤下' : '公告暂时没加载出来'}}<view wx:if="{{!missing}}" class="gap"><qy-action variant="secondary" bindactivate="load">重试</qy-action></view></view>
+</view>

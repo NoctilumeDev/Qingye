@@ -40,6 +40,50 @@ const openManual = async (p, intents = ['ACTIVITIES']) => { p.onLoad(); intents.
 const plain = value => JSON.parse(JSON.stringify(value))
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
+test('announcement archive is private, reversible and submits the displayed version once', async () => {
+  const writes = [], pending = deferred(); let backs = 0
+  const p = page('announcement', async (url, method, body) => {
+    if (method === 'PUT') { writes.push({ url, body }); return pending.promise }
+    return { id: 8, title: '说明', body: '正文', archived: false, version: 3, builtinKey: 'help' }
+  }, { showToast() {}, navigateBack() { backs++ } })
+  p.onLoad({ id: '8' }); await p.onShow(); const first = p.archive(); await p.archive()
+  assert.equal(writes.length, 1); assert.deepEqual(plain(writes[0].body), { archived: true, version: 3 })
+  pending.resolve({}); await first; assert.equal(p.data.item.archived, true)
+  await p.archive(); assert.equal(p.data.item.archived, false); assert.equal(writes[1].body.archived, false)
+  p.setData({ management: true }); p.edit(); await p.remove(); assert.equal(backs, 0)
+})
+test('announcement editor conflict keeps the draft and does not resubmit stale content', async () => {
+  let writes = 0, confirmed = false
+  const p = page('announcement-editor', async (url, method) => {
+    if (method === 'PUT') { writes++; throw Object.assign(Error('conflict'), { status: 409 }) }
+    return url === '/me' ? { admin: true } : { title: '别人已保存的标题', body: '最新正文', version: 2, category: 'GUIDE' }
+  }, { setNavigationBarTitle() {}, showToast() {} }, async () => confirmed)
+  await p.onLoad({ id: '8' }); p.onShow(); manualField(p, 'title', '我的修改'); manualField(p, 'body', '我的正文')
+  await p.save(); await p.save(); assert.equal(writes, 1); assert.equal(p.data.conflict, true)
+  assert.equal(p.data.body, '我的正文'); await p.reload(); assert.equal(p.data.body, '我的正文')
+  confirmed = true; await p.reload(); assert.equal(p.data.body, '最新正文'); assert.equal(p.data.version, 2)
+})
+test('announcement delete cancels when account changes during confirmation', async () => {
+  let session = 'a'; const pending = deferred(), writes = []
+  const p = page('announcement', async (url, method) => {
+    if (method === 'DELETE') writes.push(url)
+    return url === '/me' ? { admin: true } : { id: 8, title: '更新', version: 2 }
+  }, { getStorageSync: () => session }, () => pending.promise)
+  p.onLoad({ id: '8', manage: '1' }); await p.onShow(); const deleting = p.remove()
+  session = 'b'; pending.resolve(true); await deleting; assert.equal(writes.length, 0)
+})
+test('announcement list uses server pagination and refreshes archive contents on return', async () => {
+  const urls = []
+  const p = page('announcements', async url => {
+    urls.push(url)
+    if (url.includes('archived=true')) return { items: [{ id: 2, title: '归档公告' }], hasMore: false, nextBefore: 0 }
+    if (url.endsWith('before=8')) return { items: [{ id: 7, title: '更早公告' }], hasMore: false, nextBefore: 0 }
+    return { items: [{ id: 8, title: '新公告' }], hasMore: true, nextBefore: 8 }
+  })
+  p.onLoad({}); await p.onShow(); await p.onReachBottom(); assert.deepEqual(plain(p.data.items.map(i => i.id)), [8, 7])
+  await p.section(eventOf('section', 'archive')); assert.equal(p.data.items[0].id, 2)
+  p.onHide(); await p.onShow(); assert.equal(urls.at(-1), '/announcements?archived=true&management=false&before=0')
+})
 test('account management requires current admin role and cancellation makes no mutation', async () => {
   const calls = []; let backs = 0
   const student = page('accounts', async url => { calls.push(url); return { id: 7, admin: false } }, { navigateBack() { backs++ } })
