@@ -9,6 +9,8 @@
 .assistant-brand > image { width:38rpx; height:38rpx; }
 .assistant-title { font-size:44rpx; font-weight:750; line-height:1.4; margin-top:36rpx; }
 .assistant-subtitle { font-size:26rpx; margin-top:12rpx; color:#65767d; line-height:1.7; }
+.assistant-scope-note { display:flex; align-items:flex-start; gap:16rpx; margin-top:18rpx; padding-left:18rpx; border-left:4rpx solid #187553; color:#53675f; font-size:24rpx; line-height:1.65; }
+.assistant-scope-title { flex-shrink:0; color:#187553; font-weight:700; }
 .assistant-return,.new-question { flex-shrink:0; }
 
 .ask-card {
@@ -42,6 +44,9 @@
 .suggestion > image { width:27rpx; height:27rpx; flex-shrink:0; }
 
 .manual-entry { display:flex; justify-content:space-between; align-items:center; margin-top:28rpx; min-height:88rpx; padding:22rpx 8rpx; color:#187553; font-size:25rpx; }
+.manual-entry-copy { display:flex; flex-direction:column; gap:5rpx; }
+.manual-entry-lead { color:#294b3f; font-weight:700; }
+.assistant-ai-note { padding:0 8rpx 28rpx; color:#77857f; font-size:22rpx; line-height:1.65; }
 .notice-card {
   margin-top:24rpx;
   padding:26rpx;
