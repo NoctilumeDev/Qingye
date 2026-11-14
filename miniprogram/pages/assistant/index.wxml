@@ -6,6 +6,7 @@
   </view>
   <block wx:if="{{composing || (!status && !busy && !recoveryMessage)}}">
     <view class="assistant-title">今天想找什么？</view><view class="assistant-subtitle">校园活动、器材，还有你自己的记录。</view>
+    <view class="assistant-scope-note"><text class="assistant-scope-title">一次问一件事</text><text>可以查公开活动、器材库存、我的报名和我的借用。</text></view>
     <view class="ask-card">
       <textarea class="textarea ask-input" value="{{composing ? composeText : question}}" focus="{{correcting}}" maxlength="300" bindinput="input" bindfocus="focusQuestion" bindblur="blurQuestion" bindkeyboardheightchange="keyboardChange" adjust-position="{{false}}" aria-label="想查找的内容" placeholder="例如：明天摄影社活动在哪里？" placeholder-style="color:#75857e" />
       <view id="assistant-query"><qy-action variant="primary" bindactivate="ask">帮我找找</qy-action></view>
@@ -32,6 +33,7 @@
     <block wx:if="{{feedbackIndex < 0 && busyAction !== 'correction'}}"><include src="../../views/assistant-results.wxml" /></block>
     <view wx:if="{{retryToken && !busy}}" class="retry-button"><qy-action variant="primary" bindactivate="retry">再试一次</qy-action></view>
   </block>
-  <view wx:if="{{!busy && (!composing || startOpen) && feedbackIndex < 0}}" class="manual-entry" bindtap="toggleDirectory" hover-class="facet-toggle-pressed" aria-role="button"><text>自己选条件查找</text><text aria-hidden="true">›</text></view>
+  <view wx:if="{{!busy && (!composing || startOpen) && feedbackIndex < 0}}" class="manual-entry" bindtap="toggleDirectory" hover-class="facet-toggle-pressed" aria-role="button"><view class="manual-entry-copy"><text class="manual-entry-lead">想同时查多项？</text><text>自己选条件查找</text></view><text aria-hidden="true">›</text></view>
+  <view wx:if="{{!busy && (!composing || startOpen) && feedbackIndex < 0}}" class="assistant-ai-note">青野由 AI 辅助理解，也可能出错。重要信息请核实。</view>
   <view class="keyboard-space" style="height:{{keyboardHeight}}px" />
 </view>
