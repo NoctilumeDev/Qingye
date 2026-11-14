@@ -1,0 +1,27 @@
+{
+  "version": "qingye-second-gate-classifier-ab-pilot-v1",
+  "purpose": "先验证合法多目标、混合分类、超过四项、撤回、时间角色与硬条件；不执行查询。",
+  "caseIds": [
+    "long-tail-attack-LT37",
+    "long-tail-attack-LT38",
+    "long-tail-attack-LT39",
+    "long-tail-attack-LT40",
+    "long-tail-attack-LT41",
+    "long-tail-attack-LT42",
+    "long-tail-attack-LT45",
+    "long-tail-attack-LT48",
+    "long-tail-attack-MT03",
+    "long-tail-attack-ADV-029",
+    "long-tail-attack-ADV-037",
+    "business93-BQ-080",
+    "business93-BQ-009",
+    "business93-BQ-010",
+    "legacy-R027",
+    "legacy-R063",
+    "legacy-R086",
+    "legacy-R087",
+    "legacy-Q01",
+    "legacy-Q03",
+    "legacy-S04"
+  ]
+}
