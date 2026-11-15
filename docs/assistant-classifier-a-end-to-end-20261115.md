@@ -50,7 +50,10 @@
 证据坐标：
 
 - A/C 原始业务账：`D:\ResearchEvidence\qingye-classifier-c-full-final-review-v4-20261115`
-- 不调用模型的四道门回放：`D:\ResearchEvidence\qingye-classifier-a-unchanged-gates-replay-v4-20261115`
-- 最终逐题裁决：`D:\ResearchEvidence\qingye-classifier-a-unchanged-gates-replay-review-v7-20261115`
+- 回放源码提交：`d1de3464e0b850030d8f1db81c62a5989e9644d2`（运行时工作树干净）
+- 不调用模型的四道门回放：`D:\ResearchEvidence\qingye-classifier-a-unchanged-gates-replay-final2-20261115`
+- 最终逐题裁决：`D:\ResearchEvidence\qingye-classifier-a-unchanged-gates-replay-final2-review-20261115`
+- `summary.json` SHA-256：`7290781CBFC2B3F8D971B36D3887B12EDBE83C8824510FDDF176B38430F07241`
+- `business-ledger.json` SHA-256：`59DB41C022068BB87453A9FF2FE536AD322873472CB4D3BB13C8D569B9BB7003`
 
-上述目录在最终提交后会重新生成并绑定 exact commit；本文件中的数字以重新生成后的哈希清单为准。
+回放清单同时绑定生产第一门、第三门、第四门源码，冻结 A 业务账、H2 夹具与实验适配器；原始回放和裁决没有 API 密钥，也没有新的模型调用。
