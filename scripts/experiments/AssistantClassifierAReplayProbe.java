@@ -156,6 +156,7 @@ public final class AssistantClassifierAReplayProbe {
             "tasks", complete,
             "modelCalls", 0,
             "source", input.toString(),
+            "firstGate", "AssistantIntake.reject unchanged",
             "thirdGate", "AssistantContract.directoryQuery unchanged",
             "fourthGate", "AssistantService.query fixed business read unchanged"
         ));

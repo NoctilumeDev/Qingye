@@ -258,7 +258,7 @@ def main():
     summary = {
         "version": "qingye-classifier-a-unchanged-gates-replay-v1",
         "scope": "Frozen A first-turn classifications for four providers x 391 tasks; no model calls",
-        "qualificationBoundary": "This is a first-turn frozen replay through unchanged Gates 3 and 4, not a completed multi-turn or production qualification.",
+        "qualificationBoundary": "This is a first-turn frozen replay through unchanged Gates 1, 3 and 4, not a completed multi-turn or production qualification.",
         "secondGateUnacceptable": {"total": 155, "types": dict(failure_types)},
         "unacceptableFlow": {
             failure: dict(collections.Counter(
