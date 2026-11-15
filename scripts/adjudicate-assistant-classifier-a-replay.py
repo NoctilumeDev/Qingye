@@ -189,12 +189,16 @@ def main():
     parser.add_argument("--legacy-grade", type=Path, required=True)
     parser.add_argument("--multiple-oracle", type=Path, required=True)
     parser.add_argument("--classifier-adjudicator", type=Path, required=True)
+    parser.add_argument("--expected-commit", required=True)
     args = parser.parse_args()
     if args.output.exists():
         raise SystemExit("refuse to overwrite output directory")
     args.output.mkdir(parents=True)
 
     review = read_json(args.review)
+    manifest = read_json(args.probe / "manifest.json")
+    if manifest.get("sourceCommit") != args.expected_commit or manifest.get("workingTreeClean") is not True:
+        raise SystemExit("probe evidence is not bound to the expected clean source commit")
     probe = read_jsonl(args.probe / "results.jsonl")
     if len(review["cases"]) != 1564 or len(probe) != 1564:
         raise SystemExit("expected 1564 review and probe rows")
@@ -278,6 +282,7 @@ def main():
             "businessReview": sha256(args.review),
             "probeResults": sha256(args.probe / "results.jsonl"),
             "probeSummary": sha256(args.probe / "probe-summary.json"),
+            "probeManifest": sha256(args.probe / "manifest.json"),
             "legacyGrade": sha256(args.legacy_grade),
             "multipleOracle": sha256(args.multiple_oracle),
             "classifierAdjudicator": sha256(args.classifier_adjudicator),
