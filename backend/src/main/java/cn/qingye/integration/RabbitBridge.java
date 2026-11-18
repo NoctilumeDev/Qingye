@@ -4,8 +4,10 @@ import com.rabbitmq.client.*;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 public class RabbitBridge {
@@ -14,6 +16,8 @@ public class RabbitBridge {
     private final boolean enabled;
     private Connection connection;
     private Channel producer,consumer;
+    private AtomicBoolean publishReturned;
+    private AtomicBoolean consumerCancelled;
     private long retryAfter=0;
     private volatile String mode="DISABLED";
     private static final String QUEUE="qingye.notification.v1";
@@ -31,12 +35,18 @@ public class RabbitBridge {
     public synchronized boolean publish(long id) {
         if (!enabled || System.currentTimeMillis()<retryAfter) return false;
         try {
-            if (connection==null || !connection.isOpen() || producer==null || !producer.isOpen() || consumer==null || !consumer.isOpen()) {
+            if (connection==null || !connection.isOpen() || producer==null || !producer.isOpen()
+                    || consumer==null || !consumer.isOpen() || consumerCancelled.get()) {
                 close();
                 connect();
             }
-            producer.basicPublish("",QUEUE,MessageProperties.PERSISTENT_TEXT_PLAIN,String.valueOf(id).getBytes(StandardCharsets.UTF_8));
+            publishReturned.set(false);
+            producer.basicPublish("",QUEUE,true,MessageProperties.PERSISTENT_TEXT_PLAIN,String.valueOf(id).getBytes(StandardCharsets.UTF_8));
             producer.waitForConfirmsOrDie(1000);
+            // A mandatory return arrives before its confirm on the producer channel.
+            if (publishReturned.get() || consumerCancelled.get()) {
+                throw new IOException("Notification could not be routed to an active subscription");
+            }
             mode="RABBITMQ";
             return true;
         }
@@ -54,6 +64,8 @@ public class RabbitBridge {
         producer.confirmSelect();
         consumer=connection.createChannel();
         consumer.basicQos(10);
+        var cancelled=new AtomicBoolean();
+        consumerCancelled=cancelled;
         Channel deliveryChannel=consumer;
         deliveryChannel.basicConsume(QUEUE,false,(tag,delivery)-> {
             try {
@@ -66,8 +78,10 @@ public class RabbitBridge {
             catch(Exception e) {
                 if (deliveryChannel.isOpen()) deliveryChannel.basicNack(delivery.getEnvelope().getDeliveryTag(),false,false);
             }
-        },tag-> {
-        });
+        },tag->cancelled.set(true));
+        var returned=new AtomicBoolean();
+        publishReturned=returned;
+        producer.addReturnListener(message->returned.set(true));
     }
     @PreDestroy public synchronized void close() {
         try {

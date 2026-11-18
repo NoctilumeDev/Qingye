@@ -785,7 +785,7 @@
     "backend/src/main/java/cn/qingye/integration/ExternalHttp.java": "fe2a9e0d38f71c0a13cee9d98e7181b7432b32f376c4ff88bfffd0b3911abd6f",
     "backend/src/main/java/cn/qingye/integration/LlmPlanner.java": "f830acf368643876f239dbef2bdaadcbeee081ec0ad1ccfbfaaafac06a9cabf4",
     "backend/src/main/java/cn/qingye/integration/QueryCache.java": "d0be7bdca02d1f1c3e9a4a83a9468edcbd2b56703ba90dbb395bb8c95e341929",
-    "backend/src/main/java/cn/qingye/integration/RabbitBridge.java": "3b66989beb9af1b203c6796654d78a261250ec5ec06d90cbfda23090ef9c7df3",
+    "backend/src/main/java/cn/qingye/integration/RabbitBridge.java": "e51fb883aa8435f2c7301c586a97d2e13882af949c95d371b982fbf4822f5787",
     "backend/src/main/resources/application.yml": "eaf6b644152763ffdc4c086553efd2977f7c383c59b65379a3ab50a6070e46ae",
     "backend/src/main/java/cn/qingye/model/AssistantHint.java": "bf5efc267144afc6862ce3fd0320ea3a2061a1b8eb6d4a8b51ebb1189e0ac578",
     "backend/src/main/java/cn/qingye/integration/AssistantHintDecoder.java": "6a519a7794559ab6a6157216ba914b181cff4ff2298a3602c0f632755faf03a9",
