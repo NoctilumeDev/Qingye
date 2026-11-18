@@ -62,9 +62,6 @@ public class RabbitBridge {
         producer=connection.createChannel();
         producer.queueDeclare(QUEUE,true,false,false,Map.of());
         producer.confirmSelect();
-        var returned=new AtomicBoolean();
-        publishReturned=returned;
-        producer.addReturnListener(message->returned.set(true));
         consumer=connection.createChannel();
         consumer.basicQos(10);
         var cancelled=new AtomicBoolean();
@@ -82,6 +79,9 @@ public class RabbitBridge {
                 if (deliveryChannel.isOpen()) deliveryChannel.basicNack(delivery.getEnvelope().getDeliveryTag(),false,false);
             }
         },tag->cancelled.set(true));
+        var returned=new AtomicBoolean();
+        publishReturned=returned;
+        producer.addReturnListener(message->returned.set(true));
     }
     @PreDestroy public synchronized void close() {
         try {
