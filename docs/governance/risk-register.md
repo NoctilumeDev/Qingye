@@ -142,3 +142,14 @@ PR #6 当时**没有**接入持续完整依赖扫描，账册校验不能代替�
 静态检查中 spotbugs-026 因构造器增加超时参数更换了指纹，原 ObjectMapper 注入赋值未变。保留旧指纹，迁移到 `47a6a3ec06a095f17eb6de2882afea17`；类型 EI_EXPOSE_REP2、priority 2、rank 18 及 UNRESOLVED 状态不变。构造期间校验配置产生的两条新增告警已通过调用前校验消除，未加入基线。
 
 配置文件仅新增 `qingye.llm-timeout-ms`。引用 application.yml 的六项公告已复核：未新增 SSE、XSLT、DIGEST、FORM、servlet 约束、HTTP/2 或 TLS/SNI 配置，保留原分诊及部署条件未知项。第二次输入变化拒绝保留在 dependencies-rechecked.log。
+
+## 通知发布与订阅恢复 · 2026-11-18
+
+以 `830bf1890b0617cb38d9b412f8919a27bcc486b1` 为基线，复核修复提交
+`9eb1b30243bce5b06729c0e52dd6d850e4b35a9c`。通知发布会识别返回结果，取消订阅后会重新连接原 Broker。
+MQ 的启用条件、连接配置、队列、客户端 5.37.0 和 ID 解析顺序沿用基线。现有可选部署边界也仍适用。
+
+引用 `RabbitBridge.java` 的 11 条记录均属于历史客户端 5.14.3。保留其中 5 条 `NOT_APPLICABLE`、
+6 条 `UNRESOLVED` 及原始证据。仅重绑该源码文件的逻辑 SHA-256
+`e51fb883aa8435f2c7301c586a97d2e13882af949c95d371b982fbf4822f5787`。
+[首次 CI](https://github.com/NoctilumeDev/Qingye/actions/runs/44284564809) 保留对旧摘要的拒绝结果。
