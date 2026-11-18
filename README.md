@@ -131,7 +131,7 @@ cd ..
 
 ## 工程维护
 
-维护环境：Java 17、Maven 3.9、Python 3.10+、Node 24.14.0。从仓库根目录运行：
+维护环境：Java 17、Maven 3.9、Python 3.10+、Node 24.22.3。从仓库根目录运行：
 
 ```powershell
 python -B scripts/check.py quick  # 维护检查 + 客户端 + H2 + 静态分析

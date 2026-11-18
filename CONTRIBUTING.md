@@ -10,7 +10,7 @@
 PR 说明修了什么、没有改什么，列出实际执行的命令、环境、源码坐标与尚未验证的部分。
 有失败时保留首次失败与修复后的结果，不能只留下最后一次绿灯。
 
-Java 17、Maven 3.9、Python 3.10+、Node 24.14.0：
+Java 17、Maven 3.9、Python 3.10+、Node 24.22.3：
 
 ```powershell
 python -B scripts/check.py quick
